@@ -126,17 +126,17 @@ const Index = () => {
                   </button>
                 </DialogTrigger>
 
-                <DialogContent className="sm:max-w-md bg-background border-border shadow-2xl rounded-3xl p-8 max-h-[85vh] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full w-full text-foreground">
+                <DialogContent className="sm:max-w-xl bg-background border-border shadow-2xl rounded-3xl p-6 md:p-8 max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full w-full text-foreground transition-all duration-300">
                   <DialogHeader className="mb-4">
                     <DialogTitle className="text-left text-2xl font-bold tracking-tight text-foreground">Play Online</DialogTitle>
                     <p className="text-sm font-medium text-muted-foreground text-left">Choose your time control.</p>
                   </DialogHeader>
 
-                  <div className="flex flex-col gap-8 w-full mt-2">
-                    <div className="space-y-4">
+                  <div className="flex flex-col gap-5 w-full mt-1">
+                    <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Zap className="w-4 h-4 text-orange-400" />
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Bullet</h4>
+                        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Bullet</h4>
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         {[
@@ -147,18 +147,18 @@ const Index = () => {
                           <button
                             key={label}
                             onClick={() => setSelectedOnlineTime({ t, inc })}
-                            className={`py-3 px-1 rounded-xl border flex justify-center items-center transition-all ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted/80'}`}
+                            className={`py-3 px-2 rounded-xl border flex justify-center items-center transition-all duration-200 ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                           >
-                            <span className="font-semibold text-sm">{label}</span>
+                            <span className="font-bold text-sm">{label}</span>
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Flame className="w-4 h-4 text-primary" />
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Blitz</h4>
+                        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Blitz</h4>
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         {[
@@ -171,18 +171,18 @@ const Index = () => {
                           <button
                             key={label}
                             onClick={() => setSelectedOnlineTime({ t, inc })}
-                            className={`py-3 px-1 rounded-xl border flex justify-center items-center transition-all ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted/80'}`}
+                            className={`py-3 px-2 rounded-xl border flex justify-center items-center transition-all duration-200 ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                           >
-                            <span className="font-semibold text-sm">{label}</span>
+                            <span className="font-bold text-sm">{label}</span>
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-emerald-500" />
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Rapid</h4>
+                        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Rapid</h4>
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         {[
@@ -196,9 +196,9 @@ const Index = () => {
                           <button
                             key={label}
                             onClick={() => setSelectedOnlineTime({ t, inc })}
-                            className={`py-3 px-1 rounded-xl border flex justify-center items-center transition-all ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted/80'}`}
+                            className={`py-3 px-2 rounded-xl border flex justify-center items-center transition-all duration-200 ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                           >
-                            <span className="font-semibold text-sm">{label}</span>
+                            <span className="font-bold text-sm">{label}</span>
                           </button>
                         ))}
                       </div>
@@ -206,8 +206,8 @@ const Index = () => {
 
                     {selectedOnlineTime && (
                       <Link to={`/play?time=${selectedOnlineTime.t}&inc=${selectedOnlineTime.inc}`} className="w-full mt-4">
-                        <button className="w-full py-3 rounded-xl bg-orange-500 text-white font-semibold flex items-center justify-center gap-2 hover:bg-orange-600 transition-colors">
-                          <Play className="w-4 h-4" /> Start Match
+                        <button className="w-full py-3.5 rounded-xl bg-orange-500 text-white font-bold text-base flex items-center justify-center gap-3 hover:bg-orange-600 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 shadow-lg shadow-orange-500/20">
+                          <Play className="w-4 h-4 fill-current" /> Start Match
                         </button>
                       </Link>
                     )}
@@ -233,17 +233,17 @@ const Index = () => {
                 </button>
               </DialogTrigger>
 
-              <DialogContent className="sm:max-w-md bg-background border-border shadow-2xl rounded-3xl p-8 max-h-[85vh] overflow-y-auto text-foreground w-full">
+              <DialogContent className="sm:max-w-xl bg-background border-border shadow-2xl rounded-3xl p-6 md:p-8 max-h-[90vh] overflow-y-auto text-foreground w-full transition-all duration-300">
                 <DialogHeader className="mb-4">
                   <DialogTitle className="text-left text-2xl font-bold tracking-tight text-foreground">Match Config</DialogTitle>
                   <p className="text-sm font-medium text-muted-foreground text-left">Set up your perfect local game.</p>
                 </DialogHeader>
 
-                <div className="flex flex-col gap-8 w-full mt-2">
-                  <div className="space-y-4">
+                <div className="flex flex-col gap-5 w-full mt-1">
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-orange-400" />
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Time Control</h4>
+                      <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Time Control</h4>
                     </div>
                     <div className="grid grid-cols-4 gap-3">
                       {[
@@ -255,19 +255,19 @@ const Index = () => {
                         <button
                           key={t}
                           onClick={() => setCompTime(t)}
-                          className={`py-3 px-1 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${compTime === t ? 'border-orange-500/50 bg-orange-500/10 text-orange-400' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted/80'}`}
+                          className={`py-3 px-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 ${compTime === t ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                         >
-                          <span className="text-sm font-bold">{val}</span>
-                          <span className="text-[10px] uppercase font-semibold text-muted-foreground/80">{label}</span>
+                          <span className="text-base font-black">{val}</span>
+                          <span className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider font-mono">{label}</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Target className="w-4 h-4 text-orange-400" />
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">AI Difficulty</h4>
+                      <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">AI Difficulty</h4>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {[
@@ -279,18 +279,18 @@ const Index = () => {
                         <button
                           key={l}
                           onClick={() => setCompLevel(l)}
-                          className={`py-3 px-4 rounded-xl border flex justify-between items-center transition-all ${compLevel === l ? 'border-orange-500/50 bg-orange-500/10 text-orange-400' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted/80'}`}
+                          className={`py-3 px-5 rounded-xl border flex justify-between items-center transition-all duration-200 ${compLevel === l ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                         >
-                          <span className="font-semibold text-sm">{name}</span>
-                          <span className="text-xs text-muted-foreground font-medium">{elo}</span>
+                          <span className="font-bold text-sm">{name}</span>
+                          <span className="text-[13px] text-muted-foreground/60 font-mono font-bold tracking-tighter">{elo}</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <Link to={`/play?mode=computer&level=${compLevel}&time=${compTime}`} className="w-full mt-4">
-                    <button className="w-full py-3 rounded-xl bg-orange-500 text-white font-semibold flex items-center justify-center gap-2 hover:bg-orange-600 transition-colors">
-                      <Play className="w-4 h-4" /> Start Match
+                    <button className="w-full py-3.5 rounded-xl bg-orange-500 text-white font-bold text-base flex items-center justify-center gap-3 hover:bg-orange-600 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 shadow-lg shadow-orange-500/20">
+                      <Play className="w-4 h-4 fill-current" /> Start Match
                     </button>
                   </Link>
                 </div>

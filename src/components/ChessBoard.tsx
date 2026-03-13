@@ -21,16 +21,7 @@ import {
   getPieceSymbol,
 } from '@/lib/chess';
 import ChessSquare from './ChessSquare';
-import {
-  playMove,
-  playCapture,
-  playCheck,
-  playCheckmate,
-  playDraw,
-  playCastle,
-  playPromotion,
-  playNewGame,
-} from '@/lib/sounds';
+
 import {
   boardToFen,
   getBestMoveStockfish,
@@ -42,6 +33,7 @@ import {
   calculateWinProbability,
   estimateEloFromAccuracy
 } from '@/lib/engine';
+import { playChessSound, ChessSoundType } from '@/lib/sounds';
 
 interface ChessBoardProps {
   initialTime?: number;
@@ -107,16 +99,11 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     const status = getGameStatus(board, currentTurn, castlingRights, enPassantTarget);
     const draw = getInsufficientMaterial(board);
     setInsufficientMaterial(draw);
+    
     setGameStatus((prevStatus) => {
       if (prevStatus === 'resigned' || prevStatus === 'draw') return prevStatus;
+      
 
-      if (status === 'checkmate') {
-        playCheckmate();
-      } else if (status === 'stalemate' || draw) {
-        playDraw();
-      } else if (status === 'check') {
-        playCheck();
-      }
       return status;
     });
   }, [board, currentTurn, castlingRights, enPassantTarget]);
@@ -188,16 +175,19 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
             setCaptured(updatedCaptured);
           }
 
-          if (result.isCastle) playCastle();
-          else if (result.isPromotion) playPromotion();
-          else if (result.captured) playCapture();
-          else playMove();
-
           setMoveHistory(prev => [...prev, result.notation]);
           if (initialTime > 0 && increment > 0) {
             setBlackTime(prev => prev + increment);
           }
           setCurrentTurn('white');
+
+          // Play sound for AI move
+          const postMoveStatus = getGameStatus(result.newBoard, 'white', result.newCastlingRights, result.newEnPassantTarget);
+          let soundType: ChessSoundType = 'move';
+          if (postMoveStatus === 'checkmate') soundType = 'checkmate';
+          else if (postMoveStatus === 'check') soundType = 'check';
+          else if (result.captured) soundType = 'capture';
+          playChessSound(soundType);
 
           const newFen = boardToFen(result.newBoard, 'white', result.newCastlingRights, result.newEnPassantTarget, 0, Math.floor((moveHistory.length + 1) / 2) + 1);
 
@@ -214,7 +204,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
       // Ensure at least a slight delay for better UX
       const timer = setTimeout(() => {
         playAIMove();
-      }, 500);
+      }, 200); // Reduced from 500ms
 
       return () => {
         active = false;
@@ -224,31 +214,23 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   }, [currentTurn, mode, level, gameStatus, insufficientMaterial, timeoutWinner, board, castlingRights, enPassantTarget, moveHistory.length, isViewingHistory]);
 
   const navigateHistory = useCallback((direction: 'prev' | 'next') => {
+    let newIndex = -1;
+    
     setViewIndex((prev) => {
       const currentIndex = prev === -1 ? historySnapshots.length - 1 : prev;
-      let newIndex = currentIndex;
-
+      
       if (direction === 'prev' && currentIndex > 0) {
         newIndex = currentIndex - 1;
-        playMove();
       } else if (direction === 'next' && currentIndex < historySnapshots.length - 1) {
         newIndex = currentIndex + 1;
-        const notation = moveHistory[newIndex - 1];
-        if (notation) {
-          if (notation.includes('#')) playCheckmate();
-          else if (notation.includes('+')) playCheck();
-          else if (notation.includes('=')) playPromotion();
-          else if (notation.includes('O-O')) playCastle();
-          else if (notation.includes('x')) playCapture();
-          else playMove();
-        } else {
-          playMove();
-        }
+      } else {
+        newIndex = prev;
       }
-
+      
       return newIndex === historySnapshots.length - 1 ? -1 : newIndex;
     });
-  }, [historySnapshots.length, moveHistory]);
+
+  }, [historySnapshots.length, moveHistory, viewIndex]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -385,17 +367,6 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
             setCaptured(updatedCaptured);
           }
 
-          // Play the appropriate move sound
-          if (result.isCastle) {
-            playCastle();
-          } else if (result.isPromotion) {
-            playPromotion();
-          } else if (result.captured) {
-            playCapture();
-          } else {
-            playMove();
-          }
-
           setMoveHistory((prev) => [...prev, result.notation]);
           if (initialTime > 0 && increment > 0) {
             if (currentTurn === 'white') setWhiteTime(prev => prev + increment);
@@ -403,6 +374,14 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           }
           const newTurn = currentTurn === 'white' ? 'black' : 'white';
           setCurrentTurn(newTurn);
+
+          // Determine and play appropriate chess sound
+          const postMoveStatus = getGameStatus(result.newBoard, newTurn, result.newCastlingRights, result.newEnPassantTarget);
+          let soundType: ChessSoundType = 'move';
+          if (postMoveStatus === 'checkmate') soundType = 'checkmate';
+          else if (postMoveStatus === 'check') soundType = 'check';
+          else if (result.captured) soundType = 'capture';
+          playChessSound(soundType);
 
           const newFen = boardToFen(result.newBoard, newTurn, result.newCastlingRights, result.newEnPassantTarget, 0, Math.floor((moveHistory.length + 1) / 2) + 1);
 
@@ -419,6 +398,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           return;
         }
 
+        // Invalid move attempt
         setSelected(null);
         setValidMoves([]);
       } else {
@@ -428,7 +408,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         }
       }
     },
-    [board, selected, currentTurn, castlingRights, enPassantTarget, isGameOver]
+    [board, selected, currentTurn, castlingRights, enPassantTarget, isGameOver, isViewingHistory, mode, initialTime, increment, captured, moveHistory.length, historySnapshots.length]
   );
   const startFullGameReview = async () => {
     setOverlayContent('analyzing');
@@ -545,7 +525,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     setOverlayContent('result');
     setReviewProgress({ current: 0, total: 0 });
     setReviewSummary(null);
-    playNewGame();
+
   };
 
   const isValidMoveSquare = (row: number, col: number) =>
@@ -856,7 +836,8 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
               </div>
 
               {/* Board Container with responsive square dimensions */}
-              <div
+              <motion.div
+                layout
                 style={{
                   width: 'min(98vw, calc(100vh - 100px), 1200px)',
                   height: 'min(98vw, calc(100vh - 100px), 1200px)'
@@ -894,7 +875,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                     ))
                   )}
                 </div>
-              </div>
+              </motion.div>
 
               {/* Ranks right */}
               <div className="w-8 flex flex-col">
@@ -1117,7 +1098,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           <div className="flex gap-3 w-full">
             <motion.button
               className="flex-1 py-3.5 rounded-xl bg-red-500/10 text-red-500 font-semibold text-sm tracking-wide hover:bg-red-500/20 transition-all duration-200 border border-red-500/20 shadow-sm transition-colors"
-              onClick={() => { setGameStatus('resigned'); playCheckmate(); }}
+              onClick={() => { setGameStatus('resigned'); }}
               whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -1125,7 +1106,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
             </motion.button>
             <motion.button
               className="flex-1 py-3.5 rounded-xl bg-secondary/80 text-secondary-foreground font-semibold text-sm tracking-wide hover:bg-secondary transition-all duration-200 border border-border shadow-sm transition-colors"
-              onClick={() => { setGameStatus('draw'); playDraw(); }}
+              onClick={() => { setGameStatus('draw'); }}
               whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
             >

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Piece, getPieceSymbol } from '@/lib/chess';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 
 interface ChessPieceProps {
   piece: Piece;
@@ -8,55 +8,73 @@ interface ChessPieceProps {
   canDrag: boolean;
   position: [number, number];
   onClick: () => void;
+  onDrop?: (source: [number, number], target: [number, number]) => void;
 }
 
-const ChessPiece = ({ piece, isSelected, canDrag, position, onClick }: ChessPieceProps) => {
+const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop }: ChessPieceProps) => {
   const isWhite = piece.color === 'white';
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleDragStart = (e: any) => {
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', position.join(','));
-    }
 
-    // Select the piece right as we start dragging
-    onClick();
-
-    // Hide the original element *after* the browser takes the drag snapshot
-    // This removes the physical piece from its start location while we move the invisible ghost
-    setTimeout(() => {
-      setIsDragging(true);
-    }, 0);
-  };
-
-  const handleDragEnd = () => {
+  const handleDragEnd = (event: any, info: any) => {
     setIsDragging(false);
+    
+    // Use motion's info.point which is more reliable than raw event coordinates
+    const { x, y } = info.point;
+    
+    if (x && y) {
+      const element = document.elementFromPoint(x, y);
+      const square = element?.closest('.chess-square');
+      const targetPosString = square?.getAttribute('data-position');
+      
+      if (targetPosString && onDrop) {
+        const targetPos = targetPosString.split(',').map(Number) as [number, number];
+        if (targetPos[0] !== position[0] || targetPos[1] !== position[1]) {
+          onDrop(position, targetPos);
+        }
+      }
+    }
   };
 
   return (
     <motion.div
-      draggable={canDrag}
-      onDragStart={handleDragStart}
+      layoutId={piece.id}
+      layout
+      drag={canDrag}
+      dragSnapToOrigin
+      dragElastic={0}
+      dragMomentum={false}
+      onDragStart={() => {
+        setIsDragging(true);
+        onClick();
+      }}
       onDragEnd={handleDragEnd}
-      className={`relative flex items-center justify-center w-full h-full select-none outline-none ${canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        }`}
-      style={{ zIndex: isSelected ? 40 : 10 }}
-      initial={{ scale: 0, opacity: 0 }}
+      className={`relative flex items-center justify-center w-full h-full select-none outline-none ${
+        canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+      }`}
+      style={{ 
+        zIndex: isDragging ? 100 : (isSelected ? 40 : 10),
+        touchAction: 'none',
+        pointerEvents: isDragging ? 'none' : 'auto' 
+      }}
+      initial={false}
       animate={{
-        scale: isSelected ? 1.15 : 1,
-        opacity: isDragging ? 0 : 1,
+        scale: isDragging ? 1.05 : isSelected ? 1.05 : 1,
+        opacity: 1,
       }}
       transition={{
         scale: {
-          type: 'spring',
-          stiffness: 300,
-          damping: 20,
+          type: 'tween',
+          duration: 0.1, // Near-instant 100ms tween for predictable lightning speed
         },
-        opacity: { duration: isDragging ? 0 : 0.2 }
+        layout: {
+          type: 'spring',
+          stiffness: 3000, // Maximum stiffness for near-teleportation
+          damping: 80,
+          mass: 0.2
+        }
       }}
-      whileHover={canDrag ? { scale: 1.08 } : {}}
-      whileTap={canDrag ? { scale: 0.95 } : {}}
+      whileHover={canDrag ? { scale: 1.02 } : {}}
     >
       <span
         className={`inline-block leading-none ${!isWhite ? 'text-chess-bright piece-bright' : 'text-chess-dull piece-dull'
@@ -82,6 +100,8 @@ const ChessPiece = ({ piece, isSelected, canDrag, position, onClick }: ChessPiec
       </span>
     </motion.div>
   );
-};
+});
+
+ChessPiece.displayName = 'ChessPiece';
 
 export default ChessPiece;

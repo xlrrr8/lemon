@@ -2,6 +2,7 @@ export type PieceColor = 'white' | 'black';
 export type PieceType = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn';
 
 export interface Piece {
+  id: string;
   type: PieceType;
   color: PieceColor;
 }
@@ -21,10 +22,10 @@ export function createInitialBoard(): Board {
   const backRow: PieceType[] = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
 
   for (let col = 0; col < 8; col++) {
-    board[0][col] = { type: backRow[col], color: 'black' };
-    board[1][col] = { type: 'pawn', color: 'black' };
-    board[6][col] = { type: 'pawn', color: 'white' };
-    board[7][col] = { type: backRow[col], color: 'white' };
+    board[0][col] = { id: `black-${backRow[col]}-${col}`, type: backRow[col], color: 'black' };
+    board[1][col] = { id: `black-pawn-${col}`, type: 'pawn', color: 'black' };
+    board[6][col] = { id: `white-pawn-${col}`, type: 'pawn', color: 'white' };
+    board[7][col] = { id: `white-${backRow[col]}-${col}`, type: backRow[col], color: 'white' };
   }
 
   return board;
@@ -160,7 +161,7 @@ export function applyRawMove(board: Board, from: Position, to: Position, enPassa
 
   const movedPiece = newBoard[to[0]][to[1]];
   if (movedPiece?.type === 'pawn' && (to[0] === 0 || to[0] === 7)) {
-    newBoard[to[0]][to[1]] = { type: 'queen', color: movedPiece.color };
+    newBoard[to[0]][to[1]] = { ...movedPiece, type: 'queen' };
   }
 
   return newBoard;
@@ -340,7 +341,7 @@ export function movePiece(
 
     const movedPiece = newBoard[to[0]][to[1]];
     if (movedPiece?.type === 'pawn' && (to[0] === 0 || to[0] === 7)) {
-      newBoard[to[0]][to[1]] = { type: 'queen', color: movedPiece.color };
+      newBoard[to[0]][to[1]] = { ...movedPiece, type: 'queen' };
       isPromotion = true;
     }
   }

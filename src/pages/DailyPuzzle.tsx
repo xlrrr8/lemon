@@ -22,7 +22,8 @@ import {
     getPieceSymbol,
 } from '@/lib/chess';
 import { fenToBoard, parseMoveAlgebraic, boardToFen } from '@/lib/engine';
-import { playMove, playCapture, playCheck, playCheckmate, playCastle, playPromotion, playNewGame } from '@/lib/sounds';
+import { playChessSound, ChessSoundType } from '@/lib/sounds';
+
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -243,9 +244,7 @@ const DailyPuzzle = () => {
 
                 if (!result) { setOpponentMoving(false); return; }
 
-                if (result.flags.includes('k') || result.flags.includes('q')) playCastle();
-                else if (result.flags.includes('c') || result.flags.includes('e')) playCapture();
-                else playMove();
+
 
                 const newFen = chess.fen();
                 const newState = fenToBoard(newFen);
@@ -261,7 +260,13 @@ const DailyPuzzle = () => {
 
                 const gs = getGameStatus(newState.board, newState.currentTurn, newState.castlingRights, newState.enPassantTarget);
                 setGameStatus(gs);
-                if (chess.inCheck()) playCheck();
+
+                // Play sound for opponent puzzle move
+                let soundType: ChessSoundType = 'move';
+                if (gs === 'checkmate') soundType = 'checkmate';
+                else if (gs === 'check') soundType = 'check';
+                else if (result.captured) soundType = 'capture';
+                playChessSound(soundType);
 
                 setSolutionIndex(idx + 1);
                 setOpponentMoving(false);
@@ -270,7 +275,7 @@ const DailyPuzzle = () => {
                 console.error("Opponent move error:", err);
                 setOpponentMoving(false);
             }
-        }, 600);
+        }, 300); // Reduced from 600ms
     }
 
     // ── Handle square click (player move) ────────────────────────────────────
@@ -280,6 +285,7 @@ const DailyPuzzle = () => {
             if (!board || !puzzleState) return;
             if (status === 'solved' || status === 'wrong' || status === 'loading' || opponentMoving) return;
             if (currentTurn !== puzzleState.playerColor) return; // not player's turn
+
 
             const clickedPiece = board[row][col];
 
@@ -323,10 +329,7 @@ const DailyPuzzle = () => {
                         // Fallback
                         if (!result) throw new Error("Move rejected by chess.js");
 
-                        if (result.flags.includes('k') || result.flags.includes('q')) playCastle();
-                        else if (result.flags.includes('p')) playPromotion();
-                        else if (result.flags.includes('c') || result.flags.includes('e')) playCapture();
-                        else playMove();
+
 
                         const newFen = chess.fen();
                         const newState = fenToBoard(newFen);
@@ -369,9 +372,14 @@ const DailyPuzzle = () => {
                         const gs = getGameStatus(newState.board, newState.currentTurn, newState.castlingRights, newState.enPassantTarget);
                         setGameStatus(gs);
 
-                        if (chess.inCheck()) playCheck();
+                        // Play sound for player puzzle move
+                        let soundType: ChessSoundType = 'move';
+                        if (gs === 'checkmate') soundType = 'checkmate';
+                        else if (gs === 'check') soundType = 'check';
+                        else if (result.captured) soundType = 'capture';
+                        playChessSound(soundType);
+
                         if (chess.isCheckmate()) {
-                            playCheckmate();
                             handlePuzzleSolved();
                             return;
                         }
@@ -384,7 +392,7 @@ const DailyPuzzle = () => {
                             // Play opponent's response
                             setTimeout(() => {
                                 playOpponentMove(newFen, puzzleState.solution, nextIdx);
-                            }, 400);
+                            }, 200); // Reduced from 400ms
                         }
                     } catch (e) {
                         console.error("Invalid move caught block:", e);
@@ -420,7 +428,7 @@ const DailyPuzzle = () => {
             localStorage.setItem('puzzle_best_streak', String(newBest));
             localStorage.setItem('puzzle_solved_date', String(today));
         }
-        playNewGame();
+
     }
 
     // ── Hint ─────────────────────────────────────────────────────────────────
@@ -714,10 +722,17 @@ const DailyPuzzle = () => {
                                     </div>
 
                                     {/* Board Container */}
-                                    <div
+                                    <motion.div
+                                        layout
                                         style={{
                                             width: 'min(98vw, calc(100vh - 100px), 1200px)',
                                             height: 'min(98vw, calc(100vh - 100px), 1200px)'
+                                        }}
+                                        transition={{
+                                          type: 'spring',
+                                          stiffness: 3000,
+                                          damping: 80,
+                                          mass: 0.2
                                         }}
                                         className="relative chess-board-shadow rounded-lg overflow-hidden border border-chess-board-border bg-chess-dark"
                                     >
@@ -778,7 +793,7 @@ const DailyPuzzle = () => {
                                                 ))
                                             )}
                                         </div>
-                                    </div>
+                                    </motion.div>
 
                                     {/* Ranks right */}
                                     <div className="w-8 flex flex-col">

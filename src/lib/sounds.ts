@@ -1,173 +1,192 @@
-// Chess sound effects — gentle table-tap style using Web Audio API.
-// Move/capture sounds mimic the soft "tok" of placing a piece on wood.
+// ═══════════════════════════════════════════════════════════════════════
+// Chess Sound Effects — Web Audio API synthesis (no external files)
+// ═══════════════════════════════════════════════════════════════════════
 
 let audioCtx: AudioContext | null = null;
 
-function getCtx(): AudioContext {
-    if (!audioCtx) {
-        audioCtx = new AudioContext();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-    return audioCtx;
+function getAudioContext(): AudioContext {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+  }
+  // Resume if suspended (browsers require user gesture)
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
 }
 
-/* ───── core helpers ───── */
+// ─── Wooden table tap — regular moves ────────────────────────────────
+// A short, warm knock sound: filtered noise burst + low thump
+export function playMoveSound() {
+  const ctx = getAudioContext();
+  const now = ctx.currentTime;
 
-/**
- * A gentle "table tap" — short percussive thud like placing a piece on wood.
- * Uses a low sine that decays very quickly + a tiny filtered noise layer
- * for the wooden surface texture.
- */
-function tableTap(volume = 0.25, pitch = 100) {
-    const ctx = getCtx();
-    const now = ctx.currentTime;
+  // 1) Low-frequency "thump" — the wood body resonance
+  const osc = ctx.createOscillator();
+  const oscGain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(120, now);
+  osc.frequency.exponentialRampToValueAtTime(50, now + 0.08);
+  oscGain.gain.setValueAtTime(0.35, now);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+  osc.connect(oscGain).connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.12);
 
-    // 1) Low-frequency "body" of the tap
-    const osc = ctx.createOscillator();
-    const oscGain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(pitch, now);
-    // Pitch drops quickly — characteristic of a tap
-    osc.frequency.exponentialRampToValueAtTime(pitch * 0.5, now + 0.06);
+  // 2) Noise burst — the "click" transient of wood
+  const bufferSize = ctx.sampleRate * 0.04; // 40ms of noise
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 3);
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
 
-    oscGain.gain.setValueAtTime(volume, now);
-    oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+  // Bandpass filter to make noise sound "woody"
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 800;
+  filter.Q.value = 1.2;
 
-    osc.connect(oscGain);
-    oscGain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.1);
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0.25, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
 
-    // 2) Tiny burst of filtered noise for the "surface" texture
-    const bufferSize = Math.floor(ctx.sampleRate * 0.04);
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        // Decaying noise
-        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 4);
-    }
-
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(volume * 0.12, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
-
-    // Bandpass filter to make it sound woody, not hissy
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(800, now);
-    filter.Q.setValueAtTime(1.5, now);
-
-    noise.connect(filter);
-    filter.connect(noiseGain);
-    noiseGain.connect(ctx.destination);
-    noise.start(now);
+  noise.connect(filter).connect(noiseGain).connect(ctx.destination);
+  noise.start(now);
+  noise.stop(now + 0.06);
 }
 
-/** A soft tone with smooth envelope — used for musical cues (check, checkmate, etc.) */
-function softTone(
-    frequency: number,
-    duration: number,
-    volume = 0.06,
-    startDelay = 0,
-) {
-    const ctx = getCtx();
-    const now = ctx.currentTime + startDelay;
-    const attack = 0.012;
+// ─── Capture sound — deeper, heavier tap ─────────────────────────────
+// Like slamming a piece down harder on wood
+export function playCaptureSound() {
+  const ctx = getAudioContext();
+  const now = ctx.currentTime;
 
+  // Deeper thump
+  const osc = ctx.createOscillator();
+  const oscGain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(90, now);
+  osc.frequency.exponentialRampToValueAtTime(35, now + 0.12);
+  oscGain.gain.setValueAtTime(0.45, now);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+  osc.connect(oscGain).connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.18);
+
+  // Sharper, louder noise transient
+  const bufferSize = ctx.sampleRate * 0.05;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2.5);
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 600;
+  filter.Q.value = 0.8;
+
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0.35, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+  noise.connect(filter).connect(noiseGain).connect(ctx.destination);
+  noise.start(now);
+  noise.stop(now + 0.08);
+
+  // Second knock (double-tap feel for captures)
+  const osc2 = ctx.createOscillator();
+  const osc2Gain = ctx.createGain();
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(70, now + 0.05);
+  osc2.frequency.exponentialRampToValueAtTime(30, now + 0.15);
+  osc2Gain.gain.setValueAtTime(0.2, now + 0.05);
+  osc2Gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+  osc2.connect(osc2Gain).connect(ctx.destination);
+  osc2.start(now + 0.05);
+  osc2.stop(now + 0.2);
+}
+
+// ─── Check sound — soft alert tone ───────────────────────────────────
+// A gentle two-note chime that says "watch out"
+export function playCheckSound() {
+  const ctx = getAudioContext();
+  const now = ctx.currentTime;
+
+  // First tone
+  const osc1 = ctx.createOscillator();
+  const gain1 = ctx.createGain();
+  osc1.type = 'triangle';
+  osc1.frequency.value = 520;
+  gain1.gain.setValueAtTime(0, now);
+  gain1.gain.linearRampToValueAtTime(0.18, now + 0.02);
+  gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+  osc1.connect(gain1).connect(ctx.destination);
+  osc1.start(now);
+  osc1.stop(now + 0.22);
+
+  // Second tone (slightly higher, delayed)
+  const osc2 = ctx.createOscillator();
+  const gain2 = ctx.createGain();
+  osc2.type = 'triangle';
+  osc2.frequency.value = 660;
+  gain2.gain.setValueAtTime(0, now + 0.1);
+  gain2.gain.linearRampToValueAtTime(0.15, now + 0.12);
+  gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+  osc2.connect(gain2).connect(ctx.destination);
+  osc2.start(now + 0.1);
+  osc2.stop(now + 0.38);
+}
+
+// ─── Checkmate sound — satisfying resolution ─────────────────────────
+// A soft 3-note descending chime (game over, decisive)
+export function playCheckmateSound() {
+  const ctx = getAudioContext();
+  const now = ctx.currentTime;
+
+  const notes = [660, 520, 392]; // E5, C5, G4 — a resolving triad
+  const delays = [0, 0.15, 0.3];
+
+  notes.forEach((freq, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(frequency, now);
+    osc.frequency.value = freq;
 
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.linearRampToValueAtTime(volume, now + attack);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    const t = now + delays[i];
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.2, t + 0.03);
+    gain.gain.setValueAtTime(0.2, t + 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + duration + 0.01);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.55);
+  });
 }
 
-/* ───── audio elements ───── */
-const moveAudio = new Audio('/sounds/move.mp3');
-const captureAudio = new Audio('/sounds/capture.mp3');
-const checkAudio = new Audio('/sounds/check.mp3');
+// ─── Helper: determine which sound to play after a move ──────────────
+export type ChessSoundType = 'move' | 'capture' | 'check' | 'checkmate';
 
-function playRealSound(audioNode: HTMLAudioElement, vol = 0.7) {
-    try {
-        const clone = audioNode.cloneNode() as HTMLAudioElement;
-        clone.volume = vol;
-        clone.play().catch(e => console.error("Audio playback blocked", e));
-    } catch (e) {
-        // Fallback for strict environments
-        console.error("Audio playback failed", e);
-    }
-}
-
-/* ───── public API ───── */
-
-/** Authentic tap — placing a piece down */
-export function playMove() {
-    playRealSound(moveAudio, 0.8);
-}
-
-/** Standard capture sound */
-export function playCapture() {
-    playRealSound(captureAudio, 0.9);
-}
-
-/** Warm rising hint for check */
-export function playCheck() {
-    playRealSound(checkAudio, 0.6);
-    // Add original soft tone
-    softTone(350, 0.2, 0.05);
-    softTone(470, 0.15, 0.04, 0.1);
-}
-
-/** Resolving chord for checkmate */
-export function playCheckmate() {
-    // A satisfying climax of soft wooden taps ending in a solid thud
-    tableTap(0.4, 150);
-    setTimeout(() => tableTap(0.5, 120), 80);
-    setTimeout(() => tableTap(0.6, 90), 160);
-    setTimeout(() => {
-        playRealSound(captureAudio, 1.0);
-        tableTap(0.8, 60);
-    }, 280);
-}
-
-/** Gentle descending tones for draw */
-export function playDraw() {
-    softTone(392, 0.3, 0.05);          // G4
-    softTone(349, 0.3, 0.04, 0.18);    // F4
-    softTone(330, 0.45, 0.04, 0.36);   // E4
-}
-
-/** Castling sound */
-export function playCastle() {
-    // Castle sounds like a move and a quick slide usually, we'll double tap move
-    playRealSound(moveAudio, 0.8);
-    setTimeout(() => playRealSound(moveAudio, 0.6), 120);
-}
-
-/** Tap + ascending shimmer for promotion */
-export function playPromotion() {
-    playRealSound(moveAudio, 0.9);
-    softTone(524, 0.15, 0.04, 0.05);
-    softTone(660, 0.15, 0.04, 0.12);
-    softTone(784, 0.15, 0.04, 0.19);
-    softTone(1048, 0.2, 0.05, 0.26);
-}
-
-/** Soft double-tap for new game */
-export function playNewGame() {
-    playRealSound(moveAudio, 0.5);
-    setTimeout(() => playRealSound(moveAudio, 0.3), 150);
+export function playChessSound(type: ChessSoundType) {
+  switch (type) {
+    case 'checkmate':
+      playCheckmateSound();
+      break;
+    case 'check':
+      playCheckSound();
+      break;
+    case 'capture':
+      playCaptureSound();
+      break;
+    case 'move':
+    default:
+      playMoveSound();
+      break;
+  }
 }
