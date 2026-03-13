@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Swords, Brain, Crown, ArrowRight, Timer, Users, Trophy, Flame, Play, Zap, Clock, Target } from 'lucide-react';
+import { Swords, Brain, Crown, ArrowRight, Timer, User, Users, Trophy, Flame, Play, Zap, Clock, Target } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import {
@@ -72,6 +72,20 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-4">
             <ThemeSwitcher />
+            {isSignedIn && (
+              <Link
+                to="/profile"
+                className="flex items-center gap-2.5 rounded-full border border-border bg-card/40 pl-1.5 pr-4 py-1.5 text-sm font-bold text-foreground transition hover:border-primary/40 hover:bg-card/60 group"
+              >
+                <div className="relative">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground group-hover:text-primary transition-colors">
+                    <User className="h-5 w-5" />
+                  </div>
+                  <div className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-card bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.4)]"></div>
+                </div>
+                <span className="tracking-tight">Aaryan K.</span>
+              </Link>
+            )}
             <button
               onClick={() => setIsSignedIn(!isSignedIn)}
               className="rounded-full border border-border bg-card/70 px-4 py-2 text-sm font-medium text-foreground transition hover:border-orange-400/40 hover:text-orange-200"
@@ -143,7 +157,7 @@ const Index = () => {
 
                     <div className="space-y-4">
                       <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-orange-500" />
+                        <Flame className="w-4 h-4 text-primary" />
                         <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Blitz</h4>
                       </div>
                       <div className="grid grid-cols-3 gap-3">

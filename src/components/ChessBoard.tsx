@@ -278,7 +278,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
       const currAnalysis = moveAnalyses[currentViewIndex]?.eval;
 
-      let fetchedCurrAnalysis = currAnalysis;
+      let fetchedCurrAnalysis: PositionAnalysis | null | undefined = currAnalysis;
       if (!fetchedCurrAnalysis) {
         fetchedCurrAnalysis = await analyzePositionStockfish(snap.fen, 10);
         if (isMounted && fetchedCurrAnalysis) {
@@ -287,7 +287,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
       }
 
       if (currentViewIndex > 0 && prevSnap && prevSnap.fen && fetchedCurrAnalysis) {
-        let prevAnalysis = moveAnalyses[currentViewIndex - 1]?.eval;
+        let prevAnalysis: PositionAnalysis | null | undefined = moveAnalyses[currentViewIndex - 1]?.eval;
         if (!prevAnalysis) {
           prevAnalysis = await analyzePositionStockfish(prevSnap.fen, 10);
           if (isMounted && prevAnalysis) {
@@ -945,16 +945,16 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
               className={`w-3 h-3 rounded-full flex-shrink-0 ${gameStatus === 'check' || gameStatus === 'checkmate'
                 ? 'bg-red-500'
                 : currentTurn === 'white'
-                  ? 'bg-chess-bright'
-                  : 'bg-white/80'
+                  ? 'bg-chess-dull'
+                  : 'bg-primary'
                 }`}
               animate={{
                 boxShadow:
                   gameStatus === 'check' || gameStatus === 'checkmate'
                     ? '0 0 14px rgba(239,68,68,0.8)'
                     : currentTurn === 'white'
-                      ? '0 0 12px hsl(43 100% 65% / 0.5)'
-                      : '0 0 10px rgba(255, 255, 255, 0.5)',
+                      ? '0 0 10px rgba(255, 255, 255, 0.4)'
+                      : '0 0 12px hsl(var(--primary) / 0.6)',
               }}
               transition={{ duration: 0.3 }}
             />

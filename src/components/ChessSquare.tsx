@@ -56,12 +56,12 @@ const ChessSquare = ({
     >
       {/* Last move highlight */}
       {isLastMove && !isSelected && (
-        <div className={`absolute inset-0 ${currentTurn === 'white' ? 'bg-white/20' : 'bg-chess-selected/40'} pointer-events-none`} />
+        <div className={`absolute inset-0 ${currentTurn === 'white' ? 'bg-chess-selected/15' : 'bg-white/10'} pointer-events-none`} />
       )}
 
       {/* Selected highlight */}
       {isSelected && (
-        <div className={`absolute inset-0 ${currentTurn === 'black' ? 'bg-white/20' : 'bg-chess-selected/40'} pointer-events-none`} />
+        <div className={`absolute inset-0 ${piece?.color === 'black' ? 'bg-chess-selected/30' : 'bg-white/20'} pointer-events-none`} />
       )}
 
       {/* Valid move indicator */}
@@ -69,10 +69,10 @@ const ChessSquare = ({
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           {piece ? (
             // Capture ring
-            <div className={`w-[85%] h-[85%] rounded-full border-4 ${currentTurn === 'black' ? 'border-white/50' : 'border-chess-valid-move/60'}`} />
+            <div className={`w-[85%] h-[85%] rounded-full border-4 ${currentTurn === 'black' ? 'border-chess-valid-move/60' : 'border-white/50'}`} />
           ) : (
             // Move dot
-            <div className={`w-[25%] h-[25%] rounded-full ${currentTurn === 'black' ? 'bg-white/50' : 'bg-chess-valid-move/60'}`} />
+            <div className={`w-[25%] h-[25%] rounded-full ${currentTurn === 'black' ? 'bg-chess-valid-move/60' : 'bg-white/50'}`} />
           )}
         </div>
       )}
