@@ -1,0 +1,220 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 7%;
+    --foreground: 220 10% 90%;
+
+    --card: 220 18% 10%;
+    --card-foreground: 220 10% 90%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 220 10% 90%;
+
+    --primary: 25 90% 55%;
+    --primary-foreground: 220 20% 7%;
+
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 220 10% 75%;
+
+    --muted: 220 15% 13%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 220 15% 18%;
+    --accent-foreground: 220 10% 85%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 16%;
+    --input: 220 15% 16%;
+    --ring: 25 90% 55%;
+
+    --radius: 0.75rem;
+
+    /* Chess-specific tokens */
+    --chess-light-square: 220 12% 16%;
+    --chess-dark-square: 220 15% 10%;
+    --chess-bright-piece: 27 100% 55%;
+    --chess-bright-piece-glow: 27 100% 60%;
+    --chess-dull-piece: 0 0% 96%;
+    --chess-dull-piece-glow: 0 0% 100%;
+    --chess-selected: 25 90% 55%;
+    --chess-valid-move: 25 80% 50%;
+    --chess-board-border: 220 15% 20%;
+
+    --sidebar-background: 220 18% 8%;
+    --sidebar-foreground: 220 10% 80%;
+    --sidebar-primary: 25 90% 55%;
+    --sidebar-primary-foreground: 220 20% 7%;
+    --sidebar-accent: 220 15% 14%;
+    --sidebar-accent-foreground: 220 10% 80%;
+    --sidebar-border: 220 15% 16%;
+    --sidebar-ring: 25 90% 55%;
+
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  /* Charcoal Theme */
+  :root.theme-charcoal {
+    --background: 210 5% 12%;
+    --foreground: 210 10% 90%;
+
+    --card: 210 5% 14%;
+    --card-foreground: 210 10% 90%;
+
+    --popover: 210 5% 14%;
+    --popover-foreground: 210 10% 90%;
+
+    --primary: 25 90% 55%;
+    --primary-foreground: 210 5% 10%;
+
+    --secondary: 210 5% 18%;
+    --secondary-foreground: 210 10% 80%;
+
+    --muted: 210 5% 15%;
+    --muted-foreground: 210 10% 60%;
+
+    --accent: 210 5% 20%;
+    --accent-foreground: 210 10% 85%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 210 5% 20%;
+    --input: 210 5% 20%;
+    --ring: 25 90% 55%;
+
+    --chess-light-square: 210 5% 22%;
+    --chess-dark-square: 210 5% 14%;
+    --chess-bright-piece: 27 100% 55%;
+    --chess-bright-piece-glow: 27 100% 60%;
+    --chess-dull-piece: 0 0% 96%;
+    --chess-dull-piece-glow: 0 0% 100%;
+    --chess-selected: 25 90% 55%;
+    --chess-valid-move: 25 80% 50%;
+    --chess-board-border: 210 5% 22%;
+
+    --sidebar-background: 210 5% 12%;
+    --sidebar-foreground: 210 10% 90%;
+    --sidebar-primary: 25 90% 55%;
+    --sidebar-primary-foreground: 210 5% 10%;
+    --sidebar-accent: 210 5% 16%;
+    --sidebar-accent-foreground: 210 10% 85%;
+    --sidebar-border: 210 5% 20%;
+    --sidebar-ring: 25 90% 55%;
+  }
+
+  /* Darker Theme */
+  :root.theme-darker {
+    --background: 220 10% 2%;
+    --foreground: 220 10% 94%;
+
+    --card: 220 10% 4%;
+    --card-foreground: 220 10% 94%;
+
+    --popover: 220 10% 4%;
+    --popover-foreground: 220 10% 94%;
+
+    --primary: 25 90% 55%;
+    --primary-foreground: 220 10% 2%;
+
+    --secondary: 220 10% 7%;
+    --secondary-foreground: 220 10% 80%;
+
+    --muted: 220 10% 5%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 220 10% 8%;
+    --accent-foreground: 220 10% 85%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 10% 12%;
+    --input: 220 10% 12%;
+    --ring: 25 90% 55%;
+
+    --chess-light-square: 220 10% 14%;
+    --chess-dark-square: 220 10% 5%;
+    --chess-bright-piece: 27 100% 55%;
+    --chess-bright-piece-glow: 27 100% 60%;
+    --chess-dull-piece: 0 0% 96%;
+    --chess-dull-piece-glow: 0 0% 100%;
+    --chess-selected: 25 90% 55%;
+    --chess-valid-move: 25 80% 50%;
+    --chess-board-border: 220 10% 14%;
+
+    --sidebar-background: 220 10% 2%;
+    --sidebar-foreground: 220 10% 94%;
+    --sidebar-primary: 25 90% 55%;
+    --sidebar-primary-foreground: 220 10% 2%;
+    --sidebar-accent: 220 10% 6%;
+    --sidebar-accent-foreground: 220 10% 85%;
+    --sidebar-border: 220 10% 12%;
+    --sidebar-ring: 25 90% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .chess-board-shadow {
+    box-shadow:
+      0 0 60px -10px hsl(var(--primary) / 0.08),
+      0 25px 50px -12px hsl(220 20% 0% / 0.6);
+  }
+
+  .piece-bright {
+    background-image: linear-gradient(to bottom, hsl(27 100% 70%), hsl(27 100% 48%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.75));
+  }
+
+  .piece-dull {
+    background-image: linear-gradient(to bottom, hsl(0 0% 100%), hsl(0 0% 80%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.9));
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .chess-square {
+    container-type: inline-size;
+  }
+}
