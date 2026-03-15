@@ -20,6 +20,9 @@ import {
     FILES,
     RANKS,
     getPieceSymbol,
+    isRawValidMove,
+    isKingInCheck,
+    applyRawMove,
 } from '@/lib/chess';
 import { fenToBoard, parseMoveAlgebraic, boardToFen } from '@/lib/engine';
 import { playChessSound, ChessSoundType } from '@/lib/sounds';
@@ -261,7 +264,7 @@ const DailyPuzzle = () => {
                 const gs = getGameStatus(newState.board, newState.currentTurn, newState.castlingRights, newState.enPassantTarget);
                 setGameStatus(gs);
 
-                // Play sound for opponent puzzle move
+                // Play sound for opponent puzzle move (Immediate)
                 let soundType: ChessSoundType = 'move';
                 if (gs === 'checkmate') soundType = 'checkmate';
                 else if (gs === 'check') soundType = 'check';
@@ -353,6 +356,7 @@ const DailyPuzzle = () => {
                         if (!isCorrect) {
                             setWrongMove(newLastMove);
                             setStatus('wrong');
+                            playChessSound('error');
                             // Revert after a moment
                             setTimeout(() => {
                                 const oldState = fenToBoard(prevFen);
@@ -372,7 +376,7 @@ const DailyPuzzle = () => {
                         const gs = getGameStatus(newState.board, newState.currentTurn, newState.castlingRights, newState.enPassantTarget);
                         setGameStatus(gs);
 
-                        // Play sound for player puzzle move
+                        // Play sound for player puzzle move (Immediate)
                         let soundType: ChessSoundType = 'move';
                         if (gs === 'checkmate') soundType = 'checkmate';
                         else if (gs === 'check') soundType = 'check';
@@ -400,6 +404,16 @@ const DailyPuzzle = () => {
                     return;
                 }
 
+                // Invalid move attempt
+                const rawValid = isRawValidMove(board, selected, [row, col], currentTurn, enPassantTarget);
+                if (rawValid) {
+                    const newBoard = applyRawMove(board, selected, [row, col], enPassantTarget);
+                    if (isKingInCheck(newBoard, currentTurn)) {
+                        playChessSound('error');
+                    }
+                } else if (getGameStatus(board, currentTurn, castlingRights, enPassantTarget) === 'check') {
+                    playChessSound('error');
+                }
                 setSelected(null);
                 setValidMoves([]);
             } else {
@@ -521,7 +535,7 @@ const DailyPuzzle = () => {
                 </div>
             </div>
 
-            <div className="relative z-10 w-full max-w-7xl mx-auto flex-1 flex flex-col lg:flex-row items-center lg:items-center justify-center gap-4 lg:gap-8 xl:gap-12 overflow-hidden px-4 min-h-0 pb-6">
+            <div className="relative z-10 w-full max-w-7xl mx-auto flex-1 flex flex-col lg:flex-row items-center lg:items-center justify-center gap-4 lg:gap-8 xl:gap-12 overflow-y-auto px-4 min-h-0 pb-6">
                 {/* Left Panel */}
                 <div className="hidden lg:flex flex-col gap-4 w-full lg:w-[360px] flex-shrink-0 order-2 lg:order-1 max-w-[500px] lg:max-w-none mx-auto lg:mx-0 lg:overflow-y-auto lg:max-h-full">
                     {/* Puzzle Info */}
@@ -725,8 +739,8 @@ const DailyPuzzle = () => {
                                     <motion.div
                                         layout
                                         style={{
-                                            width: 'min(98vw, calc(100vh - 100px), 1200px)',
-                                            height: 'min(98vw, calc(100vh - 100px), 1200px)'
+                                            width: 'min(70vw, calc(100vh - 200px), 700px)',
+                                            height: 'min(70vw, calc(100vh - 200px), 700px)'
                                         }}
                                         transition={{
                                           type: 'spring',

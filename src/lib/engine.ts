@@ -79,7 +79,8 @@ export function fenToBoard(fen: string): { board: Board; currentTurn: PieceColor
                     'k': 'king'
                 };
                 const type = typeMap[char.toLowerCase()];
-                board[r][c] = { type, color: isWhite ? 'white' : 'black' };
+                const id = `${isWhite ? 'white' : 'black'}-${type}-${r}-${c}`;
+                board[r][c] = { id, type, color: isWhite ? 'white' : 'black' };
                 c++;
             }
         }

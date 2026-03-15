@@ -188,7 +188,7 @@ function canCastle(board: Board, color: PieceColor, side: 'kingSide' | 'queenSid
   }
 }
 
-function isRawValidMove(
+export function isRawValidMove(
   board: Board,
   from: Position,
   to: Position,

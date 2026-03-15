@@ -1,155 +1,96 @@
 // ═══════════════════════════════════════════════════════════════════════
-// Chess Sound Effects — Web Audio API synthesis (no external files)
+// Chess Sound Effects — Ultra-Low Latency Audio System
 // ═══════════════════════════════════════════════════════════════════════
 
 let audioCtx: AudioContext | null = null;
+const bufferCache: Map<string, AudioBuffer> = new Map();
 
 function getAudioContext(): AudioContext {
   if (!audioCtx) {
-    audioCtx = new AudioContext();
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({
+        // Set latency hint to 'interactive' for fastest response
+        latencyHint: 'interactive'
+    });
   }
-  // Resume if suspended (browsers require user gesture)
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
   return audioCtx;
 }
 
-// ─── Wooden table tap — regular moves ────────────────────────────────
-// A short, warm knock sound: filtered noise burst + low thump
+/**
+ * Loads and decodes an audio file. Returns the buffer once if already loaded.
+ */
+async function loadBuffer(url: string): Promise<AudioBuffer> {
+  if (bufferCache.has(url)) return bufferCache.get(url)!;
+
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const ctx = getAudioContext();
+  const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+  
+  bufferCache.set(url, audioBuffer);
+  return audioBuffer;
+}
+
+/**
+ * Plays an AudioBuffer synchronously to avoid promise microtask delays.
+ */
+function playBufferImmediate(buffer: AudioBuffer, volume: number = 1.0) {
+  const ctx = getAudioContext();
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  
+  if (volume !== 1.0) {
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = volume;
+    source.connect(gainNode);
+    gainNode.connect(ctx.destination);
+  } else {
+    source.connect(ctx.destination);
+  }
+  
+  // Using 0 ensures it starts as fast as the hardware allows
+  source.start(0);
+}
+
+// ─── External mp3 — regular moves ────────────────────────────────────
 export function playMoveSound() {
-  const ctx = getAudioContext();
-  const now = ctx.currentTime;
-
-  // 1) Low-frequency "thump" — the wood body resonance
-  const osc = ctx.createOscillator();
-  const oscGain = ctx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(120, now);
-  osc.frequency.exponentialRampToValueAtTime(50, now + 0.08);
-  oscGain.gain.setValueAtTime(0.35, now);
-  oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-  osc.connect(oscGain).connect(ctx.destination);
-  osc.start(now);
-  osc.stop(now + 0.12);
-
-  // 2) Noise burst — the "click" transient of wood
-  const bufferSize = ctx.sampleRate * 0.04; // 40ms of noise
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 3);
+  const buffer = bufferCache.get('/sounds/capture.wav');
+  if (buffer) {
+    playBufferImmediate(buffer, 3.0);
+  } else {
+    // Fallback if not yet cached (shouldn't happen with pre-loading)
+    loadBuffer('/sounds/capture.wav').then(b => playBufferImmediate(b, 3.0)).catch(() => {});
   }
-  const noise = ctx.createBufferSource();
-  noise.buffer = buffer;
-
-  // Bandpass filter to make noise sound "woody"
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'bandpass';
-  filter.frequency.value = 800;
-  filter.Q.value = 1.2;
-
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.25, now);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-
-  noise.connect(filter).connect(noiseGain).connect(ctx.destination);
-  noise.start(now);
-  noise.stop(now + 0.06);
 }
 
-// ─── Capture sound — deeper, heavier tap ─────────────────────────────
-// Like slamming a piece down harder on wood
+// ─── External mp3 — error moves ────────────────────────────────────
+export function playErrorSound() {
+  const buffer = bufferCache.get('/sounds/error.mp3');
+  if (buffer) {
+    playBufferImmediate(buffer);
+  } else {
+    loadBuffer('/sounds/error.mp3').then(playBufferImmediate).catch(() => {});
+  }
+}
+
+// ─── External mp3 — capture moves ────────────────────────────────────
 export function playCaptureSound() {
-  const ctx = getAudioContext();
-  const now = ctx.currentTime;
-
-  // Deeper thump
-  const osc = ctx.createOscillator();
-  const oscGain = ctx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(90, now);
-  osc.frequency.exponentialRampToValueAtTime(35, now + 0.12);
-  oscGain.gain.setValueAtTime(0.45, now);
-  oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-  osc.connect(oscGain).connect(ctx.destination);
-  osc.start(now);
-  osc.stop(now + 0.18);
-
-  // Sharper, louder noise transient
-  const bufferSize = ctx.sampleRate * 0.05;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2.5);
+  const buffer = bufferCache.get('/sounds/move.mp3');
+  if (buffer) {
+    playBufferImmediate(buffer, 3.0);
+  } else {
+    loadBuffer('/sounds/move.mp3').then(b => playBufferImmediate(b, 3.0)).catch(() => {});
   }
-  const noise = ctx.createBufferSource();
-  noise.buffer = buffer;
-
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'bandpass';
-  filter.frequency.value = 600;
-  filter.Q.value = 0.8;
-
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.35, now);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-
-  noise.connect(filter).connect(noiseGain).connect(ctx.destination);
-  noise.start(now);
-  noise.stop(now + 0.08);
-
-  // Second knock (double-tap feel for captures)
-  const osc2 = ctx.createOscillator();
-  const osc2Gain = ctx.createGain();
-  osc2.type = 'sine';
-  osc2.frequency.setValueAtTime(70, now + 0.05);
-  osc2.frequency.exponentialRampToValueAtTime(30, now + 0.15);
-  osc2Gain.gain.setValueAtTime(0.2, now + 0.05);
-  osc2Gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-  osc2.connect(osc2Gain).connect(ctx.destination);
-  osc2.start(now + 0.05);
-  osc2.stop(now + 0.2);
 }
 
-// ─── Check sound — soft alert tone ───────────────────────────────────
-// A gentle two-note chime that says "watch out"
-export function playCheckSound() {
-  const ctx = getAudioContext();
-  const now = ctx.currentTime;
-
-  // First tone
-  const osc1 = ctx.createOscillator();
-  const gain1 = ctx.createGain();
-  osc1.type = 'triangle';
-  osc1.frequency.value = 520;
-  gain1.gain.setValueAtTime(0, now);
-  gain1.gain.linearRampToValueAtTime(0.18, now + 0.02);
-  gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-  osc1.connect(gain1).connect(ctx.destination);
-  osc1.start(now);
-  osc1.stop(now + 0.22);
-
-  // Second tone (slightly higher, delayed)
-  const osc2 = ctx.createOscillator();
-  const gain2 = ctx.createGain();
-  osc2.type = 'triangle';
-  osc2.frequency.value = 660;
-  gain2.gain.setValueAtTime(0, now + 0.1);
-  gain2.gain.linearRampToValueAtTime(0.15, now + 0.12);
-  gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-  osc2.connect(gain2).connect(ctx.destination);
-  osc2.start(now + 0.1);
-  osc2.stop(now + 0.38);
-}
-
-// ─── Checkmate sound — satisfying resolution ─────────────────────────
-// A soft 3-note descending chime (game over, decisive)
+// ─── Checkmate sound ─────────────────────────────────────────────────
 export function playCheckmateSound() {
   const ctx = getAudioContext();
   const now = ctx.currentTime;
 
-  const notes = [660, 520, 392]; // E5, C5, G4 — a resolving triad
+  const notes = [660, 520, 392];
   const delays = [0, 0.15, 0.3];
 
   notes.forEach((freq, i) => {
@@ -171,15 +112,18 @@ export function playCheckmateSound() {
 }
 
 // ─── Helper: determine which sound to play after a move ──────────────
-export type ChessSoundType = 'move' | 'capture' | 'check' | 'checkmate';
+export type ChessSoundType = 'move' | 'capture' | 'check' | 'checkmate' | 'error';
 
 export function playChessSound(type: ChessSoundType) {
   switch (type) {
+    case 'error':
+      playErrorSound();
+      break;
     case 'checkmate':
       playCheckmateSound();
       break;
     case 'check':
-      playCheckSound();
+      playMoveSound();
       break;
     case 'capture':
       playCaptureSound();
@@ -189,4 +133,21 @@ export function playChessSound(type: ChessSoundType) {
       playMoveSound();
       break;
   }
+}
+
+// FORCE PRE-LOAD ON STARTUP
+if (typeof window !== 'undefined') {
+  // Pre-load immediately
+  loadBuffer('/sounds/move.mp3').catch(() => {});
+  loadBuffer('/sounds/capture.wav').catch(() => {});
+  loadBuffer('/sounds/error.mp3').catch(() => {});
+
+  // Extra insurance: reload on first click to handle browser autoplay policies
+  window.addEventListener('mousedown', () => {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') ctx.resume();
+    loadBuffer('/sounds/move.mp3').catch(() => {});
+    loadBuffer('/sounds/capture.wav').catch(() => {});
+    loadBuffer('/sounds/error.mp3').catch(() => {});
+  }, { once: true });
 }

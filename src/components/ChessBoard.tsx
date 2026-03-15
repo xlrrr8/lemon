@@ -19,6 +19,9 @@ import {
   FILES,
   RANKS,
   getPieceSymbol,
+  isRawValidMove,
+  isKingInCheck,
+  applyRawMove,
 } from '@/lib/chess';
 import ChessSquare from './ChessSquare';
 
@@ -62,8 +65,8 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   const [overlayContent, setOverlayContent] = useState<'result' | 'analyzing' | 'review'>('result');
   const [reviewProgress, setReviewProgress] = useState({ current: 0, total: 0 });
   const [reviewSummary, setReviewSummary] = useState<{
-    white: { accuracy: number, brilliant: number, great: number, best: number, good: number, inaccuracy: number, mistake: number, blunder: number, estimatedElo: number },
-    black: { accuracy: number, brilliant: number, great: number, best: number, good: number, inaccuracy: number, mistake: number, blunder: number, estimatedElo: number }
+    white: { accuracy: number, brilliant: number, great: number, book: number, best: number, excellent: number, good: number, inaccuracy: number, mistake: number, miss: number, blunder: number, estimatedElo: number },
+    black: { accuracy: number, brilliant: number, great: number, book: number, best: number, excellent: number, good: number, inaccuracy: number, mistake: number, miss: number, blunder: number, estimatedElo: number }
   } | null>(null);
 
   const [userElo, setUserElo] = useState(() => parseInt(localStorage.getItem('chess_user_elo') || '800', 10));
@@ -88,6 +91,8 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     coachComment?: string;
   }>>({});
   const [viewIndex, setViewIndex] = useState(-1);
+  const [isReviewPageActive, setIsReviewPageActive] = useState(false);
+  const [activeClassFilter, setActiveClassFilter] = useState<{ classification: string; matchIndices: number[]; currentMatch: number } | null>(null);
 
   const currentViewIndex = viewIndex === -1 ? historySnapshots.length - 1 : viewIndex;
   const isViewingHistory = currentViewIndex < historySnapshots.length - 1;
@@ -181,7 +186,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           }
           setCurrentTurn('white');
 
-          // Play sound for AI move
+          // Play sound for AI move (Immediate)
           const postMoveStatus = getGameStatus(result.newBoard, 'white', result.newCastlingRights, result.newEnPassantTarget);
           let soundType: ChessSoundType = 'move';
           if (postMoveStatus === 'checkmate') soundType = 'checkmate';
@@ -214,23 +219,32 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   }, [currentTurn, mode, level, gameStatus, insufficientMaterial, timeoutWinner, board, castlingRights, enPassantTarget, moveHistory.length, isViewingHistory]);
 
   const navigateHistory = useCallback((direction: 'prev' | 'next') => {
-    let newIndex = -1;
-    
-    setViewIndex((prev) => {
-      const currentIndex = prev === -1 ? historySnapshots.length - 1 : prev;
-      
-      if (direction === 'prev' && currentIndex > 0) {
-        newIndex = currentIndex - 1;
-      } else if (direction === 'next' && currentIndex < historySnapshots.length - 1) {
-        newIndex = currentIndex + 1;
-      } else {
-        newIndex = prev;
-      }
-      
-      return newIndex === historySnapshots.length - 1 ? -1 : newIndex;
-    });
+    const currentIndex = viewIndex === -1 ? historySnapshots.length - 1 : viewIndex;
+    let newIndex: number;
 
-  }, [historySnapshots.length, moveHistory, viewIndex]);
+    if (direction === 'prev' && currentIndex > 0) {
+      newIndex = currentIndex - 1;
+    } else if (direction === 'next' && currentIndex < historySnapshots.length - 1) {
+      newIndex = currentIndex + 1;
+    } else {
+      return; // No change
+    }
+
+    // Play sound based on what happened at the target move
+    if (newIndex > 0) {
+      const prevSnap = historySnapshots[newIndex - 1];
+      const targetSnap = historySnapshots[newIndex];
+      const prevCapCount = prevSnap.captured.white.length + prevSnap.captured.black.length;
+      const currCapCount = targetSnap.captured.white.length + targetSnap.captured.black.length;
+      playChessSound(currCapCount > prevCapCount ? 'capture' : 'move');
+    } else {
+      playChessSound('move');
+    }
+
+    setViewIndex(newIndex === historySnapshots.length - 1 ? -1 : newIndex);
+    setActiveClassFilter(null);
+
+  }, [historySnapshots, viewIndex]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -375,7 +389,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           const newTurn = currentTurn === 'white' ? 'black' : 'white';
           setCurrentTurn(newTurn);
 
-          // Determine and play appropriate chess sound
+          // Determine and play appropriate chess sound immediately
           const postMoveStatus = getGameStatus(result.newBoard, newTurn, result.newCastlingRights, result.newEnPassantTarget);
           let soundType: ChessSoundType = 'move';
           if (postMoveStatus === 'checkmate') soundType = 'checkmate';
@@ -399,6 +413,15 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         }
 
         // Invalid move attempt
+        const rawValid = isRawValidMove(board, selected, [row, col], currentTurn, enPassantTarget);
+        if (rawValid) {
+          const newBoard = applyRawMove(board, selected, [row, col], enPassantTarget);
+          if (isKingInCheck(newBoard, currentTurn)) {
+            playChessSound('error');
+          }
+        } else if (getGameStatus(board, currentTurn, castlingRights, enPassantTarget) === 'check') {
+          playChessSound('error');
+        }
         setSelected(null);
         setValidMoves([]);
       } else {
@@ -442,8 +465,8 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
       }
     }
 
-    let whiteStats = { brilliant: 0, great: 0, best: 0, excellent: 0, good: 0, inaccuracy: 0, mistake: 0, blunder: 0, total: 0, wpSum: 0 };
-    let blackStats = { brilliant: 0, great: 0, best: 0, excellent: 0, good: 0, inaccuracy: 0, mistake: 0, blunder: 0, total: 0, wpSum: 0 };
+    let whiteStats = { brilliant: 0, great: 0, book: 0, best: 0, excellent: 0, good: 0, inaccuracy: 0, mistake: 0, miss: 0, blunder: 0, total: 0, wpSum: 0 };
+    let blackStats = { brilliant: 0, great: 0, book: 0, best: 0, excellent: 0, good: 0, inaccuracy: 0, mistake: 0, miss: 0, blunder: 0, total: 0, wpSum: 0 };
 
     for (let i = 1; i < historySnapshots.length; i++) {
       const prevAnalysis = updatedAnalyses[i - 1]?.eval;
@@ -492,7 +515,10 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
       black: { ...blackStats, accuracy: finalBlackAccuracy, estimatedElo: estimateEloFromAccuracy(finalBlackAccuracy) }
     });
 
-    setOverlayContent('review');
+    setOverlayContent('result');
+    setHideWinnerCard(true);
+    setIsReviewPageActive(true);
+    setViewIndex(1);
   };
 
   const resetGame = () => {
@@ -520,6 +546,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     }]);
     setMoveAnalyses({});
     setViewIndex(-1);
+    setIsReviewPageActive(false);
     eloUpdatedRef.current = false;
     setEloChange(null);
     setOverlayContent('result');
@@ -578,9 +605,9 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   const { text: statusText, color: statusColor } = statusLabel();
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-8 w-full max-w-screen-2xl mx-auto px-4 min-h-fit items-center">
+    <div className={`grid grid-cols-1 w-full mx-auto px-4 min-h-fit transition-all duration-500 ease-in-out ${isReviewPageActive ? 'lg:grid-cols-[1fr_350px] gap-6 max-w-[1080px] items-center' : 'lg:grid-cols-[280px_1fr_280px] gap-8 max-w-screen-2xl items-center'}`}>
       {/* Left Panel - Timers */}
-      {initialTime > 0 ? (
+      {!isReviewPageActive && initialTime > 0 ? (
         <div className="hidden lg:flex flex-col w-[280px] flex-shrink-0 justify-between gap-4 py-8 h-full">
           <div className="flex-1" />
 
@@ -603,11 +630,11 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           <div className="flex-1" />
         </div>
       ) : (
-        <div className="hidden lg:block w-[280px] flex-shrink-0" />
+        !isReviewPageActive && <div className="hidden lg:block w-[280px] flex-shrink-0" />
       )}
 
       {/* Mobile Timers Row */}
-      {initialTime > 0 && (
+      {!isReviewPageActive && initialTime > 0 && (
         <div className="flex lg:hidden flex-row gap-4 w-full px-2 mb-4">
           <div className={`p-3 rounded-xl border flex-1 flex flex-col items-center justify-center ${currentTurn === 'black' ? 'bg-primary/10 border-primary/30' : 'bg-card'}`}>
             <span className="text-[10px] font-mono text-muted-foreground uppercase mb-1">Orange</span>
@@ -621,7 +648,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
       )}
 
       {/* Board Column - centered via grid */}
-      <div className="flex flex-col items-center justify-start relative overflow-visible min-h-0 w-full">
+      <div className={`flex flex-col items-center relative overflow-visible min-h-0 w-full ${isReviewPageActive ? 'justify-center' : 'justify-start'}`}>
 
         <div className="chess-board-shadow rounded-xl overflow-hidden border border-chess-board-border relative">
           {/* Game Over Score Card Overlay */}
@@ -755,56 +782,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                       </div>
                     )}
 
-                    {overlayContent === 'review' && reviewSummary && (
-                      <div className="flex flex-col w-full text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
-                        <div className="flex items-center justify-center gap-2 mb-6">
-                          <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,165,0,0.8)]" />
-                          <h2 className="text-xl font-display font-bold text-foreground uppercase tracking-widest">Match Report</h2>
-                          <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,165,0,0.8)]" />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                          <div className="flex flex-col items-center bg-muted/40 py-5 px-2 rounded-2xl border border-white/5 relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-1">White</span>
-                            <span className="text-4xl font-display font-black text-foreground drop-shadow-sm">{reviewSummary.white.accuracy}<span className="text-xl font-medium text-muted-foreground/50">%</span></span>
-                            <span className="text-[9px] font-mono text-muted-foreground/50 mt-1 mb-2 uppercase tracking-widest">Accuracy</span>
-                            <div className="bg-background/40 w-full px-2 py-1 rounded-md text-center mt-auto border border-white/5">
-                              <span className="text-[9px] font-mono text-muted-foreground/60 uppercase">Est. Rating</span>
-                              <div className="text-sm font-bold font-mono text-primary/90">{reviewSummary.white.estimatedElo}</div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-center bg-muted/40 py-5 px-2 rounded-2xl border border-white/5 relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-1">Orange</span>
-                            <span className="text-4xl font-display font-black text-foreground drop-shadow-sm">{reviewSummary.black.accuracy}<span className="text-xl font-medium text-muted-foreground/50">%</span></span>
-                            <span className="text-[9px] font-mono text-muted-foreground/50 mt-1 mb-2 uppercase tracking-widest">Accuracy</span>
-                            <div className="bg-background/40 w-full px-2 py-1 rounded-md text-center mt-auto border border-white/5">
-                              <span className="text-[9px] font-mono text-muted-foreground/60 uppercase">Est. Rating</span>
-                              <div className="text-sm font-bold font-mono text-primary/90">{reviewSummary.black.estimatedElo}</div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="bg-muted/20 border border-white/5 rounded-2xl p-4 mb-8 w-full text-xs font-mono font-medium text-muted-foreground grid grid-cols-2 gap-y-3.5 shadow-inner">
-                          <div className="flex justify-between px-3 items-center"><span className="uppercase text-[10px] tracking-wider text-chess-bright/80 font-bold drop-shadow-[0_0_2px_rgba(34,197,94,0.5)]">Brilliant</span><span className="text-foreground tracking-widest bg-muted/50 px-2 py-0.5 rounded text-[10px]">{reviewSummary.white.brilliant} - {reviewSummary.black.brilliant}</span></div>
-                          <div className="flex justify-between px-3 items-center"><span className="uppercase text-[10px] tracking-wider text-chess-bright drop-shadow-sm font-bold">Great</span><span className="text-foreground tracking-widest bg-muted/50 px-2 py-0.5 rounded text-[10px]">{reviewSummary.white.great} - {reviewSummary.black.great}</span></div>
-                          <div className="flex justify-between px-3 items-center"><span className="uppercase text-[10px] tracking-wider text-muted-foreground font-bold">Best</span><span className="text-foreground tracking-widest bg-muted/50 px-2 py-0.5 rounded text-[10px]">{reviewSummary.white.best} - {reviewSummary.black.best}</span></div>
-                          <div className="flex justify-between px-3 items-center"><span className="uppercase text-[10px] tracking-wider text-yellow-500/80 font-bold">Inaccuracy</span><span className="text-foreground tracking-widest bg-muted/50 px-2 py-0.5 rounded text-[10px]">{reviewSummary.white.inaccuracy} - {reviewSummary.black.inaccuracy}</span></div>
-                          <div className="flex justify-between px-3 items-center"><span className="uppercase text-[10px] tracking-wider text-orange-500/80 font-bold">Mistake</span><span className="text-foreground tracking-widest bg-muted/50 px-2 py-0.5 rounded text-[10px]">{reviewSummary.white.mistake} - {reviewSummary.black.mistake}</span></div>
-                          <div className="flex justify-between px-3 items-center"><span className="uppercase text-[10px] tracking-wider text-red-500/80 font-bold">Blunder</span><span className="text-foreground tracking-widest bg-muted/50 px-2 py-0.5 rounded text-[10px]">{reviewSummary.white.blunder} - {reviewSummary.black.blunder}</span></div>
-                        </div>
-
-                        <motion.button
-                          className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-bold text-sm tracking-widest uppercase hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(255,165,0,0.2)] hover:shadow-[0_0_25px_rgba(255,165,0,0.4)]"
-                          onClick={() => { setHideWinnerCard(true); setViewIndex(1); }}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          Step Through Key Moves
-                        </motion.button>
-                      </div>
-                    )}
+                    {/* Review overlay has been moved to the side panel */}
                   </div>
                 </motion.div>
               </motion.div>
@@ -839,8 +817,8 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
               <motion.div
                 layout
                 style={{
-                  width: 'min(98vw, calc(100vh - 100px), 1200px)',
-                  height: 'min(98vw, calc(100vh - 100px), 1200px)'
+                  width: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(98vw, calc(100vh - 100px), 1200px)',
+                  height: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(98vw, calc(100vh - 100px), 1200px)'
                 }}
                 className="relative chess-board-shadow rounded-lg overflow-hidden border border-chess-board-border bg-chess-dark"
               >
@@ -905,7 +883,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
       {/* Side Panel Score Board */}
       <motion.div
-        className="flex lg:flex w-full lg:w-[280px] flex-col gap-4 lg:self-start"
+        className={`flex lg:flex w-full ${isReviewPageActive ? 'lg:col-start-2 lg:w-full max-w-[350px] lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto custom-scrollbar' : 'lg:w-[280px]'} flex-col gap-4 lg:self-start transition-all duration-500`}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
@@ -978,6 +956,107 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           </button>
         </div>
 
+        {/* Review Results Panel - only visible when isReviewPageActive is true */}
+        {isReviewPageActive && reviewSummary && (
+          <div className="flex flex-col w-full animate-in fade-in slide-in-from-right-8 duration-700 bg-card/60 rounded-2xl border border-border p-4 shadow-xl relative overflow-hidden shrink-0 lg:mt-2">
+             <div className="flex items-center justify-center gap-2 mb-5">
+               <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,165,0,0.8)]" />
+               <h2 className="text-xl font-display font-bold text-foreground uppercase tracking-widest">Match Report</h2>
+               <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,165,0,0.8)]" />
+             </div>
+
+             <div className="grid grid-cols-2 gap-4 mb-5">
+               <div className="flex flex-col items-center bg-card py-4 px-2 rounded-xl border border-border relative overflow-hidden group shadow-sm transition hover:border-primary/50">
+                 <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                 <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">White</span>
+                 <span className="text-4xl font-display font-black text-foreground drop-shadow-sm mb-1">{reviewSummary.white.accuracy}<span className="text-xl font-medium text-muted-foreground/50">%</span></span>
+                 <span className="text-[10px] font-mono text-muted-foreground mt-1 mb-3 uppercase tracking-widest">Accuracy</span>
+                 <div className="bg-background/80 w-full px-3 py-1.5 rounded-lg text-center mt-auto border border-border flex justify-between items-center group-hover:border-primary/30 transition-colors">
+                   <span className="text-[10px] font-mono text-muted-foreground uppercase">Est. Rating</span>
+                   <div className="text-sm font-bold font-mono text-foreground">{reviewSummary.white.estimatedElo}</div>
+                 </div>
+               </div>
+               <div className="flex flex-col items-center bg-card py-4 px-2 rounded-xl border border-border relative overflow-hidden group shadow-sm transition hover:border-orange-500/50">
+                 <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                 <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Orange</span>
+                 <span className="text-4xl font-display font-black text-foreground drop-shadow-sm mb-1">{reviewSummary.black.accuracy}<span className="text-xl font-medium text-muted-foreground/50">%</span></span>
+                 <span className="text-[10px] font-mono text-muted-foreground mt-1 mb-3 uppercase tracking-widest">Accuracy</span>
+                 <div className="bg-background/80 w-full px-3 py-1.5 rounded-lg text-center mt-auto border border-border flex justify-between items-center group-hover:border-orange-500/30 transition-colors">
+                   <span className="text-[10px] font-mono text-muted-foreground uppercase">Est. Rating</span>
+                   <div className="text-sm font-bold font-mono text-primary/90">{reviewSummary.black.estimatedElo}</div>
+                 </div>
+               </div>
+             </div>
+
+             <div className="bg-background/80 border border-border rounded-xl p-3 mb-4 w-full shadow-sm">
+               {[
+                 { label: 'Brilliant', key: 'brilliant', icon: '!!', wVal: reviewSummary.white.brilliant, bVal: reviewSummary.black.brilliant },
+                 { label: 'Great', key: 'great', icon: '!', wVal: reviewSummary.white.great, bVal: reviewSummary.black.great },
+                 { label: 'Book', key: 'book', icon: '📖', wVal: reviewSummary.white.book, bVal: reviewSummary.black.book },
+                 { label: 'Best', key: 'best', icon: '★', wVal: reviewSummary.white.best, bVal: reviewSummary.black.best },
+                 { label: 'Excellent', key: 'excellent', icon: '👍', wVal: reviewSummary.white.excellent, bVal: reviewSummary.black.excellent },
+                 { label: 'Good', key: 'good', icon: '✓', wVal: reviewSummary.white.good, bVal: reviewSummary.black.good },
+                 { label: 'Inaccuracy', key: 'inaccuracy', icon: '?!', wVal: reviewSummary.white.inaccuracy, bVal: reviewSummary.black.inaccuracy },
+                 { label: 'Mistake', key: 'mistake', icon: '?', wVal: reviewSummary.white.mistake, bVal: reviewSummary.black.mistake },
+                 { label: 'Miss', key: 'miss', icon: '✕', wVal: reviewSummary.white.miss, bVal: reviewSummary.black.miss },
+                 { label: 'Blunder', key: 'blunder', icon: '??', wVal: reviewSummary.white.blunder, bVal: reviewSummary.black.blunder },
+               ].map((row) => {
+                 const isActive = activeClassFilter?.classification === row.key;
+                 const hasMatches = (row.wVal + row.bVal) > 0;
+                 return (
+                   <div
+                     key={row.label}
+                     className={`grid grid-cols-[1fr_auto_1fr] items-center py-2 border-b border-border/40 last:border-b-0 transition-colors ${hasMatches ? 'cursor-pointer hover:bg-primary/5' : 'opacity-40'} ${isActive ? 'bg-primary/10 rounded-lg' : ''}`}
+                     onClick={() => {
+                       if (!hasMatches) return;
+                       const matchIndices = Object.entries(moveAnalyses)
+                         .filter(([, v]) => v.classification === row.key)
+                         .map(([k]) => parseInt(k))
+                         .sort((a, b) => a - b);
+                       if (matchIndices.length === 0) return;
+
+                       const jumpTo = (idx: number) => {
+                         if (idx > 0) {
+                           const prevSnap = historySnapshots[idx - 1];
+                           const targetSnap = historySnapshots[idx];
+                           const prevCapCount = prevSnap.captured.white.length + prevSnap.captured.black.length;
+                           const currCapCount = targetSnap.captured.white.length + targetSnap.captured.black.length;
+                           playChessSound(currCapCount > prevCapCount ? 'capture' : 'move');
+                         } else {
+                           playChessSound('move');
+                         }
+                         setViewIndex(idx);
+                       };
+
+                       if (isActive && activeClassFilter) {
+                         const nextMatch = (activeClassFilter.currentMatch + 1) % matchIndices.length;
+                         setActiveClassFilter({ classification: row.key, matchIndices, currentMatch: nextMatch });
+                         jumpTo(matchIndices[nextMatch]);
+                       } else {
+                         setActiveClassFilter({ classification: row.key, matchIndices, currentMatch: 0 });
+                         jumpTo(matchIndices[0]);
+                       }
+                     }}
+                   >
+                     <div className="flex items-center justify-between px-2">
+                       <span className="text-[11px] font-bold uppercase tracking-wide text-foreground">{row.label}</span>
+                       <span className="text-sm font-mono font-bold text-foreground">{row.wVal}</span>
+                     </div>
+                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black border mx-2 shrink-0 ${isActive ? 'bg-primary border-primary text-primary-foreground' : 'bg-primary/10 border-primary/30 text-primary'}`}>
+                       {row.icon}
+                     </div>
+                     <div className="flex items-center justify-between px-2">
+                       <span className="text-[11px] font-bold uppercase tracking-wide text-primary">{row.label}</span>
+                       <span className="text-sm font-mono font-bold text-primary">{row.bVal}</span>
+                     </div>
+                   </div>
+                 );
+               })}
+             </div>
+          </div>
+        )}
+
+        <div className={`hidden lg:flex flex-col gap-3 ${isReviewPageActive ? 'w-full' : 'w-full max-w-[280px]'}`}>
         {/* Captured Pieces */}
         <div className="hidden lg:flex bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-4 border border-border/60 flex-col">
           <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-3">Material Score</p>
@@ -1114,6 +1193,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
             </motion.button>
           </div>
         )}
+        </div>
       </motion.div>
     </div>
   );
