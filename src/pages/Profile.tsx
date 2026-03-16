@@ -116,7 +116,7 @@ const Profile = () => {
             onClick={() => navigate('/')}
             className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card transition-colors group-hover:border-primary/50">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg skeuo-btn">
               <ChevronLeft className="w-4 h-4" />
             </div>
             <span className="text-sm font-medium">Back to Play</span>
@@ -124,7 +124,7 @@ const Profile = () => {
           
           <div className="flex items-center gap-4">
             <ThemeSwitcher />
-            <div className="flex items-center gap-2.5 rounded-full border border-border bg-card/40 pl-1.5 pr-4 py-1.5 text-sm font-bold text-foreground group cursor-default">
+            <div className="flex items-center gap-2.5 rounded-full pl-1.5 pr-4 py-1.5 text-sm font-bold text-foreground group cursor-default skeuo-panel">
               <div className="relative">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground transition-colors group-hover:text-primary">
                   <User className="h-5 w-5" />
@@ -144,21 +144,21 @@ const Profile = () => {
             <motion.section 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-8"
+              className="rounded-3xl p-8 skeuo-panel"
             >
               <div className="flex flex-col items-center text-center">
                 <div className="relative mb-6">
-                  <div className="h-32 w-32 rounded-3xl bg-gradient-to-br from-primary/60 via-primary to-primary/80 p-1 rotate-3 shadow-2xl shadow-primary/20">
-                    <div className="h-full w-full rounded-[1.4rem] bg-card flex items-center justify-center overflow-hidden -rotate-3">
+                  <div className="h-32 w-32 rounded-3xl skeuo-btn-primary p-1.5 flex items-center justify-center">
+                    <div className="h-full w-full rounded-[1.2rem] overflow-hidden skeuo-inner">
                       <img 
                         src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aaryan" 
                         alt="Avatar" 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover scale-110 mt-2"
                       />
                     </div>
                   </div>
-                  <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl bg-primary border-4 border-background flex items-center justify-center text-primary-foreground">
-                    <Medal className="w-5 h-5" />
+                  <div className="absolute -bottom-2 -right-2 h-11 w-11 rounded-xl skeuo-btn-primary flex items-center justify-center z-10 pointer-events-none">
+                    <Medal className="w-5 h-5 fill-current" />
                   </div>
                 </div>
 
@@ -190,7 +190,7 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-6"
+              className="rounded-3xl p-6 skeuo-panel"
             >
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6 flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
@@ -199,26 +199,43 @@ const Profile = () => {
               <div className="h-48 w-full flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
+                    <defs>
+                      <filter id="skeuoPieShadow" x="-30%" y="-30%" width="160%" height="160%">
+                        <feDropShadow dx="4" dy="4" stdDeviation="5" floodColor="#000000" floodOpacity="0.6" />
+                        <feDropShadow dx="-2" dy="-2" stdDeviation="4" floodColor="#ffffff" floodOpacity="0.05" />
+                      </filter>
+                      {winLossData.map((entry, index) => (
+                        <linearGradient key={`pieGrad-${index}`} id={`pieGrad-${index}`} x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor={entry.color} />
+                          <stop offset="100%" stopColor={entry.color} stopOpacity={0.6} />
+                        </linearGradient>
+                      ))}
+                    </defs>
                     <Pie
                       data={winLossData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
+                      innerRadius={55}
+                      outerRadius={82}
+                      paddingAngle={6}
                       dataKey="value"
+                      stroke="rgba(255,255,255,0.1)"
+                      strokeWidth={1}
+                      style={{ filter: "url(#skeuoPieShadow)" }}
                     >
                       {winLossData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={`url(#pieGrad-${index})`} style={{ outline: 'none' }} />
                       ))}
                     </Pie>
                     <Tooltip 
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
-                        borderColor: 'hsl(var(--border))', 
+                        borderColor: 'rgba(255,255,255,0.1)', 
                         borderRadius: '12px',
                         fontSize: '12px',
+                        boxShadow: '4px 4px 10px rgba(0,0,0,0.5)',
                       }}
+                      itemStyle={{ color: 'hsl(var(--foreground))' }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -237,7 +254,7 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-6"
+              className="rounded-3xl p-6 skeuo-panel"
             >
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6 flex items-center gap-2">
                 <Award className="w-4 h-4" />
@@ -284,7 +301,7 @@ const Profile = () => {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.1 }}
-                  className="rounded-3xl border border-border bg-card/40 p-6 relative overflow-hidden group hover:-translate-y-1 hover:border-primary/30 hover:bg-primary/5 transition-all"
+                  className="rounded-3xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-all skeuo-panel"
                 >
                   <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
                     {f.type === 'Bullet' ? <Zap className="w-24 h-24" /> : f.type === 'Blitz' ? <Flame className="w-24 h-24" /> : <Clock className="w-24 h-24" />}
@@ -311,7 +328,7 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-8"
+              className="rounded-3xl p-8 skeuo-panel"
             >
               <div className="flex items-center justify-between mb-8">
                 <div>
@@ -397,7 +414,7 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-8"
+              className="rounded-3xl p-8 skeuo-panel"
             >
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-bold">Brilliant Performances</h3>
@@ -441,7 +458,7 @@ const Profile = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-8"
+                className="rounded-3xl p-8 skeuo-panel"
               >
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                   <Star className="w-5 h-5 text-primary" />
@@ -471,7 +488,7 @@ const Profile = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-8"
+                className="rounded-3xl p-8 skeuo-panel"
               >
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                   <Target className="w-5 h-5 text-primary" />

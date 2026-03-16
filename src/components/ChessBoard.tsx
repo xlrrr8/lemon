@@ -24,6 +24,7 @@ import {
   applyRawMove,
 } from '@/lib/chess';
 import ChessSquare from './ChessSquare';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 import {
   boardToFen,
@@ -611,20 +612,40 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         <div className="hidden lg:flex flex-col w-[280px] flex-shrink-0 justify-between gap-4 py-8 h-full">
           <div className="flex-1" />
 
-          <div className={`p-4 rounded-xl border flex flex-col items-center justify-center transition-all duration-300 ${currentTurn === 'black' && !isGameOver ? 'bg-primary/10 border-primary/30 shadow-[0_0_20px_rgba(255,165,0,0.15)] scale-105' : 'bg-card border-border opacity-60 scale-95'}`}>
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-1.5">Orange</span>
-            <span className={`text-3xl xl:text-4xl font-mono font-bold tracking-tight ${currentTurn === 'black' && !isGameOver ? 'text-primary' : 'text-muted-foreground'}`}>
-              {formatTime(blackTime)}
-            </span>
+          <div className={`rounded-xl border flex flex-col transition-all duration-300 ${currentTurn === 'black' && !isGameOver ? 'bg-primary/10 border-primary/30 shadow-[0_0_20px_rgba(255,165,0,0.15)] scale-105' : 'bg-card border-border opacity-70 scale-95'} overflow-hidden`}>
+            <div className={`px-4 py-2 border-b flex items-center justify-between ${currentTurn === 'black' && !isGameOver ? 'border-primary/20 bg-primary/5' : 'border-border/50 bg-black/10'}`}>
+               <div className="flex items-center gap-2.5">
+                 <div className="w-6 h-6 rounded flex items-center justify-center bg-orange-500/20 text-orange-400 text-xs font-bold border border-orange-500/20">O</div>
+                 <span className="text-sm font-bold text-foreground tracking-tight">Orange</span>
+               </div>
+               <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
+                 {mode === 'computer' ? `Bot L.${level}` : userElo}
+               </span>
+            </div>
+            <div className="flex flex-col items-center justify-center p-4 pt-3">
+              <span className={`text-3xl xl:text-4xl font-mono font-bold tracking-tight ${currentTurn === 'black' && !isGameOver ? 'text-primary' : 'text-muted-foreground'}`}>
+                {formatTime(blackTime)}
+              </span>
+            </div>
           </div>
 
           <div className="flex-1" />
 
-          <div className={`p-4 rounded-xl border flex flex-col items-center justify-center transition-all duration-300 ${currentTurn === 'white' && !isGameOver ? 'bg-white/5 border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-105' : 'bg-card border-border opacity-60 scale-95'}`}>
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-1.5">White</span>
-            <span className={`text-3xl xl:text-4xl font-mono font-bold tracking-tight ${currentTurn === 'white' && !isGameOver ? 'text-foreground' : 'text-muted-foreground'}`}>
-              {formatTime(whiteTime)}
-            </span>
+          <div className={`rounded-xl border flex flex-col transition-all duration-300 ${currentTurn === 'white' && !isGameOver ? 'bg-white/5 border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-105' : 'bg-card border-border opacity-70 scale-95'} overflow-hidden`}>
+            <div className={`px-4 py-2 border-b flex items-center justify-between ${currentTurn === 'white' && !isGameOver ? 'border-white/10 bg-white/5' : 'border-border/50 bg-black/10'}`}>
+               <div className="flex items-center gap-2.5">
+                 <div className="w-6 h-6 rounded flex items-center justify-center bg-muted/60 text-muted-foreground text-xs font-bold border border-white/10">W</div>
+                 <span className="text-sm font-bold text-foreground tracking-tight">You</span>
+               </div>
+               <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
+                 {userElo}
+               </span>
+            </div>
+            <div className="flex flex-col items-center justify-center p-4 pt-3">
+              <span className={`text-3xl xl:text-4xl font-mono font-bold tracking-tight ${currentTurn === 'white' && !isGameOver ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {formatTime(whiteTime)}
+              </span>
+            </div>
           </div>
 
           <div className="flex-1" />
@@ -636,13 +657,29 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
       {/* Mobile Timers Row */}
       {!isReviewPageActive && initialTime > 0 && (
         <div className="flex lg:hidden flex-row gap-4 w-full px-2 mb-4">
-          <div className={`p-3 rounded-xl border flex-1 flex flex-col items-center justify-center ${currentTurn === 'black' ? 'bg-primary/10 border-primary/30' : 'bg-card'}`}>
-            <span className="text-[10px] font-mono text-muted-foreground uppercase mb-1">Orange</span>
-            <span className={`text-2xl font-mono font-bold ${currentTurn === 'black' ? 'text-primary' : 'text-foreground'}`}>{formatTime(blackTime)}</span>
+          <div className={`rounded-xl border flex-1 flex flex-col overflow-hidden ${currentTurn === 'black' ? 'bg-primary/10 border-primary/30' : 'bg-card border-border'}`}>
+            <div className={`px-2.5 py-1.5 border-b flex justify-between items-center ${currentTurn === 'black' ? 'border-primary/20 bg-primary/5' : 'border-border/50 bg-black/10'}`}>
+               <div className="flex items-center gap-1.5">
+                 <span className="text-xs font-bold text-foreground tracking-tight">Orange</span>
+               </div>
+               <span className="text-[10px] font-mono font-black text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
+                 {mode === 'computer' ? `Bot L.${level}` : userElo}
+               </span>
+            </div>
+            <div className="p-2.5 flex justify-center items-center">
+               <span className={`text-2xl font-mono font-bold tracking-tight ${currentTurn === 'black' ? 'text-primary' : 'text-foreground'}`}>{formatTime(blackTime)}</span>
+            </div>
           </div>
-          <div className={`p-3 rounded-xl border flex-1 flex flex-col items-center justify-center ${currentTurn === 'white' ? 'bg-white/5 border-white/20' : 'bg-card'}`}>
-            <span className="text-[10px] font-mono text-muted-foreground uppercase mb-1">White</span>
-            <span className={`text-2xl font-mono font-bold ${currentTurn === 'white' ? 'text-foreground' : 'text-muted-foreground'}`}>{formatTime(whiteTime)}</span>
+          <div className={`rounded-xl border flex-1 flex flex-col overflow-hidden ${currentTurn === 'white' ? 'bg-white/5 border-white/20' : 'bg-card border-border'}`}>
+            <div className={`px-2.5 py-1.5 border-b flex justify-between items-center ${currentTurn === 'white' ? 'border-white/10 bg-white/5' : 'border-border/50 bg-black/10'}`}>
+               <span className="text-xs font-bold text-foreground tracking-tight">You</span>
+               <span className="text-[10px] font-mono font-black text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
+                 {userElo}
+               </span>
+            </div>
+            <div className="p-2.5 flex justify-center items-center">
+               <span className={`text-2xl font-mono font-bold tracking-tight ${currentTurn === 'white' ? 'text-foreground' : 'text-muted-foreground'}`}>{formatTime(whiteTime)}</span>
+            </div>
           </div>
         </div>
       )}
@@ -893,11 +930,14 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
           <div className="flex justify-between items-center w-full">
             <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Status</p>
-            {mode === 'computer' && (
-              <p className="text-[10px] font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 drop-shadow-[0_0_5px_rgba(255,165,0,0.3)]">
-                Elo: {userElo}
-              </p>
-            )}
+            <div className="flex items-center gap-2">
+              {mode === 'computer' && (
+                <p className="text-[10px] font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 drop-shadow-[0_0_5px_rgba(255,165,0,0.3)]">
+                  Elo: {userElo}
+                </p>
+              )}
+              <ThemeSwitcher />
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <motion.div

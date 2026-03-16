@@ -62,7 +62,7 @@ const Index = () => {
             {isSignedIn && (
               <Link
                 to="/profile"
-                className="flex items-center gap-2.5 rounded-full border border-border bg-card/40 pl-1.5 pr-4 py-1.5 text-sm font-bold text-foreground transition hover:border-primary/40 hover:bg-card/60 group"
+                className="flex items-center gap-2.5 rounded-full pl-1.5 pr-4 py-1.5 text-sm font-bold text-foreground transition hover:border-primary/40 hover:bg-card/60 group glass-panel"
               >
                 <div className="relative">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground group-hover:text-primary transition-colors">
@@ -75,7 +75,7 @@ const Index = () => {
             )}
             <button
               onClick={() => setIsSignedIn(!isSignedIn)}
-              className="rounded-full border border-border bg-card/70 px-4 py-2 text-sm font-medium text-foreground transition hover:border-orange-400/40 hover:text-orange-200"
+              className="rounded-full px-4 py-2 text-sm font-medium text-foreground transition hover:border-orange-400/40 hover:text-orange-200 skeuo-btn"
             >
               {isSignedIn ? 'Sign Out' : 'Sign In'}
             </button>
@@ -121,8 +121,16 @@ const Index = () => {
             {isSignedIn && (
               <Dialog>
                 <DialogTrigger asChild>
-                  <button className="sm:col-span-2 group overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-card/80 to-background/50 p-6 sm:p-8 flex items-center justify-between text-left transition hover:border-orange-500/50 shadow-sm shadow-black/20">
-                    <div className="flex flex-col gap-2">
+                  <button className="sm:col-span-2 group overflow-hidden relative rounded-3xl p-6 sm:p-8 flex items-center justify-between text-left transition hover:border-orange-500/50 shadow-sm shadow-black/20 glass-panel">
+                    <Swords className="absolute -right-8 -bottom-16 sm:right-[15%] sm:-top-16 h-64 w-64 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05] pointer-events-none" />
+                    
+                    {/* Decorative 3D Glass Tile */}
+                    <div className="absolute right-12 top-11 w-32 h-32 rounded-3xl glass-panel hidden sm:flex items-center justify-center rotate-6 shadow-2xl shadow-black/40 xl:right-24 xl:w-36 xl:h-36 transition-transform duration-500 group-hover:scale-105 group-hover:-rotate-3 pointer-events-none">
+                      <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-white/5 to-transparent"></div>
+                      <span className="text-[100px] xl:text-[110px] leading-none text-foreground/80 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] pb-4">♞</span>
+                    </div>
+
+                    <div className="flex flex-col gap-2 relative z-10">
                        <div className="flex items-center gap-3">
                          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-400">
                             <Swords className="h-6 w-6" />
@@ -131,11 +139,11 @@ const Index = () => {
                        </div>
                        <div className="mt-4">
                          <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">Play Online</p>
-                         <p className="text-base text-muted-foreground mt-1">Match instantly with players of your exact skill level.</p>
+                         <p className="text-base text-muted-foreground mt-1 max-w-[280px]">Match instantly with players of your exact skill level.</p>
                        </div>
                     </div>
-                    <div className="hidden sm:flex rounded-full bg-orange-500/10 p-5 text-orange-400 transition-all duration-300 group-hover:bg-orange-500 group-hover:text-black group-hover:scale-110">
-                       <Play className="h-8 w-8 ml-1" />
+                    <div className="hidden sm:flex rounded-full p-5 text-black transition-all duration-300 group-hover:scale-110 skeuo-btn-primary relative z-10">
+                       <Play className="h-8 w-8 ml-1 fill-current" />
                     </div>
                   </button>
                 </DialogTrigger>
@@ -220,7 +228,7 @@ const Index = () => {
 
                     {selectedOnlineTime && (
                       <Link to={`/play?time=${selectedOnlineTime.t}&inc=${selectedOnlineTime.inc}`} className="w-full mt-4">
-                        <button className="w-full py-3.5 rounded-xl bg-orange-500 text-white font-bold text-base flex items-center justify-center gap-3 hover:bg-orange-600 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 shadow-lg shadow-orange-500/20">
+                        <button className="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-3 transition-all duration-200 skeuo-btn-primary">
                           <Play className="w-4 h-4 fill-current" /> Start Match
                         </button>
                       </Link>
@@ -232,13 +240,23 @@ const Index = () => {
 
             <Dialog>
               <DialogTrigger asChild>
-                <button className="group flex flex-col justify-between rounded-3xl border border-border/80 bg-card/60 p-6 text-left transition hover:-translate-y-1 hover:border-orange-400/45 hover:bg-card relative overflow-hidden min-h-[16rem]">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300 relative z-10">
-                    <Brain className="h-5 w-5" />
+                <button className="group flex flex-col justify-between rounded-3xl p-6 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[16rem] glass-panel">
+                  <div className="flex justify-between items-start relative z-10 w-full">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
+                      <Brain className="h-5 w-5" />
+                    </div>
+                    <span className="rounded-full border border-border/50 bg-background/50 px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground tracking-wide uppercase">PRACTICE</span>
                   </div>
+                  <Brain className="absolute -right-6 -top-2 h-40 w-40 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
+                  
+                  {/* Decorative 3D Glass Tile */}
+                  <div className="absolute right-6 top-6 w-24 h-24 rounded-2xl glass-panel flex items-center justify-center -rotate-12 shadow-xl shadow-black/40 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-0 pointer-events-none">
+                    <span className="text-[75px] leading-none text-foreground/80 drop-shadow-[0_10px_10px_rgba(0,0,0,0.7)] pb-2">♚</span>
+                  </div>
+
                   <div className="relative z-10">
                     <p className="text-2xl font-bold text-foreground">Computer</p>
-                    <p className="text-sm text-muted-foreground mt-1">Adaptive AI sparring</p>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-[180px]">Adaptive AI sparring</p>
                   </div>
                   <ArrowRight className="absolute bottom-6 right-6 h-5 w-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
                 </button>
@@ -300,7 +318,7 @@ const Index = () => {
                   </div>
 
                   <Link to={`/play?mode=computer&level=${compLevel}&time=${compTime}`} className="w-full mt-4">
-                    <button className="w-full py-3.5 rounded-xl bg-orange-500 text-white font-bold text-base flex items-center justify-center gap-3 hover:bg-orange-600 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 shadow-lg shadow-orange-500/20">
+                    <button className="w-full py-3.5 rounded-xl text-white font-bold text-base flex items-center justify-center gap-3 transition-all duration-200 skeuo-btn-primary">
                       <Play className="w-4 h-4 fill-current" /> Start Match
                     </button>
                   </Link>
@@ -308,19 +326,29 @@ const Index = () => {
               </DialogContent>
             </Dialog>
 
-            <Link to="/puzzle" className="group flex flex-col justify-between rounded-3xl border border-border/80 bg-card/60 p-6 text-left transition hover:-translate-y-1 hover:border-orange-400/45 hover:bg-card relative overflow-hidden min-h-[16rem]">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300 relative z-10">
-                <Crown className="h-5 w-5" />
+            <Link to="/puzzle" className="group flex flex-col justify-between rounded-3xl p-6 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[16rem] glass-panel">
+              <div className="flex justify-between items-start relative z-10 w-full">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
+                  <Crown className="h-5 w-5" />
+                </div>
+                <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-500 tracking-wide uppercase">NEW DAILY</span>
               </div>
+              <Crown className="absolute -right-8 -top-6 h-48 w-48 rotate-12 opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[8deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
+              
+              {/* Decorative 3D Glass Tile */}
+              <div className="absolute right-6 top-8 w-24 h-24 rounded-2xl glass-panel flex items-center justify-center rotate-12 shadow-xl shadow-black/40 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 pointer-events-none border border-orange-500/20">
+                <span className="text-[75px] leading-none text-orange-400/90 drop-shadow-[0_10px_10px_rgba(255,121,24,0.3)] pb-2">♛</span>
+              </div>
+
               <div className="relative z-10">
                 <p className="text-2xl font-bold text-foreground">Daily Puzzle</p>
-                <p className="text-sm text-muted-foreground mt-1">Sharpen tactics in 5 mins</p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-[180px]">Sharpen tactics in 5 mins</p>
               </div>
               <ArrowRight className="absolute bottom-6 right-6 h-5 w-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
             </Link>
 
-            <div className="sm:col-span-2 rounded-3xl border border-border/70 bg-card/45 overflow-hidden flex flex-col">
-               <div className="border-b border-border/60 bg-background/50 px-6 py-4 flex justify-between items-center">
+            <div className="sm:col-span-2 rounded-3xl glass-panel overflow-hidden flex flex-col">
+               <div className="border-b border-white/5 bg-background/50 px-6 py-4 flex justify-between items-center">
                    <h2 className="text-sm font-bold text-foreground uppercase tracking-widest text-muted-foreground">Live Events</h2>
                    <div className="flex items-center gap-2 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                      <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>

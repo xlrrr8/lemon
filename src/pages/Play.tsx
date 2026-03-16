@@ -53,10 +53,6 @@ const Play = () => {
                 <span className="text-sm font-medium">Home</span>
             </Link>
 
-            <div className="hidden md:block absolute top-6 right-6 z-50">
-                <ThemeSwitcher />
-            </div>
-
             {/* Board + side panel */}
             <motion.div
                 className="w-full flex justify-center relative z-10"

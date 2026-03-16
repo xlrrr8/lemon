@@ -7,7 +7,7 @@ export function ThemeSwitcher() {
     const isAlternative = theme === "charcoal" || theme === "darker";
 
     return (
-        <div className="flex items-center gap-2.5 bg-card/40 border border-border px-3 py-1.5 rounded-full backdrop-blur-sm">
+        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full backdrop-blur-sm skeuo-panel">
             <Moon className="w-4 h-4 text-muted-foreground" />
             <Switch
                 checked={isAlternative}
