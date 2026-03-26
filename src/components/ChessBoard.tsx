@@ -613,12 +613,12 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           <div className="flex-1" />
 
           <div className={`rounded-xl border flex flex-col transition-all duration-300 ${currentTurn === 'black' && !isGameOver ? 'bg-primary/10 border-primary/30 shadow-[0_0_20px_rgba(255,165,0,0.15)] scale-105' : 'bg-card border-border opacity-70 scale-95'} overflow-hidden`}>
-            <div className={`px-4 py-2 border-b flex items-center justify-between ${currentTurn === 'black' && !isGameOver ? 'border-primary/20 bg-primary/5' : 'border-border/50 bg-black/10'}`}>
-               <div className="flex items-center gap-2.5">
-                 <div className="w-6 h-6 rounded flex items-center justify-center bg-orange-500/20 text-orange-400 text-xs font-bold border border-orange-500/20">O</div>
-                 <span className="text-sm font-bold text-foreground tracking-tight">Orange</span>
+            <div className={`px-5 py-4 border-b flex items-center justify-between ${currentTurn === 'black' && !isGameOver ? 'border-primary/20 bg-primary/5' : 'border-border/50 bg-black/10'}`}>
+               <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded flex items-center justify-center bg-orange-500/20 text-orange-400 text-sm font-bold border border-orange-500/20">O</div>
+                 <span className="text-lg font-bold text-foreground tracking-tight">Orange</span>
                </div>
-               <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
+               <span className="text-sm font-mono font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
                  {mode === 'computer' ? `Bot L.${level}` : userElo}
                </span>
             </div>
@@ -632,12 +632,12 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           <div className="flex-1" />
 
           <div className={`rounded-xl border flex flex-col transition-all duration-300 ${currentTurn === 'white' && !isGameOver ? 'bg-white/5 border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-105' : 'bg-card border-border opacity-70 scale-95'} overflow-hidden`}>
-            <div className={`px-4 py-2 border-b flex items-center justify-between ${currentTurn === 'white' && !isGameOver ? 'border-white/10 bg-white/5' : 'border-border/50 bg-black/10'}`}>
-               <div className="flex items-center gap-2.5">
-                 <div className="w-6 h-6 rounded flex items-center justify-center bg-muted/60 text-muted-foreground text-xs font-bold border border-white/10">W</div>
-                 <span className="text-sm font-bold text-foreground tracking-tight">You</span>
+            <div className={`px-5 py-4 border-b flex items-center justify-between ${currentTurn === 'white' && !isGameOver ? 'border-white/10 bg-white/5' : 'border-border/50 bg-black/10'}`}>
+               <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded flex items-center justify-center bg-muted/60 text-muted-foreground text-sm font-bold border border-white/10">W</div>
+                 <span className="text-lg font-bold text-foreground tracking-tight">You</span>
                </div>
-               <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
+               <span className="text-sm font-mono font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
                  {userElo}
                </span>
             </div>
@@ -658,11 +658,12 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
       {!isReviewPageActive && initialTime > 0 && (
         <div className="flex lg:hidden flex-row gap-4 w-full px-2 mb-4">
           <div className={`rounded-xl border flex-1 flex flex-col overflow-hidden ${currentTurn === 'black' ? 'bg-primary/10 border-primary/30' : 'bg-card border-border'}`}>
-            <div className={`px-2.5 py-1.5 border-b flex justify-between items-center ${currentTurn === 'black' ? 'border-primary/20 bg-primary/5' : 'border-border/50 bg-black/10'}`}>
-               <div className="flex items-center gap-1.5">
-                 <span className="text-xs font-bold text-foreground tracking-tight">Orange</span>
+            <div className={`px-3 py-2 border-b flex justify-between items-center ${currentTurn === 'black' ? 'border-primary/20 bg-primary/5' : 'border-border/50 bg-black/10'}`}>
+               <div className="flex items-center gap-2">
+                 <div className="w-5 h-5 rounded flex items-center justify-center bg-orange-500/20 text-orange-400 text-[10px] font-bold border border-orange-500/20">O</div>
+                 <span className="text-sm font-bold text-foreground tracking-tight">Orange</span>
                </div>
-               <span className="text-[10px] font-mono font-black text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
+               <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
                  {mode === 'computer' ? `Bot L.${level}` : userElo}
                </span>
             </div>
@@ -671,9 +672,12 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
             </div>
           </div>
           <div className={`rounded-xl border flex-1 flex flex-col overflow-hidden ${currentTurn === 'white' ? 'bg-white/5 border-white/20' : 'bg-card border-border'}`}>
-            <div className={`px-2.5 py-1.5 border-b flex justify-between items-center ${currentTurn === 'white' ? 'border-white/10 bg-white/5' : 'border-border/50 bg-black/10'}`}>
-               <span className="text-xs font-bold text-foreground tracking-tight">You</span>
-               <span className="text-[10px] font-mono font-black text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
+            <div className={`px-3 py-2 border-b flex justify-between items-center ${currentTurn === 'white' ? 'border-white/10 bg-white/5' : 'border-border/50 bg-black/10'}`}>
+               <div className="flex items-center gap-2">
+                 <div className="w-5 h-5 rounded flex items-center justify-center bg-muted/60 text-muted-foreground text-[10px] font-bold border border-white/10">W</div>
+                 <span className="text-sm font-bold text-foreground tracking-tight">You</span>
+               </div>
+               <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
                  {userElo}
                </span>
             </div>
@@ -926,7 +930,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         transition={{ delay: 0.3, duration: 0.5 }}
       >
         {/* Status */}
-        <div className="hidden lg:flex bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-4 border border-border/60 relative overflow-hidden flex-col gap-2">
+        <div className="hidden lg:flex bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-4 border border-border/60 relative overflow-hidden flex-col gap-2 shrink-0">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
           <div className="flex justify-between items-center w-full">
             <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Status</p>

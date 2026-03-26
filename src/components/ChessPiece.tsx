@@ -1,6 +1,5 @@
-import { motion } from 'framer-motion';
 import { Piece, getPieceSymbol } from '@/lib/chess';
-import { useState, memo } from 'react';
+import { useState, useCallback, memo } from 'react';
 
 interface ChessPieceProps {
   piece: Piece;
@@ -15,70 +14,104 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
   const isWhite = piece.color === 'white';
   const [isDragging, setIsDragging] = useState(false);
 
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (!canDrag) return;
 
-  const handleDragEnd = (event: any, info: any) => {
-    setIsDragging(false);
+    const el = e.currentTarget as HTMLElement;
+    el.setPointerCapture(e.pointerId);
     
-    // Use motion's info.point which is more reliable than raw event coordinates
-    const { x, y } = info.point;
+    const rect = el.getBoundingClientRect();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    let hasMoved = false;
+    let dragClone: HTMLElement | null = null;
     
-    if (x && y) {
-      const element = document.elementFromPoint(x, y);
-      const square = element?.closest('.chess-square');
-      const targetPosString = square?.getAttribute('data-position');
+    const squareSize = rect.width;
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+
+      if (!hasMoved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+        hasMoved = true;
+        setIsDragging(true);
+        
+        // Create a lightweight clone for dragging
+        dragClone = el.cloneNode(true) as HTMLElement;
+        dragClone.style.position = 'fixed';
+        dragClone.style.width = `${squareSize}px`;
+        dragClone.style.height = `${squareSize}px`;
+        dragClone.style.pointerEvents = 'none';
+        dragClone.style.zIndex = '10000';
+        dragClone.style.transform = 'scale(1.08)';
+        dragClone.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.4))';
+        dragClone.style.willChange = 'left, top';
+        dragClone.style.transition = 'none';
+        dragClone.style.containerType = 'inline-size';
+        document.body.appendChild(dragClone);
+        
+        // Select the piece on drag start
+        onClick();
+      }
+
+      if (hasMoved && dragClone) {
+        dragClone.style.left = `${moveEvent.clientX - squareSize / 2}px`;
+        dragClone.style.top = `${moveEvent.clientY - squareSize / 2}px`;
+      }
+    };
+
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      el.removeEventListener('pointermove', handlePointerMove);
+      el.removeEventListener('pointerup', handlePointerUp);
       
-      if (targetPosString && onDrop) {
-        const targetPos = targetPosString.split(',').map(Number) as [number, number];
-        if (targetPos[0] !== position[0] || targetPos[1] !== position[1]) {
-          onDrop(position, targetPos);
+      if (dragClone) {
+        dragClone.remove();
+        dragClone = null;
+      }
+
+      setIsDragging(false);
+      
+      if (hasMoved && onDrop) {
+        const dropElement = document.elementFromPoint(upEvent.clientX, upEvent.clientY);
+        const square = dropElement?.closest('.chess-square');
+        const targetPosString = square?.getAttribute('data-position');
+        
+        if (targetPosString) {
+          const targetPos = targetPosString.split(',').map(Number) as [number, number];
+          if (targetPos[0] !== position[0] || targetPos[1] !== position[1]) {
+            onDrop(position, targetPos);
+          }
         }
       }
-    }
-  };
+    };
+
+    el.addEventListener('pointermove', handlePointerMove);
+    el.addEventListener('pointerup', handlePointerUp);
+  }, [canDrag, position, onClick, onDrop]);
+
+  const scaleClass = piece.type === 'queen' || piece.type === 'king'
+    ? 'scale-[1.15]'
+    : piece.type === 'knight' || piece.type === 'pawn'
+      ? 'scale-110'
+      : '';
 
   return (
-    <motion.div
-      layoutId={piece.id}
-      layout
-      drag={canDrag}
-      dragSnapToOrigin
-      dragElastic={0}
-      dragMomentum={false}
-      onDragStart={() => {
-        setIsDragging(true);
-        onClick();
-      }}
-      onDragEnd={handleDragEnd}
+    <div
       className={`relative flex items-center justify-center w-full h-full select-none outline-none ${
         canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
       }`}
-      style={{ 
+      style={{
         zIndex: isDragging ? 100 : (isSelected ? 40 : 10),
         touchAction: 'none',
-        pointerEvents: isDragging ? 'none' : 'auto' 
+        opacity: isDragging ? 0.35 : 1,
+        transition: 'none',
       }}
-      initial={false}
-      animate={{
-        scale: isDragging ? 1.05 : isSelected ? 1.05 : 1,
-        opacity: 1,
-      }}
-      transition={{
-        scale: {
-          type: 'tween',
-          duration: 0.1, // Near-instant 100ms tween for predictable lightning speed
-        },
-        layout: {
-          type: 'spring',
-          stiffness: 3000, // Maximum stiffness for near-teleportation
-          damping: 80,
-          mass: 0.2
-        }
-      }}
-      whileHover={canDrag ? { scale: 1.02 } : {}}
+      onPointerDown={handlePointerDown}
+      onClick={!canDrag ? onClick : undefined}
     >
       <span
         className={`inline-block leading-none ${!isWhite ? 'text-chess-bright piece-bright' : 'text-chess-dull piece-dull'
-          } ${isSelected ? 'drop-shadow-lg' : ''}`}
+          } ${isSelected ? 'drop-shadow-lg' : ''} ${scaleClass}`}
         style={{
           textShadow: isSelected
             ? !isWhite
@@ -86,7 +119,6 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
               : '0 0 16px rgba(255, 255, 255, 0.6)'
             : 'none',
           fontSize: '75cqw',
-          transform: piece.type === 'queen' || piece.type === 'king' ? 'scale(1.15)' : piece.type === 'knight' ? 'scale(1.1)' : piece.type === 'pawn' ? 'scale(1.1)' : 'scale(1)',
         }}
       >
         {piece.type === 'queen' ? (
@@ -98,7 +130,7 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
           getPieceSymbol(piece.type)
         )}
       </span>
-    </motion.div>
+    </div>
   );
 });
 

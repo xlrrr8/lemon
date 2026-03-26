@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Swords, Brain, Crown, ArrowRight, Timer, User, Users, Trophy, Flame, Play, Zap, Clock, Target } from 'lucide-react';
+import { Swords, Brain, Crown, ArrowRight, Timer, User, Users, Trophy, Flame, Play, Zap, Clock, Target, Globe, Monitor, Puzzle } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import {
@@ -125,9 +125,9 @@ const Index = () => {
                     <Swords className="absolute -right-8 -bottom-16 sm:right-[15%] sm:-top-16 h-64 w-64 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05] pointer-events-none" />
                     
                     {/* Decorative 3D Glass Tile */}
-                    <div className="absolute right-12 top-11 w-32 h-32 rounded-3xl glass-panel hidden sm:flex items-center justify-center rotate-6 shadow-2xl shadow-black/40 xl:right-24 xl:w-36 xl:h-36 transition-transform duration-500 group-hover:scale-105 group-hover:-rotate-3 pointer-events-none">
+                    <div className="absolute right-32 top-11 w-32 h-32 rounded-3xl glass-panel hidden sm:flex items-center justify-center shadow-2xl shadow-black/40 xl:right-44 xl:w-36 xl:h-36 transition-transform duration-500 group-hover:scale-105 pointer-events-none">
                       <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-white/5 to-transparent"></div>
-                      <span className="text-[100px] xl:text-[110px] leading-none text-foreground/80 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] pb-4">♞</span>
+                      <Globe className="w-20 h-20 xl:w-24 xl:h-24 text-foreground/80 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)]" />
                     </div>
 
                     <div className="flex flex-col gap-2 relative z-10">
@@ -241,7 +241,7 @@ const Index = () => {
             <Dialog>
               <DialogTrigger asChild>
                 <button className="group flex flex-col justify-between rounded-3xl p-6 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[16rem] glass-panel">
-                  <div className="flex justify-between items-start relative z-10 w-full">
+                  <div className="flex justify-start items-center gap-3 relative z-10 w-full">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
                       <Brain className="h-5 w-5" />
                     </div>
@@ -250,8 +250,8 @@ const Index = () => {
                   <Brain className="absolute -right-6 -top-2 h-40 w-40 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
                   
                   {/* Decorative 3D Glass Tile */}
-                  <div className="absolute right-6 top-6 w-24 h-24 rounded-2xl glass-panel flex items-center justify-center -rotate-12 shadow-xl shadow-black/40 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-0 pointer-events-none">
-                    <span className="text-[75px] leading-none text-foreground/80 drop-shadow-[0_10px_10px_rgba(0,0,0,0.7)] pb-2">♚</span>
+                  <div className="absolute right-6 top-6 w-24 h-24 rounded-2xl glass-panel flex items-center justify-center shadow-xl shadow-black/40 transition-transform duration-500 group-hover:scale-110 pointer-events-none">
+                    <Monitor className="w-14 h-14 text-foreground/80 drop-shadow-[0_10px_10px_rgba(0,0,0,0.7)]" />
                   </div>
 
                   <div className="relative z-10">
@@ -327,7 +327,7 @@ const Index = () => {
             </Dialog>
 
             <Link to="/puzzle" className="group flex flex-col justify-between rounded-3xl p-6 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[16rem] glass-panel">
-              <div className="flex justify-between items-start relative z-10 w-full">
+              <div className="flex justify-start items-center gap-3 relative z-10 w-full">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
                   <Crown className="h-5 w-5" />
                 </div>
@@ -336,8 +336,8 @@ const Index = () => {
               <Crown className="absolute -right-8 -top-6 h-48 w-48 rotate-12 opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[8deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
               
               {/* Decorative 3D Glass Tile */}
-              <div className="absolute right-6 top-8 w-24 h-24 rounded-2xl glass-panel flex items-center justify-center rotate-12 shadow-xl shadow-black/40 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 pointer-events-none border border-orange-500/20">
-                <span className="text-[75px] leading-none text-orange-400/90 drop-shadow-[0_10px_10px_rgba(255,121,24,0.3)] pb-2">♛</span>
+              <div className="absolute right-6 top-8 w-24 h-24 rounded-2xl glass-panel flex items-center justify-center shadow-xl shadow-black/40 transition-transform duration-500 group-hover:scale-110 pointer-events-none border border-orange-500/20">
+                <Puzzle className="w-14 h-14 text-orange-400/90 drop-shadow-[0_10px_10px_rgba(255,121,24,0.3)]" />
               </div>
 
               <div className="relative z-10">

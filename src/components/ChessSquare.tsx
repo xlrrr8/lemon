@@ -29,43 +29,17 @@ const ChessSquare = React.memo(({
   onDropPosition,
   currentTurn,
 }: ChessSquareProps) => {
-  const [isDraggingOver, setIsDraggingOver] = React.useState(false);
   const baseColor = isLight ? 'bg-chess-light' : 'bg-chess-dark';
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); // allow drop
-    e.dataTransfer.dropEffect = 'move';
-    if (!isDraggingOver) setIsDraggingOver(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDraggingOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDraggingOver(false);
-    const data = e.dataTransfer.getData('text/plain');
-    if (!data) return;
-
-    const [fromRow, fromCol] = data.split(',').map(Number);
-    if (!isNaN(fromRow) && !isNaN(fromCol) && onDropPosition) {
-      onDropPosition([fromRow, fromCol], position);
-    }
-  };
 
   return (
     <div
       data-position={position.join(',')}
-      className={`chess-square relative aspect-square flex items-center justify-center cursor-pointer ${baseColor} ${isDraggingOver ? 'brightness-125 scale-[0.98] z-30' : ''} hover:brightness-105 transition-none`}
+      className={`chess-square relative aspect-square flex items-center justify-center cursor-pointer ${baseColor}`}
       onClick={onClick}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
     >
       {/* Last move highlight */}
       {isLastMove && !isSelected && (
-        <div className={`absolute inset-0 ${currentTurn === 'white' ? 'bg-primary/20' : 'bg-white/10'} pointer-events-none transition-none`} />
+        <div className={`absolute inset-0 ${currentTurn === 'white' ? 'bg-primary/20' : 'bg-white/10'} pointer-events-none`} />
       )}
 
       {/* Selected highlight */}
@@ -92,17 +66,15 @@ const ChessSquare = React.memo(({
       )}
 
       {piece && (
-        <div className="relative w-full h-full pointer-events-none flex items-center justify-center">
-          <div className="w-full h-full pointer-events-auto">
-            <ChessPiece
-              piece={piece}
-              isSelected={isSelected}
-              canDrag={!!canDragPiece}
-              position={position}
-              onClick={onClick}
-              onDrop={onDropPosition}
-            />
-          </div>
+        <div className="relative w-full h-full flex items-center justify-center" style={{ containerType: 'inline-size' }}>
+          <ChessPiece
+            piece={piece}
+            isSelected={isSelected}
+            canDrag={!!canDragPiece}
+            position={position}
+            onClick={onClick}
+            onDrop={onDropPosition}
+          />
         </div>
       )}
     </div>

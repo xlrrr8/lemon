@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   Calendar,
   User,
+  Users,
   ExternalLink,
   ChevronRight,
   Flame,
@@ -288,6 +289,53 @@ const Profile = () => {
                 <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </motion.section>
+
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="rounded-3xl p-6 skeuo-panel hidden"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Friends
+                </h3>
+                <span className="text-[10px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full">2 Online</span>
+              </div>
+              
+              <div className="space-y-4">
+                {[
+                  { name: 'Magnus_Clone', status: 'In a Match', isOnline: true, avatar: 'M' },
+                  { name: 'Hikaru_Fan', status: 'Online', isOnline: true, avatar: 'H' },
+                  { name: 'ChessNinja', status: 'Last seen 2h ago', isOnline: false, avatar: 'C' },
+                  { name: 'TacticsMaster', status: 'Last seen yesterday', isOnline: false, avatar: 'T' },
+                ].map((friend, i) => (
+                  <div key={i} className="flex items-center justify-between group cursor-pointer p-2 -mx-2 rounded-xl hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className={`h-10 w-10 flex items-center justify-center rounded-xl font-bold text-sm ${friend.isOnline ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground'}`}>
+                          {friend.avatar}
+                        </div>
+                        {friend.isOnline && (
+                          <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-card bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                        )}
+                      </div>
+                      <div>
+                        <p className={`text-sm font-bold ${!friend.isOnline && 'text-muted-foreground'}`}>{friend.name}</p>
+                        <p className={`text-[10px] font-semibold ${friend.isOnline && friend.status === 'In a Match' ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {friend.status}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                ))}
+              </div>
+              <button className="w-full mt-4 py-2 rounded-xl border border-dashed border-border text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
+                Add Friend
+              </button>
+            </motion.section>
           </div>
 
           {/* Main Content - Stats & Graphs */}
@@ -322,6 +370,54 @@ const Profile = () => {
                 </motion.div>
               ))}
             </div>
+
+            {/* Friends Section */}
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="rounded-3xl p-6 skeuo-panel"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Friends List
+                </h3>
+                <span className="text-[10px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full">2 Online</span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { name: 'Magnus_Clone', status: 'Playing a Rapid Match', isOnline: true, avatar: 'M' },
+                  { name: 'Hikaru_Fan', status: 'Online', isOnline: true, avatar: 'H' },
+                  { name: 'ChessNinja', status: 'Last seen 2h ago', isOnline: false, avatar: 'C' },
+                  { name: 'TacticsMaster', status: 'Last seen yesterday', isOnline: false, avatar: 'T' },
+                ].map((friend, i) => (
+                  <div key={i} className="flex items-center justify-between group cursor-pointer p-3 rounded-2xl bg-background/40 hover:bg-muted/40 transition-colors border border-border/50">
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div className={`h-12 w-12 flex items-center justify-center rounded-xl font-bold text-base ${friend.isOnline ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground'}`}>
+                          {friend.avatar}
+                        </div>
+                        {friend.isOnline && (
+                          <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-card bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                        )}
+                      </div>
+                      <div>
+                        <p className={`text-base font-bold ${!friend.isOnline && 'text-muted-foreground'}`}>{friend.name}</p>
+                        <p className={`text-xs font-semibold mt-0.5 ${friend.isOnline && friend.status.includes('Play') ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {friend.status}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                ))}
+              </div>
+              <button className="w-full mt-6 py-3 rounded-xl border border-dashed border-border/60 text-sm font-bold text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all">
+                Find / Add Friends
+              </button>
+            </motion.section>
 
             {/* Rating Graph */}
             <motion.section 
