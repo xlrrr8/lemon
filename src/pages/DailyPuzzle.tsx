@@ -396,7 +396,7 @@ const DailyPuzzle = () => {
                             // Play opponent's response
                             setTimeout(() => {
                                 playOpponentMove(newFen, puzzleState.solution, nextIdx);
-                            }, 200); // Reduced from 400ms
+                            }, 1000); // Increased from 200ms so 'correct' banner shows longer
                         }
                     } catch (e) {
                         console.error("Invalid move caught block:", e);
@@ -535,9 +535,10 @@ const DailyPuzzle = () => {
                 </div>
             </div>
 
-            <div className="relative z-10 w-full max-w-7xl mx-auto flex-1 flex flex-col lg:flex-row items-center lg:items-center justify-center gap-4 lg:gap-8 xl:gap-12 overflow-y-auto px-4 min-h-0 pb-6">
+            <div className="relative z-10 w-full max-w-7xl mx-auto flex-1 flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-4 min-h-0 pb-6">
+                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-8 xl:gap-12 w-full my-auto py-4">
                 {/* Left Panel */}
-                <div className="hidden lg:flex flex-col gap-4 w-full lg:w-[360px] flex-shrink-0 order-2 lg:order-1 max-w-[500px] lg:max-w-none mx-auto lg:mx-0 lg:overflow-y-auto lg:max-h-full">
+                <div className="hidden lg:flex flex-col gap-4 w-full lg:w-[360px] flex-shrink-0 order-2 lg:order-1 max-w-[500px] lg:max-w-none mx-auto lg:mx-0 lg:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] lg:max-h-full">
                     {/* Puzzle Info */}
                     <div className="bg-card/60 border border-border rounded-2xl p-6 backdrop-blur-sm">
                         <div className="flex items-center gap-2.5 mb-2">
@@ -649,7 +650,7 @@ const DailyPuzzle = () => {
                             {(() => {
                                 if (status === 'loading') {
                                     return (
-                                        <motion.div key="loading" className="absolute flex items-center gap-3 bg-card/60 border border-border rounded-xl px-5 py-3"
+                                        <motion.div key="loading" className="flex items-center gap-3 bg-card/60 border border-border rounded-xl px-5 py-3"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                                             <Loader2 className="w-4 h-4 text-primary animate-spin" />
                                             <span className="text-sm font-medium text-muted-foreground">Loading today's puzzle…</span>
@@ -658,7 +659,7 @@ const DailyPuzzle = () => {
                                 }
                                 if (status === 'error') {
                                     return (
-                                        <motion.div key="error" className="absolute flex items-center gap-3 bg-destructive/10 border border-destructive/30 rounded-xl px-5 py-3"
+                                        <motion.div key="error" className="flex items-center gap-3 bg-destructive/10 border border-destructive/30 rounded-xl px-5 py-3"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                                             <XCircle className="w-4 h-4 text-destructive" />
                                             <span className="text-sm font-medium text-destructive">Failed to load puzzle. Check your connection.</span>
@@ -667,7 +668,7 @@ const DailyPuzzle = () => {
                                 }
                                 if (status === 'solved') {
                                     return (
-                                        <motion.div key="solved" className="absolute flex items-center gap-3 bg-orange-500/15 border border-orange-500/40 rounded-xl px-5 py-3"
+                                        <motion.div key="solved" className="flex items-center gap-3 bg-orange-500/15 border border-orange-500/40 rounded-xl px-5 py-3"
                                             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
                                             <Trophy className="w-4 h-4 text-orange-400" />
                                             <span className="text-sm font-bold text-orange-300">Puzzle Solved! {solvedToday ? '🔥' : ''}</span>
@@ -676,7 +677,7 @@ const DailyPuzzle = () => {
                                 }
                                 if (status === 'wrong') {
                                     return (
-                                        <motion.div key="wrong" className="absolute flex items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-5 py-3"
+                                        <motion.div key="wrong" className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-5 py-3"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                                             <XCircle className="w-4 h-4 text-red-400" />
                                             <span className="text-sm font-semibold text-red-400">Not the right move — try again!</span>
@@ -685,7 +686,7 @@ const DailyPuzzle = () => {
                                 }
                                 if (status === 'correct') {
                                     return (
-                                        <motion.div key="correct" className="absolute flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-xl px-5 py-3"
+                                        <motion.div key="correct" className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-xl px-5 py-3"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                                             <CheckCircle2 className="w-4 h-4 text-green-400" />
                                             <span className="text-sm font-semibold text-green-400">Good move! Keep going…</span>
@@ -694,7 +695,7 @@ const DailyPuzzle = () => {
                                 }
                                 if ((status === 'ready' || status === 'playing') && puzzleState) {
                                     return (
-                                        <motion.div key="find" className="absolute flex items-center gap-3 bg-card/60 border border-border rounded-xl px-5 py-3"
+                                        <motion.div key="find" className="flex items-center gap-3 bg-card/60 border border-border rounded-xl px-5 py-3"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                                             <div className={`w-3 h-3 rounded-full ${puzzleState.playerColor === 'white' ? 'bg-white border border-neutral-400' : 'bg-neutral-900 border border-neutral-600'}`} />
                                             <span className="text-sm font-semibold text-foreground">
@@ -906,6 +907,7 @@ const DailyPuzzle = () => {
                             })}
                         </div>
                     )}
+                </div>
                 </div>
 
             </div>

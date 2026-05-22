@@ -73,6 +73,11 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   const [userElo, setUserElo] = useState(() => parseInt(localStorage.getItem('chess_user_elo') || '800', 10));
   const [eloChange, setEloChange] = useState<number | null>(null);
   const eloUpdatedRef = useRef(false);
+  const isDragMoveRef = useRef(false);
+
+  useEffect(() => {
+    isDragMoveRef.current = false;
+  });
 
   const [historySnapshots, setHistorySnapshots] = useState<Array<{
     board: Board,
@@ -887,8 +892,10 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                           currentTurn={currentTurn}
                           onDropPosition={(source, target) => {
                             if (target[0] === source[0] && target[1] === source[1]) return;
+                            isDragMoveRef.current = true;
                             handleSquareClick(target[0], target[1]);
                           }}
+                          shouldAnimate={!isDragMoveRef.current}
                         />
                       </div>
                     ))

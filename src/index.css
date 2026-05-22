@@ -110,8 +110,8 @@
     --sidebar-ring: 25 90% 55%;
   }
 
-  /* Darker Theme */
-  :root.theme-darker {
+  /* Batman Theme */
+  :root.theme-batman {
     --background: 220 10% 2%;
     --foreground: 220 10% 94%;
 

@@ -1,5 +1,6 @@
 import { Piece, getPieceSymbol } from '@/lib/chess';
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, memo, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 interface ChessPieceProps {
   piece: Piece;
@@ -8,11 +9,24 @@ interface ChessPieceProps {
   position: [number, number];
   onClick: () => void;
   onDrop?: (source: [number, number], target: [number, number]) => void;
+  shouldAnimate?: boolean;
 }
 
-const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop }: ChessPieceProps) => {
+const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop, shouldAnimate }: ChessPieceProps) => {
   const isWhite = piece.color === 'white';
   const [isDragging, setIsDragging] = useState(false);
+
+  // Keep latest callbacks in refs to avoid stale closures in event listeners
+  const onClickRef = useRef(onClick);
+  const onDropRef = useRef(onDrop);
+
+  useEffect(() => {
+    onClickRef.current = onClick;
+  }, [onClick]);
+
+  useEffect(() => {
+    onDropRef.current = onDrop;
+  }, [onDrop]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!canDrag) return;
@@ -51,7 +65,7 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
         document.body.appendChild(dragClone);
         
         // Select the piece on drag start
-        onClick();
+        onClickRef.current();
       }
 
       if (hasMoved && dragClone) {
@@ -71,7 +85,7 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
 
       setIsDragging(false);
       
-      if (hasMoved && onDrop) {
+      if (hasMoved && onDropRef.current) {
         const dropElement = document.elementFromPoint(upEvent.clientX, upEvent.clientY);
         const square = dropElement?.closest('.chess-square');
         const targetPosString = square?.getAttribute('data-position');
@@ -79,7 +93,7 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
         if (targetPosString) {
           const targetPos = targetPosString.split(',').map(Number) as [number, number];
           if (targetPos[0] !== position[0] || targetPos[1] !== position[1]) {
-            onDrop(position, targetPos);
+            onDropRef.current(position, targetPos);
           }
         }
       }
@@ -87,7 +101,7 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
 
     el.addEventListener('pointermove', handlePointerMove);
     el.addEventListener('pointerup', handlePointerUp);
-  }, [canDrag, position, onClick, onDrop]);
+  }, [canDrag, position]);
 
   const scaleClass = piece.type === 'queen' || piece.type === 'king'
     ? 'scale-[1.15]'
@@ -109,27 +123,38 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
       onPointerDown={handlePointerDown}
       onClick={!canDrag ? onClick : undefined}
     >
-      <span
-        className={`inline-block leading-none ${!isWhite ? 'text-chess-bright piece-bright' : 'text-chess-dull piece-dull'
-          } ${isSelected ? 'drop-shadow-lg' : ''} ${scaleClass}`}
-        style={{
-          textShadow: isSelected
-            ? !isWhite
-              ? '0 0 20px hsl(25 90% 55% / 0.6)'
-              : '0 0 16px rgba(255, 255, 255, 0.6)'
-            : 'none',
-          fontSize: '75cqw',
+      <motion.div
+        layoutId={shouldAnimate ? piece.id : undefined}
+        transition={{
+          type: 'spring',
+          stiffness: 280,
+          damping: 28,
+          mass: 0.8,
         }}
+        className="w-full h-full flex items-center justify-center"
       >
-        {piece.type === 'queen' ? (
-          <>
-            <span className="hidden md:inline">{getPieceSymbol(piece.type)}</span>
-            <span className="md:hidden">♕</span>
-          </>
-        ) : (
-          getPieceSymbol(piece.type)
-        )}
-      </span>
+        <span
+          className={`inline-block leading-none ${!isWhite ? 'text-chess-bright piece-bright' : 'text-chess-dull piece-dull'
+            } ${isSelected ? 'drop-shadow-lg' : ''} ${scaleClass}`}
+          style={{
+            textShadow: isSelected
+              ? !isWhite
+                ? '0 0 20px hsl(25 90% 55% / 0.6)'
+                : '0 0 16px rgba(255, 255, 255, 0.6)'
+              : 'none',
+            fontSize: '75cqw',
+          }}
+        >
+          {piece.type === 'queen' ? (
+            <>
+              <span className="hidden md:inline">{getPieceSymbol(piece.type)}</span>
+              <span className="md:hidden">♕</span>
+            </>
+          ) : (
+            getPieceSymbol(piece.type)
+          )}
+        </span>
+      </motion.div>
     </div>
   );
 });

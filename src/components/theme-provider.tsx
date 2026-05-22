@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react"
 
-export type Theme = "standard" | "charcoal" | "darker"
+export type Theme = "standard" | "charcoal" | "batman"
 
 type ThemeProviderProps = {
     children: React.ReactNode
@@ -33,7 +33,7 @@ export function ThemeProvider({
     useEffect(() => {
         const root = window.document.documentElement
 
-        root.classList.remove("theme-standard", "theme-charcoal", "theme-darker")
+        root.classList.remove("theme-standard", "theme-charcoal", "theme-batman")
 
         if (theme === "standard") {
             // standard is default, but we can add theme-standard or just let root handle it

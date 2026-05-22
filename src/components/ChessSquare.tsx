@@ -14,6 +14,7 @@ interface ChessSquareProps {
   canDragPiece?: boolean;
   onDropPosition?: (source: Position, target: Position) => void;
   currentTurn: PieceColor;
+  shouldAnimate: boolean;
 }
 
 const ChessSquare = React.memo(({
@@ -28,6 +29,7 @@ const ChessSquare = React.memo(({
   canDragPiece,
   onDropPosition,
   currentTurn,
+  shouldAnimate,
 }: ChessSquareProps) => {
   const baseColor = isLight ? 'bg-chess-light' : 'bg-chess-dark';
 
@@ -74,6 +76,7 @@ const ChessSquare = React.memo(({
             position={position}
             onClick={onClick}
             onDrop={onDropPosition}
+            shouldAnimate={shouldAnimate}
           />
         </div>
       )}

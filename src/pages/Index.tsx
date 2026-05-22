@@ -21,7 +21,7 @@ const Index = () => {
   const [customInc, setCustomInc] = useState(0);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground transition-colors duration-300">
+    <div className={`relative flex flex-col bg-background text-foreground transition-all duration-500 ${isSignedIn ? 'min-h-screen overflow-y-auto' : 'h-screen overflow-hidden'}`}>
       {/* Matte Dark Chess Board & Pieces Background */}
       <div className="pointer-events-none absolute inset-0 bg-background overflow-hidden transition-colors duration-300">
 
@@ -49,8 +49,8 @@ const Index = () => {
         <div className="absolute inset-0 bg-background/30 transition-colors duration-300"></div>
       </div>
 
-      <main className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 px-6 pb-20 pt-8 sm:px-10 lg:px-12">
-        <header className="flex items-center justify-between relative z-10">
+      <main className={`relative mx-auto flex w-full max-w-7xl flex-1 flex-col gap-10 px-6 pt-8 sm:px-10 lg:px-12 transition-all duration-500 ${isSignedIn ? 'justify-start pb-20' : 'justify-center pb-12'}`}>
+        <header className="flex items-center justify-between relative z-10 pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-400/30 bg-orange-500/15 text-orange-300">
               <Crown className="h-5 w-5" />
@@ -382,29 +382,32 @@ const Index = () => {
           </div>
         </div>
 
-        <section className="grid gap-6 md:grid-cols-3 mt-8 pt-10 border-t border-border/50 relative z-10">
-          <article className="rounded-3xl p-6 bg-transparent">
-            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10 text-orange-300">
-              <Timer className="h-6 w-6" />
-            </div>
-            <h2 className="text-lg font-bold text-foreground">Focus-first board</h2>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Minimal UI, clear move highlights, and distraction-free clocks built for deep calculation.</p>
-          </article>
-          <article className="rounded-3xl p-6 bg-transparent">
-            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10 text-orange-300">
-              <Users className="h-6 w-6" />
-            </div>
-            <h2 className="text-lg font-bold text-foreground">Fair matchmaking</h2>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Smart pairing by strength and form so each game feels competitive from move one.</p>
-          </article>
-          <article className="rounded-3xl p-6 bg-transparent">
-            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10 text-orange-300">
-              <Trophy className="h-6 w-6" />
-            </div>
-            <h2 className="text-lg font-bold text-foreground">Season ladders</h2>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Climb monthly ladders, earn titles, and unlock signature board themes as you rank up.</p>
-          </article>
-        </section>
+        {isSignedIn && (
+          <section className="grid gap-6 md:grid-cols-3 mt-8 pt-10 border-t border-border/50 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <article className="rounded-3xl p-6 bg-transparent">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10 text-orange-300">
+                <Timer className="h-6 w-6" />
+              </div>
+              <h2 className="text-lg font-bold text-foreground">Focus-first board</h2>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Minimal UI, clear move highlights, and distraction-free clocks built for deep calculation.</p>
+            </article>
+            <article className="rounded-3xl p-6 bg-transparent">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10 text-orange-300">
+                <Users className="h-6 w-6" />
+              </div>
+              <h2 className="text-lg font-bold text-foreground">Fair matchmaking</h2>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Smart pairing by strength and form so each game feels competitive from move one.</p>
+            </article>
+            <article className="rounded-3xl p-6 bg-transparent">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10 text-orange-300">
+                <Trophy className="h-6 w-6" />
+              </div>
+              <h2 className="text-lg font-bold text-foreground">Season ladders</h2>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Climb monthly ladders, earn titles, and unlock signature board themes as you rank up.</p>
+            </article>
+          </section>
+        )}
+
       </main>
     </div>
   );
