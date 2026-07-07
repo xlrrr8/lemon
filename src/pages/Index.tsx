@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Swords, Brain, Crown, ArrowRight, Timer, User, Users, Trophy, Flame, Play, Zap, Clock, Target, Globe, Monitor, Puzzle } from 'lucide-react';
+import { Swords, Brain, Crown, ArrowRight, Timer, User, Users, Trophy, Flame, Play, Zap, Clock, Target } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import {
@@ -24,7 +24,6 @@ const Index = () => {
     <div className={`relative flex flex-col bg-background text-foreground transition-all duration-500 ${isSignedIn ? 'min-h-screen overflow-y-auto' : 'h-screen overflow-hidden'}`}>
       {/* Matte Dark Chess Board & Pieces Background */}
       <div className="pointer-events-none absolute inset-0 bg-background overflow-hidden transition-colors duration-300">
-
         {/* Chess Board Pattern Background */}
         <div
           className="absolute inset-0 opacity-[0.35]"
@@ -36,17 +35,7 @@ const Index = () => {
             WebkitMaskImage: `radial-gradient(ellipse at top, black 30%, transparent 80%)`,
           }}
         ></div>
-
-
-
-        {/* Cinematic Orange Shades & Glows (Matte Feel) */}
-        <div className="absolute left-1/3 top-[20%] h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-600/15 blur-[120px]"></div>
-        <div className="absolute right-[10%] bottom-[10%] h-[30rem] w-[30rem] rounded-full bg-orange-700/15 blur-[100px]"></div>
-        <div className="absolute left-1/2 top-[-12rem] h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,_rgba(255,121,24,0.15),_rgba(255,121,24,0)_70%)]"></div>
         <div className="absolute inset-x-0 bottom-0 h-96 bg-[linear-gradient(180deg,rgba(0,0,0,0),hsl(var(--background))_55%,hsl(var(--background))_100%)] transition-colors duration-300"></div>
-
-        {/* Matte Noise Overlay (smooths the contrast) */}
-        <div className="absolute inset-0 bg-background/30 transition-colors duration-300"></div>
       </div>
 
       <main className={`relative mx-auto flex w-full max-w-7xl flex-1 flex-col gap-10 px-6 pt-8 sm:px-10 lg:px-12 transition-all duration-500 ${isSignedIn ? 'justify-start pb-20' : 'justify-center pb-12'}`}>
@@ -75,7 +64,7 @@ const Index = () => {
             )}
             <button
               onClick={() => setIsSignedIn(!isSignedIn)}
-              className="rounded-full px-4 py-2 text-sm font-medium text-foreground transition hover:border-orange-400/40 hover:text-orange-200 skeuo-btn"
+              className="rounded-full px-4 py-2 text-sm font-medium text-foreground transition border border-border bg-card hover:bg-muted hover:text-orange-200"
             >
               {isSignedIn ? 'Sign Out' : 'Sign In'}
             </button>
@@ -121,14 +110,10 @@ const Index = () => {
             {isSignedIn && (
               <Dialog>
                 <DialogTrigger asChild>
-                  <button className="sm:col-span-2 group overflow-hidden relative rounded-3xl p-6 sm:p-8 flex items-center justify-between text-left transition hover:border-orange-500/50 shadow-sm shadow-black/20 glass-panel">
+                  <button className="sm:col-span-2 group overflow-hidden relative rounded-3xl p-5 sm:p-6 flex items-center justify-between text-left transition hover:border-orange-500/50 shadow-sm shadow-black/20 glass-panel">
                     <Swords className="absolute -right-8 -bottom-16 sm:right-[15%] sm:-top-16 h-64 w-64 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05] pointer-events-none" />
                     
-                    {/* Decorative 3D Glass Tile */}
-                    <div className="absolute right-32 top-11 w-32 h-32 rounded-3xl glass-panel hidden sm:flex items-center justify-center shadow-2xl shadow-black/40 xl:right-44 xl:w-36 xl:h-36 transition-transform duration-500 group-hover:scale-105 pointer-events-none">
-                      <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-white/5 to-transparent"></div>
-                      <Globe className="w-20 h-20 xl:w-24 xl:h-24 text-foreground/80 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)]" />
-                    </div>
+
 
                     <div className="flex flex-col gap-2 relative z-10">
                        <div className="flex items-center gap-3">
@@ -137,12 +122,12 @@ const Index = () => {
                          </div>
                          <span className="rounded-full border border-orange-500/20 bg-orange-500/5 px-3 py-1 text-xs font-bold text-orange-400/90 tracking-wide">COMPETITIVE</span>
                        </div>
-                       <div className="mt-4">
+                       <div className="mt-2">
                          <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">Play Online</p>
                          <p className="text-base text-muted-foreground mt-1 max-w-[280px]">Match instantly with players of your exact skill level.</p>
                        </div>
                     </div>
-                    <div className="hidden sm:flex rounded-full p-5 text-black transition-all duration-300 group-hover:scale-110 skeuo-btn-primary relative z-10">
+                    <div className="hidden sm:flex rounded-full p-5 text-black transition-all duration-300 group-hover:scale-110 bg-primary relative z-10">
                        <Play className="h-8 w-8 ml-1 fill-current" />
                     </div>
                   </button>
@@ -228,7 +213,7 @@ const Index = () => {
 
                     {selectedOnlineTime && (
                       <Link to={`/play?time=${selectedOnlineTime.t}&inc=${selectedOnlineTime.inc}`} className="w-full mt-4">
-                        <button className="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-3 transition-all duration-200 skeuo-btn-primary">
+                        <button className="w-full py-3.5 rounded-xl font-bold text-base text-white flex items-center justify-center gap-3 transition-all duration-200 bg-primary hover:bg-primary/90 active:scale-[0.98]">
                           <Play className="w-4 h-4 fill-current" /> Start Match
                         </button>
                       </Link>
@@ -240,7 +225,7 @@ const Index = () => {
 
             <Dialog>
               <DialogTrigger asChild>
-                <button className="group flex flex-col justify-between rounded-3xl p-6 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[16rem] glass-panel">
+                <button className="group flex flex-col justify-between rounded-3xl p-5 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[10rem] glass-panel">
                   <div className="flex justify-start items-center gap-3 relative z-10 w-full">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
                       <Brain className="h-5 w-5" />
@@ -249,16 +234,13 @@ const Index = () => {
                   </div>
                   <Brain className="absolute -right-6 -top-2 h-40 w-40 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
                   
-                  {/* Decorative 3D Glass Tile */}
-                  <div className="absolute right-6 top-6 w-24 h-24 rounded-2xl glass-panel flex items-center justify-center shadow-xl shadow-black/40 transition-transform duration-500 group-hover:scale-110 pointer-events-none">
-                    <Monitor className="w-14 h-14 text-foreground/80 drop-shadow-[0_10px_10px_rgba(0,0,0,0.7)]" />
-                  </div>
+
 
                   <div className="relative z-10">
                     <p className="text-2xl font-bold text-foreground">Computer</p>
                     <p className="text-sm text-muted-foreground mt-1 max-w-[180px]">Adaptive AI sparring</p>
                   </div>
-                  <ArrowRight className="absolute bottom-6 right-6 h-5 w-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
+                  <ArrowRight className="absolute bottom-5 right-5 h-9 w-9 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
                 </button>
               </DialogTrigger>
 
@@ -318,7 +300,7 @@ const Index = () => {
                   </div>
 
                   <Link to={`/play?mode=computer&level=${compLevel}&time=${compTime}`} className="w-full mt-4">
-                    <button className="w-full py-3.5 rounded-xl text-white font-bold text-base flex items-center justify-center gap-3 transition-all duration-200 skeuo-btn-primary">
+                    <button className="w-full py-3.5 rounded-xl text-white font-bold text-base flex items-center justify-center gap-3 transition-all duration-200 bg-primary hover:bg-primary/90 active:scale-[0.98]">
                       <Play className="w-4 h-4 fill-current" /> Start Match
                     </button>
                   </Link>
@@ -326,7 +308,7 @@ const Index = () => {
               </DialogContent>
             </Dialog>
 
-            <Link to="/puzzle" className="group flex flex-col justify-between rounded-3xl p-6 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[16rem] glass-panel">
+            <Link to="/puzzle" className="group flex flex-col justify-between rounded-3xl p-5 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[10rem] glass-panel">
               <div className="flex justify-start items-center gap-3 relative z-10 w-full">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
                   <Crown className="h-5 w-5" />
@@ -335,16 +317,13 @@ const Index = () => {
               </div>
               <Crown className="absolute -right-8 -top-6 h-48 w-48 rotate-12 opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[8deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
               
-              {/* Decorative 3D Glass Tile */}
-              <div className="absolute right-6 top-8 w-24 h-24 rounded-2xl glass-panel flex items-center justify-center shadow-xl shadow-black/40 transition-transform duration-500 group-hover:scale-110 pointer-events-none border border-orange-500/20">
-                <Puzzle className="w-14 h-14 text-orange-400/90 drop-shadow-[0_10px_10px_rgba(255,121,24,0.3)]" />
-              </div>
+
 
               <div className="relative z-10">
                 <p className="text-2xl font-bold text-foreground">Daily Puzzle</p>
                 <p className="text-sm text-muted-foreground mt-1 max-w-[180px]">Sharpen tactics in 5 mins</p>
               </div>
-              <ArrowRight className="absolute bottom-6 right-6 h-5 w-5 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
+              <ArrowRight className="absolute bottom-5 right-5 h-9 w-9 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
             </Link>
 
             <div className="sm:col-span-2 rounded-3xl glass-panel overflow-hidden flex flex-col">

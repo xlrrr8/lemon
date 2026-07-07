@@ -56,12 +56,12 @@ function playBufferImmediate(buffer: AudioBuffer, volume: number = 1.0) {
 
 // ─── External mp3 — regular moves ────────────────────────────────────
 export function playMoveSound() {
-  const buffer = bufferCache.get('/sounds/capture.wav');
+  const buffer = bufferCache.get('/sounds/move.mp3');
   if (buffer) {
     playBufferImmediate(buffer, 3.0);
   } else {
     // Fallback if not yet cached (shouldn't happen with pre-loading)
-    loadBuffer('/sounds/capture.wav').then(b => playBufferImmediate(b, 3.0)).catch(() => {});
+    loadBuffer('/sounds/move.mp3').then(b => playBufferImmediate(b, 3.0)).catch(() => {});
   }
 }
 
@@ -77,38 +77,22 @@ export function playErrorSound() {
 
 // ─── External mp3 — capture moves ────────────────────────────────────
 export function playCaptureSound() {
-  const buffer = bufferCache.get('/sounds/move.mp3');
+  const buffer = bufferCache.get('/sounds/capture.wav');
   if (buffer) {
     playBufferImmediate(buffer, 3.0);
   } else {
-    loadBuffer('/sounds/move.mp3').then(b => playBufferImmediate(b, 3.0)).catch(() => {});
+    loadBuffer('/sounds/capture.wav').then(b => playBufferImmediate(b, 3.0)).catch(() => {});
   }
 }
 
 // ─── Checkmate sound ─────────────────────────────────────────────────
 export function playCheckmateSound() {
-  const ctx = getAudioContext();
-  const now = ctx.currentTime;
-
-  const notes = [660, 520, 392];
-  const delays = [0, 0.15, 0.3];
-
-  notes.forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-
-    const t = now + delays[i];
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.2, t + 0.03);
-    gain.gain.setValueAtTime(0.2, t + 0.12);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.55);
-  });
+  const buffer = bufferCache.get('/sounds/checkmate.mp3');
+  if (buffer) {
+    playBufferImmediate(buffer, 0.5);
+  } else {
+    loadBuffer('/sounds/checkmate.mp3').then(b => playBufferImmediate(b, 0.5)).catch(() => {});
+  }
 }
 
 // ─── Helper: determine which sound to play after a move ──────────────
@@ -141,6 +125,7 @@ if (typeof window !== 'undefined') {
   loadBuffer('/sounds/move.mp3').catch(() => {});
   loadBuffer('/sounds/capture.wav').catch(() => {});
   loadBuffer('/sounds/error.mp3').catch(() => {});
+  loadBuffer('/sounds/checkmate.mp3').catch(() => {});
 
   // Extra insurance: reload on first click to handle browser autoplay policies
   window.addEventListener('mousedown', () => {
@@ -149,5 +134,6 @@ if (typeof window !== 'undefined') {
     loadBuffer('/sounds/move.mp3').catch(() => {});
     loadBuffer('/sounds/capture.wav').catch(() => {});
     loadBuffer('/sounds/error.mp3').catch(() => {});
+    loadBuffer('/sounds/checkmate.mp3').catch(() => {});
   }, { once: true });
 }

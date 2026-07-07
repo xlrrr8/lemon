@@ -6,17 +6,14 @@ import {
   Clock, 
   TrendingUp, 
   History, 
-  Medal, 
   Star, 
   ChevronLeft,
-  Calendar,
   User,
   Users,
   ExternalLink,
   ChevronRight,
   Flame,
   Award,
-  Circle,
   BarChart3,
   Dna,
   Shield,
@@ -100,6 +97,106 @@ const formats = [
   },
 ];
 
+const LemonAvatar = () => {
+  return (
+    <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full p-1.5 bg-gradient-to-br from-primary/80 to-primary/40 flex items-center justify-center overflow-visible">
+      {/* Main avatar area */}
+      <div className="w-full h-full rounded-full overflow-hidden bg-[#0d0906] relative flex items-end justify-center">
+        {/* SVG Illustration */}
+        <svg viewBox="0 0 200 200" className="w-full h-full select-none">
+          <defs>
+            {/* Beanie Hat body gradient */}
+            <linearGradient id="beanieBody" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#4c6070" />
+              <stop offset="100%" stopColor="#354552" />
+            </linearGradient>
+            
+            {/* T-Shirt gradient */}
+            <linearGradient id="shirtGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#224b70" />
+              <stop offset="100%" stopColor="#15324d" />
+            </linearGradient>
+
+            {/* Cheek blush radial gradient */}
+            <radialGradient id="cheekBlush" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#f55038" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#f55038" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+
+          {/* 1. T-Shirt */}
+          <path 
+            d="M 35 200 C 35 155, 80 148, 80 148 C 80 148, 84 156, 100 156 C 116 156, 120 148, 120 148 C 120 148, 165 155, 165 200 Z" 
+            fill="url(#shirtGrad)" 
+          />
+
+          {/* 2. Neck */}
+          <rect x="86" y="125" width="28" height="30" rx="4" fill="#f58e38" />
+          {/* Neck shadow under chin */}
+          <path d="M 86 135 C 86 135, 100 148, 114 135 Z" fill="#cf7730" opacity="0.5" />
+
+          {/* 3. Ears */}
+          <circle cx="53" cy="100" r="9" fill="#f58e38" />
+          <circle cx="147" cy="100" r="9" fill="#f58e38" />
+
+          {/* 4. Head / Face Outline */}
+          <path 
+            d="M 58 90 C 56 128, 78 143, 100 143 C 122 143, 144 128, 142 90 C 142 60, 58 60, 58 90 Z" 
+            fill="#f58e38" 
+          />
+
+          {/* 5. Cat Ears on Hat */}
+          {/* Left Ear */}
+          <path d="M 64 45 L 59 18 Q 72 15, 82 32 Z" fill="url(#beanieBody)" />
+          {/* Left Ear Inner */}
+          <path d="M 67 41 L 63 24 Q 71 21, 78 31 Z" fill="#2d3d4a" />
+          
+          {/* Right Ear */}
+          <path d="M 136 45 L 141 18 Q 128 15, 118 32 Z" fill="url(#beanieBody)" />
+          {/* Right Ear Inner */}
+          <path d="M 133 41 L 137 24 Q 129 21, 122 31 Z" fill="#2d3d4a" />
+
+          {/* 6. Beanie Hat Body */}
+          <path d="M 56 68 C 50 35, 150 35, 144 68 Z" fill="url(#beanieBody)" />
+
+          {/* 7. Beanie White Brim (rounded band covering the seam) */}
+          <rect x="53" y="65" width="94" height="20" rx="8" fill="#ffffff" />
+
+          {/* 8. Face Features */}
+          {/* Eyebrows */}
+          <path d="M 68 83 Q 76 77, 84 82" stroke="#4d220a" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.6" />
+          <path d="M 116 82 Q 124 77, 132 83" stroke="#4d220a" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.6" />
+
+          {/* Sleepy Closed Eyes (smiley arcs) */}
+          <path d="M 73 95 Q 82 100, 91 95" stroke="#4d220a" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+          <path d="M 109 95 Q 118 100, 127 95" stroke="#4d220a" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+
+          {/* Nose */}
+          <path d="M 96 106 Q 100 109, 104 106" stroke="#cf7730" strokeWidth="3" strokeLinecap="round" fill="none" />
+
+          {/* Blush Cheeks */}
+          <circle cx="72" cy="115" r="9" fill="#f05537" />
+          <circle cx="128" cy="115" r="9" fill="#f05537" />
+
+          {/* Sour Puckered Mouth (wavy cat lip curve) */}
+          <path d="M 90 120 Q 95 125, 100 121 Q 105 125, 110 120" stroke="#4d220a" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+          
+          {/* Sour Mouth/Cheek Puff creases */}
+          <path d="M 85 116 Q 89 122, 93 118" stroke="#4d220a" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.8" />
+          <path d="M 115 118 Q 119 122, 123 116" stroke="#4d220a" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.8" />
+        </svg>
+      </div>
+
+      {/* Bottom-Right Badge (flat) */}
+      <div className="absolute bottom-0 right-0 w-11 h-11 rounded-full bg-primary/90 border-2 border-background flex items-center justify-center z-20 hover:scale-110 transition-transform duration-250 cursor-pointer">
+        <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="currentColor">
+          <path d="M12 3a9 9 0 0 0-9 9h18a9 9 0 0 0-9-9zm-1 2.08A7.003 7.003 0 0 0 5.27 11h5.73V5.08zm2 0V11h5.73A7.003 7.003 0 0 0 13 5.08zM12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9zm1-2.08V13h5.73A7.003 7.003 0 0 0 13 18.92zm-2 0a7.003 7.003 0 0 0-5.73-5.92H11v5.92z" />
+        </svg>
+      </div>
+    </div>
+  );
+};
+
 const Profile = () => {
   const navigate = useNavigate();
 
@@ -117,7 +214,7 @@ const Profile = () => {
             onClick={() => navigate('/')}
             className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg skeuo-btn">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card hover:bg-muted transition-colors">
               <ChevronLeft className="w-4 h-4" />
             </div>
             <span className="text-sm font-medium">Back to Play</span>
@@ -125,7 +222,7 @@ const Profile = () => {
           
           <div className="flex items-center gap-4">
             <ThemeSwitcher />
-            <div className="flex items-center gap-2.5 rounded-full pl-1.5 pr-4 py-1.5 text-sm font-bold text-foreground group cursor-default skeuo-panel">
+            <div className="flex items-center gap-2.5 rounded-full pl-1.5 pr-4 py-1.5 text-sm font-bold text-foreground group cursor-default border border-border bg-card">
               <div className="relative">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground transition-colors group-hover:text-primary">
                   <User className="h-5 w-5" />
@@ -145,43 +242,36 @@ const Profile = () => {
             <motion.section 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl p-8 skeuo-panel"
+              className="rounded-3xl p-8 border border-border bg-card"
             >
               <div className="flex flex-col items-center text-center">
                 <div className="relative mb-6">
-                  <div className="h-32 w-32 rounded-3xl skeuo-btn-primary p-1.5 flex items-center justify-center">
-                    <div className="h-full w-full rounded-[1.2rem] overflow-hidden skeuo-inner">
-                      <img 
-                        src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aaryan" 
-                        alt="Avatar" 
-                        className="w-full h-full object-cover scale-110 mt-2"
-                      />
-                    </div>
-                  </div>
-                  <div className="absolute -bottom-2 -right-2 h-11 w-11 rounded-xl skeuo-btn-primary flex items-center justify-center z-10 pointer-events-none">
-                    <Medal className="w-5 h-5 fill-current" />
-                  </div>
+                  <LemonAvatar />
                 </div>
 
                 <h1 className="text-2xl font-bold tracking-tight">Aaryan K.</h1>
                 <p className="text-muted-foreground text-sm font-medium mt-1 inline-flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs border border-primary/20">WNM</span>
+                  <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs border border-primary/20 font-bold">WNM</span>
                   @aaryank · Joined Jan 2024
                 </p>
 
-                <div className="grid grid-cols-2 gap-3 w-full mt-8">
+                <div className="grid grid-cols-2 gap-3.5 w-full mt-8">
                   {stats.map((s, i) => (
-                    <div key={i} className="rounded-2xl border border-border bg-background/50 p-3 text-left">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        {s.icon}
-                        <span className="text-[9px] uppercase font-bold tracking-wider">{s.label}</span>
+                    <div 
+                      key={i} 
+                      className="rounded-2xl border border-border bg-muted/30 p-3 text-left hover:border-primary/20 transition-all duration-300 hover:bg-muted/50 hover:scale-[1.02] group cursor-default"
+                    >
+                      <div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors mb-1.5">
+                        <span className="text-muted-foreground/80 group-hover:text-primary transition-colors">{s.icon}</span>
+                        <span className="text-[9px] uppercase font-bold tracking-widest text-muted-foreground/60">{s.label}</span>
                       </div>
-                      <p className="text-base font-bold">{s.value}</p>
+                      <p className="text-lg font-black tracking-tight">{s.value}</p>
                     </div>
                   ))}
                 </div>
 
-                <button className="w-full mt-6 py-3 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity">
+                <button className="w-full mt-6 py-3.5 rounded-xl font-bold text-sm text-foreground border border-border bg-card hover:bg-muted hover:text-primary transition-all duration-200 flex items-center justify-center gap-2 active:scale-95">
+                  <User className="w-4 h-4" />
                   Edit Profile
                 </button>
               </div>
@@ -191,7 +281,7 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="rounded-3xl p-6 skeuo-panel"
+              className="rounded-3xl p-6 border border-border bg-card"
             >
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6 flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
@@ -200,18 +290,6 @@ const Profile = () => {
               <div className="h-48 w-full flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <defs>
-                      <filter id="skeuoPieShadow" x="-30%" y="-30%" width="160%" height="160%">
-                        <feDropShadow dx="4" dy="4" stdDeviation="5" floodColor="#000000" floodOpacity="0.6" />
-                        <feDropShadow dx="-2" dy="-2" stdDeviation="4" floodColor="#ffffff" floodOpacity="0.05" />
-                      </filter>
-                      {winLossData.map((entry, index) => (
-                        <linearGradient key={`pieGrad-${index}`} id={`pieGrad-${index}`} x1="0" y1="0" x2="1" y2="1">
-                          <stop offset="0%" stopColor={entry.color} />
-                          <stop offset="100%" stopColor={entry.color} stopOpacity={0.6} />
-                        </linearGradient>
-                      ))}
-                    </defs>
                     <Pie
                       data={winLossData}
                       cx="50%"
@@ -220,21 +298,19 @@ const Profile = () => {
                       outerRadius={82}
                       paddingAngle={6}
                       dataKey="value"
-                      stroke="rgba(255,255,255,0.1)"
-                      strokeWidth={1}
-                      style={{ filter: "url(#skeuoPieShadow)" }}
+                      stroke="none"
+                      strokeWidth={0}
                     >
                       {winLossData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={`url(#pieGrad-${index})`} style={{ outline: 'none' }} />
+                        <Cell key={`cell-${index}`} fill={entry.color} style={{ outline: 'none' }} />
                       ))}
                     </Pie>
                     <Tooltip 
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
-                        borderColor: 'rgba(255,255,255,0.1)', 
+                        borderColor: 'hsl(var(--border))', 
                         borderRadius: '12px',
                         fontSize: '12px',
-                        boxShadow: '4px 4px 10px rgba(0,0,0,0.5)',
                       }}
                       itemStyle={{ color: 'hsl(var(--foreground))' }}
                     />
@@ -255,7 +331,7 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="rounded-3xl p-6 skeuo-panel"
+              className="rounded-3xl p-6 border border-border bg-card"
             >
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6 flex items-center gap-2">
                 <Award className="w-4 h-4" />
@@ -290,52 +366,6 @@ const Profile = () => {
               </button>
             </motion.section>
 
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="rounded-3xl p-6 skeuo-panel hidden"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  Friends
-                </h3>
-                <span className="text-[10px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full">2 Online</span>
-              </div>
-              
-              <div className="space-y-4">
-                {[
-                  { name: 'Magnus_Clone', status: 'In a Match', isOnline: true, avatar: 'M' },
-                  { name: 'Hikaru_Fan', status: 'Online', isOnline: true, avatar: 'H' },
-                  { name: 'ChessNinja', status: 'Last seen 2h ago', isOnline: false, avatar: 'C' },
-                  { name: 'TacticsMaster', status: 'Last seen yesterday', isOnline: false, avatar: 'T' },
-                ].map((friend, i) => (
-                  <div key={i} className="flex items-center justify-between group cursor-pointer p-2 -mx-2 rounded-xl hover:bg-muted/30 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="relative">
-                        <div className={`h-10 w-10 flex items-center justify-center rounded-xl font-bold text-sm ${friend.isOnline ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground'}`}>
-                          {friend.avatar}
-                        </div>
-                        {friend.isOnline && (
-                          <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-card bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                        )}
-                      </div>
-                      <div>
-                        <p className={`text-sm font-bold ${!friend.isOnline && 'text-muted-foreground'}`}>{friend.name}</p>
-                        <p className={`text-[10px] font-semibold ${friend.isOnline && friend.status === 'In a Match' ? 'text-primary' : 'text-muted-foreground'}`}>
-                          {friend.status}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                ))}
-              </div>
-              <button className="w-full mt-4 py-2 rounded-xl border border-dashed border-border text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
-                Add Friend
-              </button>
-            </motion.section>
           </div>
 
           {/* Main Content - Stats & Graphs */}
@@ -349,7 +379,7 @@ const Profile = () => {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.1 }}
-                  className="rounded-3xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-all skeuo-panel"
+                  className="rounded-3xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-all border border-border bg-card"
                 >
                   <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
                     {f.type === 'Bullet' ? <Zap className="w-24 h-24" /> : f.type === 'Blitz' ? <Flame className="w-24 h-24" /> : <Clock className="w-24 h-24" />}
@@ -376,7 +406,7 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
-              className="rounded-3xl p-6 skeuo-panel"
+              className="rounded-3xl p-6 border border-border bg-card"
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -424,7 +454,7 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="rounded-3xl p-8 skeuo-panel"
+              className="rounded-3xl p-8 border border-border bg-card"
             >
               <div className="flex items-center justify-between mb-8">
                 <div>
@@ -510,7 +540,7 @@ const Profile = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="rounded-3xl p-8 skeuo-panel"
+              className="rounded-3xl p-8 border border-border bg-card"
             >
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-bold">Brilliant Performances</h3>
@@ -554,7 +584,7 @@ const Profile = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="rounded-3xl p-8 skeuo-panel"
+                className="rounded-3xl p-8 border border-border bg-card"
               >
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                   <Star className="w-5 h-5 text-primary" />
@@ -584,7 +614,7 @@ const Profile = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="rounded-3xl p-8 skeuo-panel"
+                className="rounded-3xl p-8 border border-border bg-card"
               >
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                   <Target className="w-5 h-5 text-primary" />

@@ -17,15 +17,16 @@ export interface CastlingRights {
 
 export type GameStatus = 'playing' | 'check' | 'checkmate' | 'stalemate' | 'resigned' | 'draw';
 
-export function createInitialBoard(): Board {
+export function createInitialBoard(gameId?: string): Board {
   const board: Board = Array(8).fill(null).map(() => Array(8).fill(null));
   const backRow: PieceType[] = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
+  const prefix = gameId ? `${gameId}-` : '';
 
   for (let col = 0; col < 8; col++) {
-    board[0][col] = { id: `black-${backRow[col]}-${col}`, type: backRow[col], color: 'black' };
-    board[1][col] = { id: `black-pawn-${col}`, type: 'pawn', color: 'black' };
-    board[6][col] = { id: `white-pawn-${col}`, type: 'pawn', color: 'white' };
-    board[7][col] = { id: `white-${backRow[col]}-${col}`, type: backRow[col], color: 'white' };
+    board[0][col] = { id: `${prefix}black-${backRow[col]}-${col}`, type: backRow[col], color: 'black' };
+    board[1][col] = { id: `${prefix}black-pawn-${col}`, type: 'pawn', color: 'black' };
+    board[6][col] = { id: `${prefix}white-pawn-${col}`, type: 'pawn', color: 'white' };
+    board[7][col] = { id: `${prefix}white-${backRow[col]}-${col}`, type: backRow[col], color: 'white' };
   }
 
   return board;

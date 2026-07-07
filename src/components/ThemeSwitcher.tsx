@@ -14,12 +14,12 @@ export function ThemeSwitcher() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="w-10 h-10 rounded-full border-border backdrop-blur-sm skeuo-panel">
+                <Button variant="outline" size="icon" className="w-10 h-10 rounded-full border-border bg-card">
                     <Moon className="h-[1.2rem] w-[1.2rem] text-muted-foreground" />
                     <span className="sr-only">Toggle theme</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 border-border bg-card skeuo-panel shadow-xl">
+            <DropdownMenuContent align="end" className="w-40 border-border bg-card shadow-lg">
                 <DropdownMenuItem
                     onSelect={() => setTheme("standard")}
                     className={`cursor-pointer ${theme === "standard" ? "bg-accent text-accent-foreground" : ""}`}

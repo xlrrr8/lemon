@@ -47,7 +47,8 @@ interface ChessBoardProps {
 }
 
 const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 }: ChessBoardProps) => {
-  const [board, setBoard] = useState<Board>(createInitialBoard);
+  const [gameId, setGameId] = useState(() => Math.random().toString(36).substring(2, 9));
+  const [board, setBoard] = useState<Board>(() => createInitialBoard(gameId));
   const [selected, setSelected] = useState<Position | null>(null);
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [currentTurn, setCurrentTurn] = useState<PieceColor>('white');
@@ -84,11 +85,11 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     captured: { white: Piece[], black: Piece[] },
     lastMove: { from: Position, to: Position } | null,
     fen: string
-  }>>([{
-    board: createInitialBoard(),
+  }>>(() => [{
+    board: createInitialBoard(gameId),
     captured: { white: [], black: [] },
     lastMove: null,
-    fen: boardToFen(createInitialBoard(), 'white', createInitialCastlingRights(), null, 0, 1)
+    fen: boardToFen(createInitialBoard(gameId), 'white', createInitialCastlingRights(), null, 0, 1)
   }]);
 
   const [moveAnalyses, setMoveAnalyses] = useState<Record<number, {
@@ -528,7 +529,9 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   };
 
   const resetGame = () => {
-    setBoard(createInitialBoard());
+    const newGameId = Math.random().toString(36).substring(2, 9);
+    setGameId(newGameId);
+    setBoard(createInitialBoard(newGameId));
     setSelected(null);
     setValidMoves([]);
     setCurrentTurn('white');
@@ -545,10 +548,10 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     setTimeoutWinner(null);
     setHideWinnerCard(false);
     setHistorySnapshots([{
-      board: createInitialBoard(),
+      board: createInitialBoard(newGameId),
       captured: { white: [], black: [] },
       lastMove: null,
-      fen: boardToFen(createInitialBoard(), 'white', createInitialCastlingRights(), null, 0, 1)
+      fen: boardToFen(createInitialBoard(newGameId), 'white', createInitialCastlingRights(), null, 0, 1)
     }]);
     setMoveAnalyses({});
     setViewIndex(-1);

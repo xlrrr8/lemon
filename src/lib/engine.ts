@@ -210,7 +210,6 @@ export function classifyMove(
 }
 
 export function generateCoachComment(classification: MoveClassification, isWhite: boolean): string {
-    const side = isWhite ? "White" : "Orange";
     switch (classification) {
         case 'brilliant': return "A brilliant move that sacrifices material for a long-term decisive advantage! !!";
         case 'great': return "A great move that finds the only winning path! !";

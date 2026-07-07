@@ -126,10 +126,9 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
       <motion.div
         layoutId={shouldAnimate ? piece.id : undefined}
         transition={{
-          type: 'spring',
-          stiffness: 280,
-          damping: 28,
-          mass: 0.8,
+          type: 'tween',
+          duration: 0.15,
+          ease: [0.25, 0.1, 0.25, 1],
         }}
         className="w-full h-full flex items-center justify-center"
       >
