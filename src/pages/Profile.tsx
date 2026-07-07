@@ -103,112 +103,25 @@ const formats = [
 
 const LemonAvatar = () => {
   return (
-    <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full flex items-center justify-center overflow-visible">
-      {/* 1. Outer Ring */}
-      <div className="absolute inset-0 rounded-full border border-dashed border-primary/25" />
-      
-      {/* 2. Inner Ring with Tick Marks */}
-      <div className="absolute inset-2 rounded-full border border-primary/10 border-t-primary/35 border-b-primary/35" />
-      
-      {/* Main avatar area with glowing backdrop */}
-      <div className="w-[85%] h-[85%] rounded-full overflow-hidden bg-gradient-to-b from-[#18110b] to-[#0a0706] relative flex items-center justify-center border border-primary/20 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
-        {/* SVG Illustration (Citrus Cyber Knight) */}
-        <svg viewBox="0 0 200 200" className="w-full h-full select-none p-2">
-          <defs>
-            {/* Background Citrus Radial Glow */}
-            <radialGradient id="avatarBgGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-            </radialGradient>
+    <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full border-4 border-card bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600 flex items-center justify-center shadow-2xl overflow-visible">
+      {/* Simple, Iconic Chess Knight SVG */}
+      <svg viewBox="0 0 100 100" className="w-[62%] h-[62%] fill-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.25)] select-none">
+        {/* Chess Knight Path */}
+        <path d="M30 80 
+                 C30 80, 28 66, 36 55 
+                 C32 52, 31 48, 34 43 
+                 C37 38, 44 26, 62 26 
+                 C59 31, 60 37, 63 41 
+                 C66 45, 64 50, 60 54 
+                 C57 58, 59 66, 61 80 Z" />
+        <path d="M26 84 L65 84 L61 80 L30 80 Z" />
+        {/* Eye cut-out */}
+        <circle cx="51" cy="38" r="2.5" fill="#f97316" />
+      </svg>
 
-            {/* Metallic Gradient for Knight's Face/Body */}
-            <linearGradient id="cyberMetal" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#2e2520" />
-              <stop offset="50%" stopColor="#1a1412" />
-              <stop offset="100%" stopColor="#0a0706" />
-            </linearGradient>
-
-            {/* Glowing Citrus/Orange Gradients for the Mane & Crest */}
-            <linearGradient id="citrusWarm" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#ffb03a" />
-              <stop offset="50%" stopColor="#ff761b" />
-              <stop offset="100%" stopColor="#d83b00" />
-            </linearGradient>
-
-            <linearGradient id="citrusBright" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ffea79" />
-              <stop offset="60%" stopColor="#ff8f1c" />
-              <stop offset="100%" stopColor="#e54e00" />
-            </linearGradient>
-
-            {/* Neon Glow Filter */}
-            <filter id="neonOrangeGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-
-            <filter id="eyeGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          {/* Dotted Grid Background */}
-          <circle cx="100" cy="100" r="85" fill="url(#avatarBgGlow)" />
-          <circle cx="100" cy="100" r="80" fill="none" stroke="hsl(var(--primary) / 0.1)" strokeWidth="1" strokeDasharray="3 6" />
-
-          {/* Outer Glass Ring */}
-          <circle cx="100" cy="100" r="90" fill="none" stroke="url(#citrusBright)" strokeWidth="1.5" opacity="0.4" />
-
-          {/* ─── Chess Knight Figure ─── */}
-          {/* Back Mane: Stylized Glowing Citrus Wedges */}
-          {/* Wedge 1 (Top/Ear area) */}
-          <path d="M 98 38 C 112 34, 134 46, 130 62 C 127 75, 114 74, 102 68 Z" fill="url(#citrusBright)" filter="url(#neonOrangeGlow)" opacity="0.9" />
-          {/* Wedge 2 */}
-          <path d="M 106 63 C 122 62, 138 78, 132 94 C 127 106, 115 102, 106 94 Z" fill="url(#citrusWarm)" filter="url(#neonOrangeGlow)" opacity="0.85" />
-          {/* Wedge 3 */}
-          <path d="M 110 90 C 126 92, 136 112, 126 126 C 117 136, 108 128, 106 118 Z" fill="url(#citrusWarm)" filter="url(#neonOrangeGlow)" opacity="0.8" />
-
-          {/* Inner slice lines for the citrus mane */}
-          <path d="M 108 52 L 122 51 M 112 59 L 124 57" stroke="#ffffff" strokeWidth="1" opacity="0.5" strokeLinecap="round" />
-          <path d="M 114 77 L 128 80 M 116 85 L 128 88" stroke="#ffffff" strokeWidth="1" opacity="0.5" strokeLinecap="round" />
-          <path d="M 116 106 L 126 112 M 114 114 L 122 120" stroke="#ffffff" strokeWidth="1" opacity="0.5" strokeLinecap="round" />
-
-          {/* Knight Main Body (Dark Metallic/Glass) */}
-          <path 
-            d="M 52 165 C 52 145, 60 120, 68 110 C 64 96, 62 82, 68 72 C 74 62, 86 56, 96 64 C 94 70, 96 78, 98 84 C 90 92, 88 104, 94 116 C 98 124, 102 132, 102 146 C 102 155, 108 160, 114 165 Z" 
-            fill="url(#cyberMetal)" 
-            stroke="hsl(var(--primary) / 0.3)" 
-            strokeWidth="1.5"
-          />
-
-          {/* Knight Muzzle / Mouth overlay */}
-          <path d="M 52 95 C 56 90, 68 85, 78 88 C 76 96, 70 102, 64 104 Z" fill="#231b18" stroke="hsl(var(--primary) / 0.2)" strokeWidth="1" />
-
-          {/* Glowing Cyber Line Details on Neck */}
-          <path d="M 76 118 Q 86 128, 84 144" fill="none" stroke="url(#citrusBright)" strokeWidth="2" strokeLinecap="round" filter="url(#neonOrangeGlow)" />
-          <path d="M 86 114 Q 96 122, 94 136" fill="none" stroke="url(#citrusBright)" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
-          <circle cx="84" cy="144" r="2.5" fill="#ffffff" filter="url(#eyeGlow)" />
-          <circle cx="94" cy="136" r="1.5" fill="#ffea79" />
-
-          {/* Chess Base of the Knight */}
-          <path d="M 44 165 C 44 160, 120 160, 120 165 Z" fill="#201815" stroke="hsl(var(--primary) / 0.4)" strokeWidth="1.5" />
-          <path d="M 40 171 L 124 171 L 120 165 L 44 165 Z" fill="url(#cyberMetal)" stroke="hsl(var(--primary) / 0.3)" strokeWidth="1" />
-          <rect x="36" y="171" width="92" height="6" rx="2" fill="url(#citrusWarm)" />
-
-          {/* Glowing Eye */}
-          <polygon points="76,82 86,81 83,86 75,85" fill="#ffffff" filter="url(#eyeGlow)" />
-          {/* Secondary Eye Core */}
-          <polygon points="78,83 84,82 82,85" fill="#ffeb3b" />
-        </svg>
-      </div>
-
-      {/* Bottom-Right Badge (verified champion icon) */}
-      <div className="absolute bottom-1.5 right-1.5 w-11 h-11 rounded-full bg-primary border-2 border-background flex items-center justify-center z-20">
-        <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="currentColor">
+      {/* Bottom-Right Verified Badge */}
+      <div className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-primary border-4 border-card flex items-center justify-center z-20 shadow-lg">
+        <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="currentColor">
           <path d="M12 3a9 9 0 0 0-9 9h18a9 9 0 0 0-9-9zm-1 2.08A7.003 7.003 0 0 0 5.27 11h5.73V5.08zm2 0V11h5.73A7.003 7.003 0 0 0 13 5.08zM12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9zm1-2.08V13h5.73A7.003 7.003 0 0 0 13 18.92zm-2 0a7.003 7.003 0 0 0-5.73-5.92H11v5.92z" />
         </svg>
       </div>
