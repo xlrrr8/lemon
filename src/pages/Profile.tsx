@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { 
   Trophy, 
   Target, 
@@ -17,7 +18,10 @@ import {
   BarChart3,
   Dna,
   Shield,
-  Activity
+  Activity,
+  QrCode,
+  Copy,
+  Check
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -99,97 +103,112 @@ const formats = [
 
 const LemonAvatar = () => {
   return (
-    <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full p-1.5 bg-gradient-to-br from-primary/80 to-primary/40 flex items-center justify-center overflow-visible">
-      {/* Main avatar area */}
-      <div className="w-full h-full rounded-full overflow-hidden bg-[#0d0906] relative flex items-end justify-center">
-        {/* SVG Illustration */}
-        <svg viewBox="0 0 200 200" className="w-full h-full select-none">
+    <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full flex items-center justify-center overflow-visible group">
+      {/* 1. Outer Rotating Holographic Ring */}
+      <div className="absolute inset-0 rounded-full border border-dashed border-primary/30 animate-[spin_20s_linear_infinite] group-hover:border-primary/60 group-hover:scale-105 transition-all duration-500" />
+      
+      {/* 2. Secondary Reverse Rotating Ring with Tick Marks */}
+      <div className="absolute inset-2 rounded-full border border-primary/10 border-t-primary/40 border-b-primary/40 animate-[spin_10s_linear_infinite_reverse] group-hover:scale-105 transition-all duration-500" />
+      
+      {/* Main avatar area with glowing backdrop */}
+      <div className="w-[85%] h-[85%] rounded-full overflow-hidden bg-gradient-to-b from-[#18110b] to-[#0a0706] relative flex items-center justify-center border border-primary/20 shadow-[0_0_20px_rgba(249,115,22,0.15)] group-hover:shadow-[0_0_30px_rgba(249,115,22,0.3)] transition-all duration-500">
+        {/* SVG Illustration (Citrus Cyber Knight) */}
+        <svg viewBox="0 0 200 200" className="w-full h-full select-none p-2 transition-transform duration-500 group-hover:scale-105">
           <defs>
-            {/* Beanie Hat body gradient */}
-            <linearGradient id="beanieBody" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#4c6070" />
-              <stop offset="100%" stopColor="#354552" />
-            </linearGradient>
-            
-            {/* T-Shirt gradient */}
-            <linearGradient id="shirtGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#224b70" />
-              <stop offset="100%" stopColor="#15324d" />
+            {/* Background Citrus Radial Glow */}
+            <radialGradient id="avatarBgGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+            </radialGradient>
+
+            {/* Metallic Gradient for Knight's Face/Body */}
+            <linearGradient id="cyberMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#2e2520" />
+              <stop offset="50%" stopColor="#1a1412" />
+              <stop offset="100%" stopColor="#0a0706" />
             </linearGradient>
 
-            {/* Cheek blush radial gradient */}
-            <radialGradient id="cheekBlush" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#f55038" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#f55038" stopOpacity="0" />
-            </radialGradient>
+            {/* Glowing Citrus/Orange Gradients for the Mane & Crest */}
+            <linearGradient id="citrusWarm" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffb03a" />
+              <stop offset="50%" stopColor="#ff761b" />
+              <stop offset="100%" stopColor="#d83b00" />
+            </linearGradient>
+
+            <linearGradient id="citrusBright" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#ffea79" />
+              <stop offset="60%" stopColor="#ff8f1c" />
+              <stop offset="100%" stopColor="#e54e00" />
+            </linearGradient>
+
+            {/* Neon Glow Filter */}
+            <filter id="neonOrangeGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+
+            <filter id="eyeGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
-          {/* 1. T-Shirt */}
+          {/* Dotted Grid Background */}
+          <circle cx="100" cy="100" r="85" fill="url(#avatarBgGlow)" />
+          <circle cx="100" cy="100" r="80" fill="none" stroke="hsl(var(--primary) / 0.1)" strokeWidth="1" strokeDasharray="3 6" />
+
+          {/* Outer Glass Ring */}
+          <circle cx="100" cy="100" r="90" fill="none" stroke="url(#citrusBright)" strokeWidth="1.5" opacity="0.4" />
+
+          {/* ─── Chess Knight Figure ─── */}
+          {/* Back Mane: Stylized Glowing Citrus Wedges */}
+          {/* Wedge 1 (Top/Ear area) */}
+          <path d="M 98 38 C 112 34, 134 46, 130 62 C 127 75, 114 74, 102 68 Z" fill="url(#citrusBright)" filter="url(#neonOrangeGlow)" opacity="0.9" />
+          {/* Wedge 2 */}
+          <path d="M 106 63 C 122 62, 138 78, 132 94 C 127 106, 115 102, 106 94 Z" fill="url(#citrusWarm)" filter="url(#neonOrangeGlow)" opacity="0.85" />
+          {/* Wedge 3 */}
+          <path d="M 110 90 C 126 92, 136 112, 126 126 C 117 136, 108 128, 106 118 Z" fill="url(#citrusWarm)" filter="url(#neonOrangeGlow)" opacity="0.8" />
+
+          {/* Inner slice lines for the citrus mane */}
+          <path d="M 108 52 L 122 51 M 112 59 L 124 57" stroke="#ffffff" strokeWidth="1" opacity="0.5" strokeLinecap="round" />
+          <path d="M 114 77 L 128 80 M 116 85 L 128 88" stroke="#ffffff" strokeWidth="1" opacity="0.5" strokeLinecap="round" />
+          <path d="M 116 106 L 126 112 M 114 114 L 122 120" stroke="#ffffff" strokeWidth="1" opacity="0.5" strokeLinecap="round" />
+
+          {/* Knight Main Body (Dark Metallic/Glass) */}
           <path 
-            d="M 35 200 C 35 155, 80 148, 80 148 C 80 148, 84 156, 100 156 C 116 156, 120 148, 120 148 C 120 148, 165 155, 165 200 Z" 
-            fill="url(#shirtGrad)" 
+            d="M 52 165 C 52 145, 60 120, 68 110 C 64 96, 62 82, 68 72 C 74 62, 86 56, 96 64 C 94 70, 96 78, 98 84 C 90 92, 88 104, 94 116 C 98 124, 102 132, 102 146 C 102 155, 108 160, 114 165 Z" 
+            fill="url(#cyberMetal)" 
+            stroke="hsl(var(--primary) / 0.3)" 
+            strokeWidth="1.5"
           />
 
-          {/* 2. Neck */}
-          <rect x="86" y="125" width="28" height="30" rx="4" fill="#f58e38" />
-          {/* Neck shadow under chin */}
-          <path d="M 86 135 C 86 135, 100 148, 114 135 Z" fill="#cf7730" opacity="0.5" />
+          {/* Knight Muzzle / Mouth overlay */}
+          <path d="M 52 95 C 56 90, 68 85, 78 88 C 76 96, 70 102, 64 104 Z" fill="#231b18" stroke="hsl(var(--primary) / 0.2)" strokeWidth="1" />
 
-          {/* 3. Ears */}
-          <circle cx="53" cy="100" r="9" fill="#f58e38" />
-          <circle cx="147" cy="100" r="9" fill="#f58e38" />
+          {/* Glowing Cyber Line Details on Neck */}
+          <path d="M 76 118 Q 86 128, 84 144" fill="none" stroke="url(#citrusBright)" strokeWidth="2" strokeLinecap="round" filter="url(#neonOrangeGlow)" />
+          <path d="M 86 114 Q 96 122, 94 136" fill="none" stroke="url(#citrusBright)" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
+          <circle cx="84" cy="144" r="2.5" fill="#ffffff" filter="url(#eyeGlow)" />
+          <circle cx="94" cy="136" r="1.5" fill="#ffea79" />
 
-          {/* 4. Head / Face Outline */}
-          <path 
-            d="M 58 90 C 56 128, 78 143, 100 143 C 122 143, 144 128, 142 90 C 142 60, 58 60, 58 90 Z" 
-            fill="#f58e38" 
-          />
+          {/* Chess Base of the Knight */}
+          <path d="M 44 165 C 44 160, 120 160, 120 165 Z" fill="#201815" stroke="hsl(var(--primary) / 0.4)" strokeWidth="1.5" />
+          <path d="M 40 171 L 124 171 L 120 165 L 44 165 Z" fill="url(#cyberMetal)" stroke="hsl(var(--primary) / 0.3)" strokeWidth="1" />
+          <rect x="36" y="171" width="92" height="6" rx="2" fill="url(#citrusWarm)" />
 
-          {/* 5. Cat Ears on Hat */}
-          {/* Left Ear */}
-          <path d="M 64 45 L 59 18 Q 72 15, 82 32 Z" fill="url(#beanieBody)" />
-          {/* Left Ear Inner */}
-          <path d="M 67 41 L 63 24 Q 71 21, 78 31 Z" fill="#2d3d4a" />
-          
-          {/* Right Ear */}
-          <path d="M 136 45 L 141 18 Q 128 15, 118 32 Z" fill="url(#beanieBody)" />
-          {/* Right Ear Inner */}
-          <path d="M 133 41 L 137 24 Q 129 21, 122 31 Z" fill="#2d3d4a" />
-
-          {/* 6. Beanie Hat Body */}
-          <path d="M 56 68 C 50 35, 150 35, 144 68 Z" fill="url(#beanieBody)" />
-
-          {/* 7. Beanie White Brim (rounded band covering the seam) */}
-          <rect x="53" y="65" width="94" height="20" rx="8" fill="#ffffff" />
-
-          {/* 8. Face Features */}
-          {/* Eyebrows */}
-          <path d="M 68 83 Q 76 77, 84 82" stroke="#4d220a" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.6" />
-          <path d="M 116 82 Q 124 77, 132 83" stroke="#4d220a" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.6" />
-
-          {/* Sleepy Closed Eyes (smiley arcs) */}
-          <path d="M 73 95 Q 82 100, 91 95" stroke="#4d220a" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-          <path d="M 109 95 Q 118 100, 127 95" stroke="#4d220a" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-
-          {/* Nose */}
-          <path d="M 96 106 Q 100 109, 104 106" stroke="#cf7730" strokeWidth="3" strokeLinecap="round" fill="none" />
-
-          {/* Blush Cheeks */}
-          <circle cx="72" cy="115" r="9" fill="#f05537" />
-          <circle cx="128" cy="115" r="9" fill="#f05537" />
-
-          {/* Sour Puckered Mouth (wavy cat lip curve) */}
-          <path d="M 90 120 Q 95 125, 100 121 Q 105 125, 110 120" stroke="#4d220a" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-          
-          {/* Sour Mouth/Cheek Puff creases */}
-          <path d="M 85 116 Q 89 122, 93 118" stroke="#4d220a" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.8" />
-          <path d="M 115 118 Q 119 122, 123 116" stroke="#4d220a" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.8" />
+          {/* Glowing Eye */}
+          <polygon points="76,82 86,81 83,86 75,85" fill="#ffffff" filter="url(#eyeGlow)" className="group-hover:fill-yellow-300 transition-colors duration-300" />
+          {/* Secondary Eye Core */}
+          <polygon points="78,83 84,82 82,85" fill="#ffeb3b" />
         </svg>
       </div>
 
-      {/* Bottom-Right Badge (flat) */}
-      <div className="absolute bottom-0 right-0 w-11 h-11 rounded-full bg-primary/90 border-2 border-background flex items-center justify-center z-20 hover:scale-110 transition-transform duration-250 cursor-pointer">
-        <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="currentColor">
+      {/* Bottom-Right Badge (glowing verified champion icon) */}
+      <div className="absolute bottom-1.5 right-1.5 w-11 h-11 rounded-full bg-primary border-2 border-background flex items-center justify-center z-20 hover:scale-110 hover:shadow-[0_0_12px_rgba(249,115,22,0.6)] transition-all duration-250 cursor-pointer">
+        <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="currentColor">
           <path d="M12 3a9 9 0 0 0-9 9h18a9 9 0 0 0-9-9zm-1 2.08A7.003 7.003 0 0 0 5.27 11h5.73V5.08zm2 0V11h5.73A7.003 7.003 0 0 0 13 5.08zM12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9zm1-2.08V13h5.73A7.003 7.003 0 0 0 13 18.92zm-2 0a7.003 7.003 0 0 0-5.73-5.92H11v5.92z" />
         </svg>
       </div>
@@ -199,6 +218,16 @@ const LemonAvatar = () => {
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [showQR, setShowQR] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    // Generate matchmaking invite or profile link
+    const inviteUrl = `${window.location.origin}/play?invite=aaryank`;
+    navigator.clipboard.writeText(inviteUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -270,10 +299,145 @@ const Profile = () => {
                   ))}
                 </div>
 
-                <button className="w-full mt-6 py-3.5 rounded-xl font-bold text-sm text-foreground border border-border bg-card hover:bg-muted hover:text-primary transition-all duration-200 flex items-center justify-center gap-2 active:scale-95">
-                  <User className="w-4 h-4" />
-                  Edit Profile
-                </button>
+                <div className="flex gap-3 w-full mt-6">
+                  <button className="flex-1 py-3.5 rounded-xl font-bold text-sm text-foreground border border-border bg-card hover:bg-muted hover:text-primary transition-all duration-200 flex items-center justify-center gap-2 active:scale-95">
+                    <User className="w-4 h-4" />
+                    Edit Profile
+                  </button>
+                  <button 
+                    onClick={() => setShowQR(!showQR)}
+                    className={`flex-1 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 border ${
+                      showQR 
+                        ? 'bg-primary/10 text-primary border-primary/30 shadow-[0_0_15px_rgba(249,115,22,0.15)] animate-[pulse_2s_infinite]' 
+                        : 'text-muted-foreground border-border bg-card hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    <QrCode className="w-4 h-4" />
+                    Share Chess ID
+                  </button>
+                </div>
+
+                {/* Collapsible QR Code Widget */}
+                {showQR && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                    className="w-full mt-4 p-5 rounded-2xl border border-primary/20 bg-primary/5/30 backdrop-blur-md overflow-hidden relative shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                  >
+                    {/* Laser Scanner Line Effect */}
+                    <div className="absolute inset-x-0 h-[3px] bg-gradient-to-r from-transparent via-primary to-transparent animate-[scan_2.5s_ease-in-out_infinite] opacity-80 shadow-[0_0_10px_rgba(249,115,22,0.8)] z-10 pointer-events-none" />
+
+                    <div className="flex flex-col items-center gap-4 relative z-0">
+                      {/* Premium QR Code SVG */}
+                      <div className="relative p-3 bg-white rounded-2xl shadow-lg shadow-black/40 hover:scale-[1.03] transition-all duration-300">
+                        <svg className="w-36 h-36" viewBox="0 0 100 100">
+                          {/* Finder Pattern Top-Left */}
+                          <rect x="0" y="0" width="28" height="28" rx="5" fill="#1e1816" />
+                          <rect x="4" y="4" width="20" height="20" rx="3" fill="#ffffff" />
+                          <rect x="8" y="8" width="12" height="12" rx="2" fill="hsl(var(--primary))" />
+                          
+                          {/* Finder Pattern Top-Right */}
+                          <rect x="72" y="0" width="28" height="28" rx="5" fill="#1e1816" />
+                          <rect x="76" y="4" width="20" height="20" rx="3" fill="#ffffff" />
+                          <rect x="80" y="8" width="12" height="12" rx="2" fill="hsl(var(--primary))" />
+                          
+                          {/* Finder Pattern Bottom-Left */}
+                          <rect x="0" y="72" width="28" height="28" rx="5" fill="#1e1816" />
+                          <rect x="4" y="76" width="20" height="20" rx="3" fill="#ffffff" />
+                          <rect x="8" y="80" width="12" height="12" rx="2" fill="hsl(var(--primary))" />
+
+                          {/* Alignment Pattern Bottom-Right */}
+                          <rect x="76" y="76" width="16" height="16" rx="3" fill="#1e1816" />
+                          <rect x="80" y="80" width="8" height="8" rx="1.5" fill="#ffffff" />
+                          <rect x="83" y="83" width="2" height="2" fill="hsl(var(--primary))" />
+
+                          {/* Data dots representation */}
+                          <rect x="36" y="0" width="4" height="4" rx="1" fill="#1e1816" />
+                          <rect x="44" y="0" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="60" y="0" width="4" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="36" y="8" width="4" height="8" rx="1" fill="#1e1816" />
+                          <rect x="48" y="8" width="4" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="56" y="8" width="4" height="4" rx="1" fill="#1e1816" />
+                          <rect x="64" y="8" width="4" height="4" rx="1" fill="#1e1816" />
+                          <rect x="36" y="20" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="48" y="20" width="4" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="60" y="20" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="40" y="28" width="4" height="4" rx="1" fill="#1e1816" />
+                          <rect x="52" y="28" width="4" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="64" y="28" width="4" height="8" rx="1" fill="#1e1816" />
+
+                          {/* Left-Right spacing and middle row patterns */}
+                          <rect x="0" y="36" width="8" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="12" y="36" width="4" height="4" rx="1" fill="#1e1816" />
+                          <rect x="24" y="36" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="68" y="36" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="80" y="36" width="4" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="88" y="36" width="8" height="4" rx="1" fill="#1e1816" />
+
+                          <rect x="4" y="44" width="4" height="8" rx="1" fill="#1e1816" />
+                          <rect x="16" y="44" width="8" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="28" y="44" width="4" height="4" rx="1" fill="#1e1816" />
+                          <rect x="68" y="44" width="4" height="12" rx="1" fill="#1e1816" />
+                          <rect x="76" y="44" width="8" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="88" y="44" width="4" height="4" rx="1" fill="#1e1816" />
+
+                          <rect x="0" y="56" width="4" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="8" y="56" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="20" y="56" width="4" height="8" rx="1" fill="#1e1816" />
+                          <rect x="28" y="56" width="4" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="76" y="56" width="4" height="8" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="84" y="56" width="8" height="4" rx="1" fill="#1e1816" />
+
+                          <rect x="36" y="68" width="4" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="44" y="68" width="4" height="8" rx="1" fill="#1e1816" />
+                          <rect x="52" y="68" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="64" y="68" width="4" height="4" rx="1" fill="#1e1816" />
+                          
+                          <rect x="36" y="80" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="48" y="80" width="4" height="4" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="56" y="80" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="68" y="80" width="4" height="12" rx="1" fill="#1e1816" />
+
+                          <rect x="40" y="92" width="4" height="8" rx="1" fill="hsl(var(--primary))" />
+                          <rect x="48" y="92" width="8" height="4" rx="1" fill="#1e1816" />
+                          <rect x="60" y="92" width="4" height="4" rx="1" fill="#1e1816" />
+
+                          {/* Center Cutout space */}
+                          <rect x="37" y="37" width="26" height="26" rx="6" fill="#ffffff" />
+                          {/* Stylized Citrus slice center logo */}
+                          <circle cx="50" cy="50" r="9" fill="hsl(var(--primary))" />
+                          <circle cx="50" cy="50" r="7.5" fill="#ffffff" />
+                          <path d="M50 43 L50 57 M43 50 L57 50 M45 45 L55 55 M45 55 L55 45" stroke="hsl(var(--primary))" strokeWidth="1" />
+                          <circle cx="50" cy="50" r="2.5" fill="hsl(var(--primary))" />
+                        </svg>
+                      </div>
+
+                      <div className="text-center space-y-1">
+                        <p className="text-sm font-bold tracking-tight text-foreground">Chess Passport</p>
+                        <p className="text-[11px] text-muted-foreground max-w-[200px] mx-auto leading-relaxed">
+                          Scan to invite @aaryank to a match, or view real-time stats.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={handleCopyLink}
+                        className="w-full py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 border border-border bg-card/80 hover:bg-muted text-foreground active:scale-95"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            Invite Link Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+                            Copy Challenge Link
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </motion.section>
 
