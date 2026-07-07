@@ -103,17 +103,17 @@ const formats = [
 
 const LemonAvatar = () => {
   return (
-    <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full flex items-center justify-center overflow-visible group">
-      {/* 1. Outer Rotating Holographic Ring */}
-      <div className="absolute inset-0 rounded-full border border-dashed border-primary/30 animate-[spin_20s_linear_infinite] group-hover:border-primary/60 group-hover:scale-105 transition-all duration-500" />
+    <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full flex items-center justify-center overflow-visible">
+      {/* 1. Outer Ring */}
+      <div className="absolute inset-0 rounded-full border border-dashed border-primary/25" />
       
-      {/* 2. Secondary Reverse Rotating Ring with Tick Marks */}
-      <div className="absolute inset-2 rounded-full border border-primary/10 border-t-primary/40 border-b-primary/40 animate-[spin_10s_linear_infinite_reverse] group-hover:scale-105 transition-all duration-500" />
+      {/* 2. Inner Ring with Tick Marks */}
+      <div className="absolute inset-2 rounded-full border border-primary/10 border-t-primary/35 border-b-primary/35" />
       
       {/* Main avatar area with glowing backdrop */}
-      <div className="w-[85%] h-[85%] rounded-full overflow-hidden bg-gradient-to-b from-[#18110b] to-[#0a0706] relative flex items-center justify-center border border-primary/20 shadow-[0_0_20px_rgba(249,115,22,0.15)] group-hover:shadow-[0_0_30px_rgba(249,115,22,0.3)] transition-all duration-500">
+      <div className="w-[85%] h-[85%] rounded-full overflow-hidden bg-gradient-to-b from-[#18110b] to-[#0a0706] relative flex items-center justify-center border border-primary/20 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
         {/* SVG Illustration (Citrus Cyber Knight) */}
-        <svg viewBox="0 0 200 200" className="w-full h-full select-none p-2 transition-transform duration-500 group-hover:scale-105">
+        <svg viewBox="0 0 200 200" className="w-full h-full select-none p-2">
           <defs>
             {/* Background Citrus Radial Glow */}
             <radialGradient id="avatarBgGlow" cx="50%" cy="50%" r="50%">
@@ -200,14 +200,14 @@ const LemonAvatar = () => {
           <rect x="36" y="171" width="92" height="6" rx="2" fill="url(#citrusWarm)" />
 
           {/* Glowing Eye */}
-          <polygon points="76,82 86,81 83,86 75,85" fill="#ffffff" filter="url(#eyeGlow)" className="group-hover:fill-yellow-300 transition-colors duration-300" />
+          <polygon points="76,82 86,81 83,86 75,85" fill="#ffffff" filter="url(#eyeGlow)" />
           {/* Secondary Eye Core */}
           <polygon points="78,83 84,82 82,85" fill="#ffeb3b" />
         </svg>
       </div>
 
-      {/* Bottom-Right Badge (glowing verified champion icon) */}
-      <div className="absolute bottom-1.5 right-1.5 w-11 h-11 rounded-full bg-primary border-2 border-background flex items-center justify-center z-20 hover:scale-110 hover:shadow-[0_0_12px_rgba(249,115,22,0.6)] transition-all duration-250 cursor-pointer">
+      {/* Bottom-Right Badge (verified champion icon) */}
+      <div className="absolute bottom-1.5 right-1.5 w-11 h-11 rounded-full bg-primary border-2 border-background flex items-center justify-center z-20">
         <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="currentColor">
           <path d="M12 3a9 9 0 0 0-9 9h18a9 9 0 0 0-9-9zm-1 2.08A7.003 7.003 0 0 0 5.27 11h5.73V5.08zm2 0V11h5.73A7.003 7.003 0 0 0 13 5.08zM12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9zm1-2.08V13h5.73A7.003 7.003 0 0 0 13 18.92zm-2 0a7.003 7.003 0 0 0-5.73-5.92H11v5.92z" />
         </svg>
@@ -308,7 +308,7 @@ const Profile = () => {
                     onClick={() => setShowQR(!showQR)}
                     className={`flex-1 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 border ${
                       showQR 
-                        ? 'bg-primary/10 text-primary border-primary/30 shadow-[0_0_15px_rgba(249,115,22,0.15)] animate-[pulse_2s_infinite]' 
+                        ? 'bg-primary/10 text-primary border-primary/30' 
                         : 'text-muted-foreground border-border bg-card hover:bg-muted hover:text-foreground'
                     }`}
                   >
@@ -324,12 +324,9 @@ const Profile = () => {
                     animate={{ opacity: 1, y: 0, height: 'auto' }}
                     className="w-full mt-4 p-5 rounded-2xl border border-primary/20 bg-primary/5/30 backdrop-blur-md overflow-hidden relative shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
                   >
-                    {/* Laser Scanner Line Effect */}
-                    <div className="absolute inset-x-0 h-[3px] bg-gradient-to-r from-transparent via-primary to-transparent animate-[scan_2.5s_ease-in-out_infinite] opacity-80 shadow-[0_0_10px_rgba(249,115,22,0.8)] z-10 pointer-events-none" />
-
                     <div className="flex flex-col items-center gap-4 relative z-0">
                       {/* Premium QR Code SVG */}
-                      <div className="relative p-3 bg-white rounded-2xl shadow-lg shadow-black/40 hover:scale-[1.03] transition-all duration-300">
+                      <div className="relative p-3 bg-white rounded-2xl shadow-lg shadow-black/40">
                         <svg className="w-36 h-36" viewBox="0 0 100 100">
                           {/* Finder Pattern Top-Left */}
                           <rect x="0" y="0" width="28" height="28" rx="5" fill="#1e1816" />
