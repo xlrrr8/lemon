@@ -56,13 +56,7 @@ function playBufferImmediate(buffer: AudioBuffer, volume: number = 1.0) {
 
 // ─── External mp3 — regular moves ────────────────────────────────────
 export function playMoveSound() {
-  const buffer = bufferCache.get('/sounds/move.mp3');
-  if (buffer) {
-    playBufferImmediate(buffer, 3.0);
-  } else {
-    // Fallback if not yet cached (shouldn't happen with pre-loading)
-    loadBuffer('/sounds/move.mp3').then(b => playBufferImmediate(b, 3.0)).catch(() => {});
-  }
+  playCaptureSound();
 }
 
 // ─── External mp3 — error moves ────────────────────────────────────
@@ -89,14 +83,24 @@ export function playCaptureSound() {
 export function playCheckmateSound() {
   const buffer = bufferCache.get('/sounds/checkmate.mp3');
   if (buffer) {
-    playBufferImmediate(buffer, 0.5);
+    playBufferImmediate(buffer, 3.0);
   } else {
-    loadBuffer('/sounds/checkmate.mp3').then(b => playBufferImmediate(b, 0.5)).catch(() => {});
+    loadBuffer('/sounds/checkmate.mp3').then(b => playBufferImmediate(b, 3.0)).catch(() => {});
+  }
+}
+
+// ─── Castle sound ────────────────────────────────────────────────────
+export function playCastleSound() {
+  const buffer = bufferCache.get('/sounds/castle.mp3');
+  if (buffer) {
+    playBufferImmediate(buffer, 3.0);
+  } else {
+    loadBuffer('/sounds/castle.mp3').then(b => playBufferImmediate(b, 3.0)).catch(() => {});
   }
 }
 
 // ─── Helper: determine which sound to play after a move ──────────────
-export type ChessSoundType = 'move' | 'capture' | 'check' | 'checkmate' | 'error';
+export type ChessSoundType = 'move' | 'capture' | 'check' | 'checkmate' | 'error' | 'castle';
 
 export function playChessSound(type: ChessSoundType) {
   switch (type) {
@@ -112,6 +116,9 @@ export function playChessSound(type: ChessSoundType) {
     case 'capture':
       playCaptureSound();
       break;
+    case 'castle':
+      playCastleSound();
+      break;
     case 'move':
     default:
       playMoveSound();
@@ -126,6 +133,7 @@ if (typeof window !== 'undefined') {
   loadBuffer('/sounds/capture.wav').catch(() => {});
   loadBuffer('/sounds/error.mp3').catch(() => {});
   loadBuffer('/sounds/checkmate.mp3').catch(() => {});
+  loadBuffer('/sounds/castle.mp3').catch(() => {});
 
   // Extra insurance: reload on first click to handle browser autoplay policies
   window.addEventListener('mousedown', () => {
@@ -135,5 +143,6 @@ if (typeof window !== 'undefined') {
     loadBuffer('/sounds/capture.wav').catch(() => {});
     loadBuffer('/sounds/error.mp3').catch(() => {});
     loadBuffer('/sounds/checkmate.mp3').catch(() => {});
+    loadBuffer('/sounds/castle.mp3').catch(() => {});
   }, { once: true });
 }

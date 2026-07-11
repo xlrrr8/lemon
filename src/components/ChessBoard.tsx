@@ -38,6 +38,14 @@ import {
   estimateEloFromAccuracy
 } from '@/lib/engine';
 import { playChessSound, ChessSoundType } from '@/lib/sounds';
+import {
+  Glicko2Player,
+  loadPlayer,
+  savePlayer,
+  updateRating as glicko2Update,
+  getBotPlayer,
+  formatRating,
+} from '@/lib/glicko2';
 
 interface ChessBoardProps {
   initialTime?: number;
@@ -71,13 +79,13 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     black: { accuracy: number, brilliant: number, great: number, book: number, best: number, excellent: number, good: number, inaccuracy: number, mistake: number, miss: number, blunder: number, estimatedElo: number }
   } | null>(null);
 
-  const [userElo, setUserElo] = useState(() => parseInt(localStorage.getItem('chess_user_elo') || '800', 10));
-  const [eloChange, setEloChange] = useState<number | null>(null);
-  const eloUpdatedRef = useRef(false);
-  const isDragMoveRef = useRef(false);
+  const [glickoPlayer, setGlickoPlayer] = useState<Glicko2Player>(() => loadPlayer());
+  const [ratingChange, setRatingChange] = useState<number | null>(null);
+  const ratingUpdatedRef = useRef(false);
+  const draggedPieceIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    isDragMoveRef.current = false;
+    draggedPieceIdRef.current = null;
   });
 
   const [historySnapshots, setHistorySnapshots] = useState<Array<{
@@ -199,6 +207,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           if (postMoveStatus === 'checkmate') soundType = 'checkmate';
           else if (postMoveStatus === 'check') soundType = 'check';
           else if (result.captured) soundType = 'capture';
+          else if (result.isCastle) soundType = 'castle';
           playChessSound(soundType);
 
           const newFen = boardToFen(result.newBoard, 'white', result.newCastlingRights, result.newEnPassantTarget, 0, Math.floor((moveHistory.length + 1) / 2) + 1);
@@ -323,9 +332,9 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   }, [currentViewIndex, isViewingHistory, isGameOver, historySnapshots, moveAnalyses]);
 
   useEffect(() => {
-    if (isGameOver && mode === 'computer' && !eloUpdatedRef.current) {
-      eloUpdatedRef.current = true;
-      const botElo = 600 + (level * 250);
+    if (isGameOver && mode === 'computer' && !ratingUpdatedRef.current) {
+      ratingUpdatedRef.current = true;
+      const bot = getBotPlayer(level);
 
       let score = 0.5;
       if (gameStatus === 'checkmate') {
@@ -336,16 +345,13 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         score = 0; // Human is always White vs computer, so if human resigns they score 0
       }
 
-      const expectedScore = 1 / (1 + Math.pow(10, (botElo - userElo) / 400));
-      const K = 32;
-      const change = Math.round(K * (score - expectedScore));
-
-      const newElo = Math.max(100, userElo + change);
-      setUserElo(newElo);
-      setEloChange(change);
-      localStorage.setItem('chess_user_elo', newElo.toString());
+      const oldRating = glickoPlayer.rating;
+      const updated = glicko2Update(glickoPlayer, bot, score);
+      setGlickoPlayer(updated);
+      savePlayer(updated);
+      setRatingChange(Math.round(updated.rating - oldRating));
     }
-  }, [isGameOver, gameStatus, currentTurn, timeoutWinner, level, mode, userElo]);
+  }, [isGameOver, gameStatus, currentTurn, timeoutWinner, level, mode, glickoPlayer]);
 
   const kingInCheckPos: Position | null =
     gameStatus === 'check' || gameStatus === 'checkmate' ? findKing(board, currentTurn) : null;
@@ -402,6 +408,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           if (postMoveStatus === 'checkmate') soundType = 'checkmate';
           else if (postMoveStatus === 'check') soundType = 'check';
           else if (result.captured) soundType = 'capture';
+          else if (result.isCastle) soundType = 'castle';
           playChessSound(soundType);
 
           const newFen = boardToFen(result.newBoard, newTurn, result.newCastlingRights, result.newEnPassantTarget, 0, Math.floor((moveHistory.length + 1) / 2) + 1);
@@ -556,8 +563,9 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     setMoveAnalyses({});
     setViewIndex(-1);
     setIsReviewPageActive(false);
-    eloUpdatedRef.current = false;
-    setEloChange(null);
+    ratingUpdatedRef.current = false;
+    setRatingChange(null);
+    setGlickoPlayer(loadPlayer());
     setOverlayContent('result');
     setReviewProgress({ current: 0, total: 0 });
     setReviewSummary(null);
@@ -614,7 +622,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   const { text: statusText, color: statusColor } = statusLabel();
 
   return (
-    <div className={`grid grid-cols-1 w-full mx-auto px-4 min-h-fit transition-all duration-500 ease-in-out ${isReviewPageActive ? 'lg:grid-cols-[1fr_350px] gap-6 max-w-[1080px] items-center' : 'lg:grid-cols-[280px_1fr_280px] gap-8 max-w-screen-2xl items-center'}`}>
+    <div className={`grid grid-cols-1 w-full mx-auto px-4 min-h-fit transition-all duration-500 ease-in-out ${isReviewPageActive ? 'lg:grid-cols-[minmax(0,_1fr)_350px] gap-6 max-w-[1080px] items-center' : 'lg:grid-cols-[280px_minmax(0,_1fr)_280px] gap-8 max-w-screen-2xl items-center'}`}>
       {/* Left Panel - Timers */}
       {!isReviewPageActive && initialTime > 0 ? (
         <div className="hidden lg:flex flex-col w-[280px] flex-shrink-0 justify-between gap-4 py-8 h-full">
@@ -627,7 +635,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                  <span className="text-lg font-bold text-foreground tracking-tight">Orange</span>
                </div>
                <span className="text-sm font-mono font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
-                 {mode === 'computer' ? `Bot L.${level}` : userElo}
+                 {mode === 'computer' ? `Bot L.${level}` : Math.round(glickoPlayer.rating)}
                </span>
             </div>
             <div className="flex flex-col items-center justify-center p-4 pt-3">
@@ -646,7 +654,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                  <span className="text-lg font-bold text-foreground tracking-tight">You</span>
                </div>
                <span className="text-sm font-mono font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
-                 {userElo}
+                 {formatRating(glickoPlayer)}
                </span>
             </div>
             <div className="flex flex-col items-center justify-center p-4 pt-3">
@@ -672,7 +680,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                  <span className="text-sm font-bold text-foreground tracking-tight">Orange</span>
                </div>
                <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
-                 {mode === 'computer' ? `Bot L.${level}` : userElo}
+                 {mode === 'computer' ? `Bot L.${level}` : Math.round(glickoPlayer.rating)}
                </span>
             </div>
             <div className="p-2.5 flex justify-center items-center">
@@ -686,7 +694,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                  <span className="text-sm font-bold text-foreground tracking-tight">You</span>
                </div>
                <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
-                 {userElo}
+                 {formatRating(glickoPlayer)}
                </span>
             </div>
             <div className="p-2.5 flex justify-center items-center">
@@ -697,7 +705,10 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
       )}
 
       {/* Board Column - centered via grid */}
-      <div className={`flex flex-col items-center relative overflow-visible min-h-0 w-full ${isReviewPageActive ? 'justify-center' : 'justify-start'}`}>
+      <div 
+        className={`flex flex-col items-center relative overflow-visible min-h-0 w-full ${isReviewPageActive ? 'justify-center' : 'justify-start'}`}
+        style={{ containerType: 'inline-size' }}
+      >
 
         <div className="chess-board-shadow rounded-xl overflow-hidden border border-chess-board-border relative">
           {/* Game Over Score Card Overlay */}
@@ -782,13 +793,14 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                             <div className="col-span-2 flex flex-col items-center justify-center py-4 bg-primary/5 rounded-2xl border border-primary/20 shadow-inner mt-2">
                               <span className="text-[10px] font-mono text-primary font-bold uppercase tracking-wider mb-1.5">Rating</span>
                               <span className="text-3xl font-mono font-black text-foreground flex items-baseline gap-2">
-                                {userElo}
-                                {eloChange !== null && (
-                                  <span className={`text-sm font-semibold px-2 py-0.5 rounded-full ${eloChange >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-destructive/20 text-destructive'}`}>
-                                    {eloChange > 0 ? `+${eloChange}` : eloChange}
+                                {Math.round(glickoPlayer.rating)}
+                                {ratingChange !== null && (
+                                  <span className={`text-sm font-semibold px-2 py-0.5 rounded-full ${ratingChange >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-destructive/20 text-destructive'}`}>
+                                    {ratingChange > 0 ? `+${ratingChange}` : ratingChange}
                                   </span>
                                 )}
                               </span>
+                              <span className="text-[10px] font-mono text-muted-foreground/60 mt-1">±{Math.round(glickoPlayer.rd)} RD</span>
                             </div>
                           )}
                         </div>
@@ -866,8 +878,8 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
               <motion.div
                 layout
                 style={{
-                  width: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(98vw, calc(100vh - 100px), 1200px)',
-                  height: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(98vw, calc(100vh - 100px), 1200px)'
+                  width: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(calc(100cqw - 64px), calc(100vh - 120px), 1200px)',
+                  height: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(calc(100cqw - 64px), calc(100vh - 120px), 1200px)'
                 }}
                 className="relative chess-board-shadow rounded-lg overflow-hidden border border-chess-board-border bg-chess-dark"
               >
@@ -895,10 +907,13 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                           currentTurn={currentTurn}
                           onDropPosition={(source, target) => {
                             if (target[0] === source[0] && target[1] === source[1]) return;
-                            isDragMoveRef.current = true;
+                            const draggedPiece = displayBoard[source[0]][source[1]];
+                            if (draggedPiece) {
+                              draggedPieceIdRef.current = draggedPiece.id;
+                            }
                             handleSquareClick(target[0], target[1]);
                           }}
-                          shouldAnimate={!isDragMoveRef.current}
+                          shouldAnimate={piece ? piece.id !== draggedPieceIdRef.current : true}
                         />
                       </div>
                     ))
@@ -947,7 +962,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
             <div className="flex items-center gap-2">
               {mode === 'computer' && (
                 <p className="text-[10px] font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 drop-shadow-[0_0_5px_rgba(255,165,0,0.3)]">
-                  Elo: {userElo}
+                  Rating: {formatRating(glickoPlayer)}
                 </p>
               )}
               <ThemeSwitcher />

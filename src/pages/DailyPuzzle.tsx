@@ -118,6 +118,11 @@ const DailyPuzzle = () => {
     const [showSolvedOverlay, setShowSolvedOverlay] = useState(true);
 
     const puzzleRef = useRef<LichessPuzzle | null>(null);
+    const draggedPieceIdRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        draggedPieceIdRef.current = null;
+    });
 
     // ── Load puzzle ──────────────────────────────────────────────────────────
 
@@ -269,6 +274,7 @@ const DailyPuzzle = () => {
                 if (gs === 'checkmate') soundType = 'checkmate';
                 else if (gs === 'check') soundType = 'check';
                 else if (result.captured) soundType = 'capture';
+                else if (result.flags && (result.flags.includes('k') || result.flags.includes('q'))) soundType = 'castle';
                 playChessSound(soundType);
 
                 setSolutionIndex(idx + 1);
@@ -381,6 +387,7 @@ const DailyPuzzle = () => {
                         if (gs === 'checkmate') soundType = 'checkmate';
                         else if (gs === 'check') soundType = 'check';
                         else if (result.captured) soundType = 'capture';
+                        else if (result.flags && (result.flags.includes('k') || result.flags.includes('q'))) soundType = 'castle';
                         playChessSound(soundType);
 
                         if (chess.isCheckmate()) {
@@ -783,8 +790,13 @@ const DailyPuzzle = () => {
                                                                     setSelected(source);
                                                                     setValidMoves(getValidMoves(board!, source, currentTurn, castlingRights, enPassantTarget));
                                                                 }
+                                                                const draggedPiece = board?.[source[0]]?.[source[1]];
+                                                                if (draggedPiece) {
+                                                                    draggedPieceIdRef.current = draggedPiece.id;
+                                                                }
                                                                 handleSquareClick(target[0], target[1]);
                                                             }}
+                                                            shouldAnimate={piece ? piece.id !== draggedPieceIdRef.current : true}
                                                         />
                                                         {/* Hint overlay */}
                                                         {isHintSquare(rowIdx, colIdx) && (

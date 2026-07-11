@@ -127,8 +127,8 @@ const ChessPiece = memo(({ piece, isSelected, canDrag, position, onClick, onDrop
         layoutId={shouldAnimate ? piece.id : undefined}
         transition={{
           type: 'tween',
-          duration: 0.15,
-          ease: [0.25, 0.1, 0.25, 1],
+          duration: 0.24,
+          ease: [0.25, 1, 0.5, 1],
         }}
         className="w-full h-full flex items-center justify-center"
       >
