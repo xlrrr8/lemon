@@ -4,6 +4,23 @@
 
 let audioCtx: AudioContext | null = null;
 const bufferCache: Map<string, AudioBuffer> = new Map();
+let isAudioMuted: boolean = typeof window !== 'undefined' ? localStorage.getItem('chess_audio_muted') === 'true' : false;
+
+export function isSoundMuted(): boolean {
+  return isAudioMuted;
+}
+
+export function setSoundMuted(muted: boolean): void {
+  isAudioMuted = muted;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('chess_audio_muted', String(muted));
+  }
+}
+
+export function toggleSoundMuted(): boolean {
+  setSoundMuted(!isAudioMuted);
+  return isAudioMuted;
+}
 
 function getAudioContext(): AudioContext {
   if (!audioCtx) {
@@ -37,6 +54,7 @@ async function loadBuffer(url: string): Promise<AudioBuffer> {
  * Plays an AudioBuffer synchronously to avoid promise microtask delays.
  */
 function playBufferImmediate(buffer: AudioBuffer, volume: number = 1.0) {
+  if (isAudioMuted) return;
   const ctx = getAudioContext();
   const source = ctx.createBufferSource();
   source.buffer = buffer;

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Lightbulb, RotateCcw, ChevronLeft, ChevronRight, CheckCircle2, XCircle, Flame, Crown, Trophy, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Lightbulb, RotateCcw, ChevronLeft, ChevronRight, CheckCircle2, XCircle, Flame, Crown, Trophy, Loader2, X, Volume2, VolumeX, ArrowUpDown } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import ChessSquare from '@/components/ChessSquare';
 import { Chess } from 'chess.js';
@@ -25,7 +25,7 @@ import {
     applyRawMove,
 } from '@/lib/chess';
 import { fenToBoard, parseMoveAlgebraic, boardToFen } from '@/lib/engine';
-import { playChessSound, ChessSoundType } from '@/lib/sounds';
+import { playChessSound, ChessSoundType, isSoundMuted, toggleSoundMuted } from '@/lib/sounds';
 
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -116,13 +116,21 @@ const DailyPuzzle = () => {
 
     const [opponentMoving, setOpponentMoving] = useState(false);
     const [showSolvedOverlay, setShowSolvedOverlay] = useState(true);
+    const [isFlipped, setIsFlipped] = useState(false);
+    const [isMuted, setIsMuted] = useState(isSoundMuted());
 
     const puzzleRef = useRef<LichessPuzzle | null>(null);
-    const draggedPieceIdRef = useRef<string | null>(null);
+    const [animatingMoves, setAnimatingMoves] = useState<Array<{ from: Position; to: Position; pieceId: string }>>([]);
+    const animTimeoutRef = useRef<number | null>(null);
 
-    useEffect(() => {
-        draggedPieceIdRef.current = null;
-    });
+    const handleToggleMute = useCallback(() => {
+        const next = toggleSoundMuted();
+        setIsMuted(next);
+    }, []);
+
+    const handleToggleFlip = useCallback(() => {
+        setIsFlipped(prev => !prev);
+    }, []);
 
     // ── Load puzzle ──────────────────────────────────────────────────────────
 
@@ -159,6 +167,7 @@ const DailyPuzzle = () => {
         setCastlingRights(cr);
         setEnPassantTarget(ep);
         setPuzzleState(parsed.puzzleState);
+        setIsFlipped(parsed.puzzleState.playerColor === 'black');
         setSolutionIndex(0);
         setGameStatus('playing');
         setStatus('playing');
@@ -252,7 +261,25 @@ const DailyPuzzle = () => {
 
                 if (!result) { setOpponentMoving(false); return; }
 
-
+                const pieceToMove = board?.[from[0]]?.[from[1]];
+                if (pieceToMove) {
+                    const newAnimMoves: Array<{ from: Position; to: Position; pieceId: string }> = [
+                        { from, to, pieceId: pieceToMove.id }
+                    ];
+                    if (result.flags && (result.flags.includes('k') || result.flags.includes('q'))) {
+                        const row = from[0];
+                        if (to[1] === 6) {
+                            const rook = board?.[row]?.[7];
+                            if (rook) newAnimMoves.push({ from: [row, 7], to: [row, 5], pieceId: rook.id });
+                        } else if (to[1] === 2) {
+                            const rook = board?.[row]?.[0];
+                            if (rook) newAnimMoves.push({ from: [row, 0], to: [row, 3], pieceId: rook.id });
+                        }
+                    }
+                    setAnimatingMoves(newAnimMoves);
+                    if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+                    animTimeoutRef.current = window.setTimeout(() => setAnimatingMoves([]), 250);
+                }
 
                 const newFen = chess.fen();
                 const newState = fenToBoard(newFen);
@@ -287,14 +314,126 @@ const DailyPuzzle = () => {
         }, 300); // Reduced from 600ms
     }
 
+    // ── Execute move (player move) ──────────────────────────────────────────
+
+    const executeMove = useCallback((from: Position, to: Position, isManualDrag = false) => {
+        if (!board || !puzzleState) return false;
+        if (status === 'solved' || status === 'wrong' || status === 'loading' || opponentMoving) return false;
+        if (currentTurn !== puzzleState.playerColor) return false;
+
+        const pieceToMove = board[from[0]][from[1]];
+        if (!pieceToMove || pieceToMove.color !== currentTurn) return false;
+
+        if (isValidMove(board, from, to, currentTurn, castlingRights, enPassantTarget)) {
+            const expectedUci = puzzleState.solution[solutionIndex];
+            const { from: expFrom, to: expTo } = parseMoveAlgebraic(expectedUci);
+            const isCorrect =
+                from[0] === expFrom[0] && from[1] === expFrom[1] &&
+                to[0] === expTo[0] && to[1] === expTo[1];
+
+            try {
+                const chess = new Chess(puzzleState.fen);
+                const fromSquare = FILES[from[1]] + RANKS[from[0]];
+                const toSquare = FILES[to[1]] + RANKS[to[0]];
+                const promotion = (pieceToMove.type === 'pawn' && (to[0] === 0 || to[0] === 7)) ? 'q' : undefined;
+
+                const result = chess.move({
+                    from: fromSquare as any,
+                    to: toSquare as any,
+                    promotion: promotion
+                });
+
+                if (!result) throw new Error("Move rejected by chess.js");
+
+                const newFen = chess.fen();
+                const newState = fenToBoard(newFen);
+                const newLastMove = { from, to };
+
+                // Animate player's move
+                const newAnimMoves: Array<{ from: Position; to: Position; pieceId: string }> = [];
+                if (!isManualDrag) {
+                    newAnimMoves.push({ from, to, pieceId: pieceToMove.id });
+                }
+                if (result.flags && (result.flags.includes('k') || result.flags.includes('q'))) {
+                    const row = from[0];
+                    if (to[1] === 6) {
+                        const rook = board[row][7];
+                        if (rook) newAnimMoves.push({ from: [row, 7], to: [row, 5], pieceId: rook.id });
+                    } else if (to[1] === 2) {
+                        const rook = board[row][0];
+                        if (rook) newAnimMoves.push({ from: [row, 0], to: [row, 3], pieceId: rook.id });
+                    }
+                }
+                setAnimatingMoves(newAnimMoves);
+                if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+                animTimeoutRef.current = window.setTimeout(() => setAnimatingMoves([]), 250);
+
+                setBoard(newState.board);
+                setCurrentTurn(newState.currentTurn);
+                setCastlingRights(newState.castlingRights);
+                setEnPassantTarget(newState.enPassantTarget);
+                setLastMove(newLastMove);
+                setSelected(null);
+                setValidMoves([]);
+                setHintSquare(null);
+
+                const prevFen = puzzleState.fen;
+                setPuzzleState(prev => prev ? { ...prev, fen: newFen } : null);
+
+                if (!isCorrect) {
+                    setWrongMove(newLastMove);
+                    setStatus('wrong');
+                    playChessSound('error');
+                    setTimeout(() => {
+                        const oldState = fenToBoard(prevFen);
+                        setBoard(oldState.board);
+                        setCurrentTurn(oldState.currentTurn);
+                        setCastlingRights(oldState.castlingRights);
+                        setEnPassantTarget(oldState.enPassantTarget);
+                        setLastMove(lastMove);
+                        setWrongMove(null);
+                        setStatus('playing');
+                        setPuzzleState(prev => prev ? { ...prev, fen: prevFen } : null);
+                    }, 1200);
+                    return true;
+                }
+
+                const nextIdx = solutionIndex + 1;
+                const gs = getGameStatus(newState.board, newState.currentTurn, newState.castlingRights, newState.enPassantTarget);
+                setGameStatus(gs);
+
+                let soundType: ChessSoundType = 'move';
+                if (gs === 'checkmate') soundType = 'checkmate';
+                else if (gs === 'check') soundType = 'check';
+                else if (result.captured) soundType = 'capture';
+                else if (result.flags && (result.flags.includes('k') || result.flags.includes('q'))) soundType = 'castle';
+                playChessSound(soundType);
+
+                if (chess.isCheckmate() || nextIdx >= puzzleState.solution.length) {
+                    handlePuzzleSolved();
+                    return true;
+                }
+
+                setSolutionIndex(nextIdx);
+                setStatus('correct');
+                setTimeout(() => {
+                    playOpponentMove(newFen, puzzleState.solution, nextIdx);
+                }, 1000);
+                return true;
+            } catch (e) {
+                console.error("Invalid move caught block:", e);
+            }
+        }
+        return false;
+    }, [board, puzzleState, currentTurn, castlingRights, enPassantTarget, status, solutionIndex, opponentMoving, lastMove]);
+
     // ── Handle square click (player move) ────────────────────────────────────
 
     const handleSquareClick = useCallback(
         (row: number, col: number) => {
             if (!board || !puzzleState) return;
             if (status === 'solved' || status === 'wrong' || status === 'loading' || opponentMoving) return;
-            if (currentTurn !== puzzleState.playerColor) return; // not player's turn
-
+            if (currentTurn !== puzzleState.playerColor) return;
 
             const clickedPiece = board[row][col];
 
@@ -312,117 +451,20 @@ const DailyPuzzle = () => {
                     return;
                 }
 
-                if (isValidMove(board, selected, [row, col], currentTurn, castlingRights, enPassantTarget)) {
-                    // Check if this matches the expected solution move
-                    const expectedUci = puzzleState.solution[solutionIndex];
-                    const { from: expFrom, to: expTo } = parseMoveAlgebraic(expectedUci);
-                    const isCorrect =
-                        sRow === expFrom[0] && sCol === expFrom[1] &&
-                        row === expTo[0] && col === expTo[1];
-
-                    // Safely play it via chess.js
-                    try {
-                        const chess = new Chess(puzzleState.fen);
-                        const fromSquare = FILES[selected[1]] + RANKS[selected[0]];
-                        const toSquare = FILES[col] + RANKS[row];
-
-                        // Default to queen promotion for simplicity if it evaluates as a valid move and hits end
-                        const promotion = (board[selected[0]][selected[1]]?.type === 'pawn' && (row === 0 || row === 7)) ? 'q' : undefined;
-
-                        const result = chess.move({
-                            from: fromSquare as any,
-                            to: toSquare as any,
-                            promotion: promotion
-                        });
-
-                        // Fallback
-                        if (!result) throw new Error("Move rejected by chess.js");
-
-
-
-                        const newFen = chess.fen();
-                        const newState = fenToBoard(newFen);
-                        const newLastMove = { from: selected as Position, to: [row, col] as Position };
-
-                        setBoard(newState.board);
-                        setCurrentTurn(newState.currentTurn);
-                        setCastlingRights(newState.castlingRights);
-                        setEnPassantTarget(newState.enPassantTarget);
-                        setLastMove(newLastMove);
-                        setSelected(null);
-                        setValidMoves([]);
-                        setHintSquare(null);
-
-                        // Save old states just for revering on wrong move. FEN handles it for us now cleanly.
-                        const prevFen = puzzleState.fen;
-
-                        // Keep puzzle fen synced immediately
-                        setPuzzleState(prev => prev ? { ...prev, fen: newFen } : null);
-
-                        if (!isCorrect) {
-                            setWrongMove(newLastMove);
-                            setStatus('wrong');
+                const moved = executeMove(selected, [row, col], false);
+                if (!moved) {
+                    const rawValid = isRawValidMove(board, selected, [row, col], currentTurn, enPassantTarget);
+                    if (rawValid) {
+                        const newBoard = applyRawMove(board, selected, [row, col], enPassantTarget);
+                        if (isKingInCheck(newBoard, currentTurn)) {
                             playChessSound('error');
-                            // Revert after a moment
-                            setTimeout(() => {
-                                const oldState = fenToBoard(prevFen);
-                                setBoard(oldState.board);
-                                setCurrentTurn(oldState.currentTurn);
-                                setCastlingRights(oldState.castlingRights);
-                                setEnPassantTarget(oldState.enPassantTarget);
-                                setLastMove(lastMove);
-                                setWrongMove(null);
-                                setStatus('playing');
-                                setPuzzleState(prev => prev ? { ...prev, fen: prevFen } : null);
-                            }, 1200);
-                            return;
                         }
-
-                        const nextIdx = solutionIndex + 1;
-                        const gs = getGameStatus(newState.board, newState.currentTurn, newState.castlingRights, newState.enPassantTarget);
-                        setGameStatus(gs);
-
-                        // Play sound for player puzzle move (Immediate)
-                        let soundType: ChessSoundType = 'move';
-                        if (gs === 'checkmate') soundType = 'checkmate';
-                        else if (gs === 'check') soundType = 'check';
-                        else if (result.captured) soundType = 'capture';
-                        else if (result.flags && (result.flags.includes('k') || result.flags.includes('q'))) soundType = 'castle';
-                        playChessSound(soundType);
-
-                        if (chess.isCheckmate()) {
-                            handlePuzzleSolved();
-                            return;
-                        }
-
-                        if (nextIdx >= puzzleState.solution.length) {
-                            handlePuzzleSolved();
-                        } else {
-                            setSolutionIndex(nextIdx);
-                            setStatus('correct');
-                            // Play opponent's response
-                            setTimeout(() => {
-                                playOpponentMove(newFen, puzzleState.solution, nextIdx);
-                            }, 1000); // Increased from 200ms so 'correct' banner shows longer
-                        }
-                    } catch (e) {
-                        console.error("Invalid move caught block:", e);
-                    }
-                    return;
-                }
-
-                // Invalid move attempt
-                const rawValid = isRawValidMove(board, selected, [row, col], currentTurn, enPassantTarget);
-                if (rawValid) {
-                    const newBoard = applyRawMove(board, selected, [row, col], enPassantTarget);
-                    if (isKingInCheck(newBoard, currentTurn)) {
+                    } else if (getGameStatus(board, currentTurn, castlingRights, enPassantTarget) === 'check') {
                         playChessSound('error');
                     }
-                } else if (getGameStatus(board, currentTurn, castlingRights, enPassantTarget) === 'check') {
-                    playChessSound('error');
+                    setSelected(null);
+                    setValidMoves([]);
                 }
-                setSelected(null);
-                setValidMoves([]);
             } else {
                 if (clickedPiece && clickedPiece.color === currentTurn && currentTurn === puzzleState.playerColor) {
                     setSelected([row, col]);
@@ -430,7 +472,7 @@ const DailyPuzzle = () => {
                 }
             }
         },
-        [board, puzzleState, selected, currentTurn, castlingRights, enPassantTarget, status, solutionIndex, opponentMoving, lastMove]
+        [board, puzzleState, selected, currentTurn, castlingRights, enPassantTarget, status, opponentMoving, executeMove]
     );
 
     // ── Puzzle solved ─────────────────────────────────────────────────────────
@@ -463,6 +505,28 @@ const DailyPuzzle = () => {
         setHintsUsed(h => h + 1);
     }, [puzzleState, solutionIndex, board]);
 
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+            if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                handleToggleFlip();
+            } else if (e.key === 'm' || e.key === 'M') {
+                e.preventDefault();
+                handleToggleMute();
+            } else if (e.key === 'h' || e.key === 'H') {
+                e.preventDefault();
+                showHint();
+            } else if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                loadPuzzle();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleToggleFlip, handleToggleMute, showHint, loadPuzzle]);
+
     // ── King check position ───────────────────────────────────────────────────
     const kingInCheckPos: Position | null =
         board && (gameStatus === 'check' || gameStatus === 'checkmate')
@@ -488,6 +552,10 @@ const DailyPuzzle = () => {
         hintSquare !== null && hintSquare[0] === row && hintSquare[1] === col;
 
     const displayBoard = board ?? (Array(8).fill(null).map(() => Array(8).fill(null)) as Board);
+    const displayFiles = isFlipped ? [...FILES].reverse() : FILES;
+    const displayRanks = isFlipped ? [...RANKS].reverse() : RANKS;
+    const rowIndices = isFlipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
+    const colIndices = isFlipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
 
     return (
         <div className="h-screen bg-background flex flex-col items-center py-2 px-2 md:px-4 relative overflow-hidden transition-colors duration-300">
@@ -532,12 +600,26 @@ const DailyPuzzle = () => {
                     <ArrowLeft className="w-4 h-4" />
                     <span className="text-sm font-medium">Home</span>
                 </Link>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2 bg-card/60 border border-border px-3 py-1.5 rounded-full">
                         <Flame className="w-3.5 h-3.5 text-orange-400" />
                         <span className="text-xs font-mono font-bold text-foreground">{streak}</span>
                         <span className="text-xs text-muted-foreground">streak</span>
                     </div>
+                    <button
+                        onClick={handleToggleFlip}
+                        title="Flip Board (F)"
+                        className="p-1.5 rounded-xl border border-border bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all flex items-center justify-center"
+                    >
+                        <ArrowUpDown className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={handleToggleMute}
+                        title="Toggle Sound (M)"
+                        className={`p-1.5 rounded-xl border border-border bg-card/60 transition-all flex items-center justify-center ${isMuted ? 'text-destructive border-destructive/40' : 'text-muted-foreground hover:text-foreground hover:border-primary/50'}`}
+                    >
+                        {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                    </button>
                     <ThemeSwitcher />
                 </div>
             </div>
@@ -724,7 +806,7 @@ const DailyPuzzle = () => {
                                 <div className="flex w-full">
                                     <div className="w-8" />
                                     <div className="flex-1 grid grid-cols-8">
-                                        {FILES.map((f) => (
+                                        {displayFiles.map((f) => (
                                             <div key={f} className="h-8 flex items-center justify-center text-sm font-mono text-muted-foreground/50">
                                                 {f}
                                             </div>
@@ -736,7 +818,7 @@ const DailyPuzzle = () => {
                                 <div className="flex relative">
                                     {/* Ranks left */}
                                     <div className="w-8 flex flex-col">
-                                        {RANKS.map((r, i) => (
+                                        {displayRanks.map((r, i) => (
                                             <div key={i} className="flex-1 flex items-center justify-center text-sm font-mono text-muted-foreground/50 aspect-square">
                                                 {r}
                                             </div>
@@ -759,72 +841,77 @@ const DailyPuzzle = () => {
                                         className="relative chess-board-shadow rounded-lg overflow-hidden border border-chess-board-border bg-chess-dark"
                                     >
                                         <div className="grid grid-cols-8 grid-rows-8 w-full h-full">
-                                            {displayBoard.flatMap((row, rowIdx) =>
-                                                row.map((piece, colIdx) => (
-                                                    <div
-                                                        key={`${rowIdx}-${colIdx}`}
-                                                        className="w-full h-full relative"
-                                                    >
-                                                        <ChessSquare
-                                                            piece={piece}
-                                                            isLight={(rowIdx + colIdx) % 2 === 0}
-                                                            isSelected={selected?.[0] === rowIdx && selected?.[1] === colIdx}
-                                                            isValidMove={isValidMoveSquare(rowIdx, colIdx)}
-                                                            isLastMove={isLastMoveSquare(rowIdx, colIdx)}
-                                                            isKingInCheck={
-                                                                kingInCheckPos !== null &&
-                                                                kingInCheckPos[0] === rowIdx && kingInCheckPos[1] === colIdx
-                                                            }
-                                                            position={[rowIdx, colIdx]}
-                                                            onClick={() => handleSquareClick(rowIdx, colIdx)}
-                                                            canDragPiece={
-                                                                !opponentMoving &&
-                                                                status !== 'solved' &&
-                                                                status !== 'wrong' &&
-                                                                piece?.color === currentTurn &&
-                                                                currentTurn === puzzleState?.playerColor
-                                                            }
-                                                            currentTurn={currentTurn}
-                                                            onDropPosition={(source, target) => {
-                                                                if (!selected || selected[0] !== source[0] || selected[1] !== source[1]) {
-                                                                    setSelected(source);
-                                                                    setValidMoves(getValidMoves(board!, source, currentTurn, castlingRights, enPassantTarget));
+                                            {rowIndices.flatMap((rowIdx) =>
+                                                colIndices.map((colIdx) => {
+                                                    const piece = displayBoard[rowIdx]?.[colIdx] ?? null;
+                                                    return (
+                                                        <div
+                                                            key={`${rowIdx}-${colIdx}`}
+                                                            className="w-full h-full relative"
+                                                        >
+                                                            <ChessSquare
+                                                                piece={piece}
+                                                                isLight={(rowIdx + colIdx) % 2 === 0}
+                                                                isSelected={selected?.[0] === rowIdx && selected?.[1] === colIdx}
+                                                                isValidMove={isValidMoveSquare(rowIdx, colIdx)}
+                                                                isLastMove={isLastMoveSquare(rowIdx, colIdx)}
+                                                                isKingInCheck={
+                                                                    kingInCheckPos !== null &&
+                                                                    kingInCheckPos[0] === rowIdx && kingInCheckPos[1] === colIdx
                                                                 }
-                                                                const draggedPiece = board?.[source[0]]?.[source[1]];
-                                                                if (draggedPiece) {
-                                                                    draggedPieceIdRef.current = draggedPiece.id;
+                                                                position={[rowIdx, colIdx]}
+                                                                onClick={() => handleSquareClick(rowIdx, colIdx)}
+                                                                canDragPiece={
+                                                                    !opponentMoving &&
+                                                                    status !== 'solved' &&
+                                                                    status !== 'wrong' &&
+                                                                    piece?.color === currentTurn &&
+                                                                    currentTurn === puzzleState?.playerColor
                                                                 }
-                                                                handleSquareClick(target[0], target[1]);
-                                                            }}
-                                                            shouldAnimate={piece ? piece.id !== draggedPieceIdRef.current : true}
-                                                        />
-                                                        {/* Hint overlay */}
-                                                        {isHintSquare(rowIdx, colIdx) && (
-                                                            <motion.div
-                                                                className="absolute inset-0 ring-4 ring-inset ring-yellow-400 bg-yellow-400/20 pointer-events-none z-20"
-                                                                initial={{ opacity: 0 }}
-                                                                animate={{ opacity: [0.5, 1, 0.5] }}
-                                                                transition={{ repeat: Infinity, duration: 2 }}
+                                                                currentTurn={currentTurn}
+                                                                onDropPosition={(source, target) => {
+                                                                    if (target[0] === source[0] && target[1] === source[1]) return;
+                                                                    const moved = executeMove(source, target, true);
+                                                                    if (!moved) {
+                                                                        playChessSound('error');
+                                                                        setSelected(null);
+                                                                        setValidMoves([]);
+                                                                    }
+                                                                }}
+                                                                animatingFrom={(() => {
+                                                                    const anim = animatingMoves.find(m => m.to[0] === rowIdx && m.to[1] === colIdx);
+                                                                    return (anim && piece && anim.pieceId === piece.id) ? anim.from : null;
+                                                                })()}
+                                                                isFlipped={isFlipped}
                                                             />
-                                                        )}
-                                                        {/* Wrong move flash */}
-                                                        {isWrongMoveSquare(rowIdx, colIdx) && (
-                                                            <motion.div
-                                                                className="absolute inset-0 bg-red-500/30 pointer-events-none rounded-sm z-30"
-                                                                initial={{ opacity: 0 }}
-                                                                animate={{ opacity: [0, 1, 0.8, 1, 0] }}
-                                                                transition={{ duration: 1.2 }}
-                                                            />
-                                                        )}
-                                                    </div>
-                                                ))
+                                                            {/* Hint overlay */}
+                                                            {isHintSquare(rowIdx, colIdx) && (
+                                                                <motion.div
+                                                                    className="absolute inset-0 ring-4 ring-inset ring-yellow-400 bg-yellow-400/20 pointer-events-none z-20"
+                                                                    initial={{ opacity: 0 }}
+                                                                    animate={{ opacity: [0.5, 1, 0.5] }}
+                                                                    transition={{ repeat: Infinity, duration: 2 }}
+                                                                />
+                                                            )}
+                                                            {/* Wrong move flash */}
+                                                            {isWrongMoveSquare(rowIdx, colIdx) && (
+                                                                <motion.div
+                                                                    className="absolute inset-0 bg-red-500/30 pointer-events-none rounded-sm z-30"
+                                                                    initial={{ opacity: 0 }}
+                                                                    animate={{ opacity: [0, 1, 0.8, 1, 0] }}
+                                                                    transition={{ duration: 1.2 }}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })
                                             )}
                                         </div>
                                     </motion.div>
 
                                     {/* Ranks right */}
                                     <div className="w-8 flex flex-col">
-                                        {RANKS.map((r, i) => (
+                                        {displayRanks.map((r, i) => (
                                             <div key={i} className="flex-1 flex items-center justify-center text-sm font-mono text-muted-foreground/50 aspect-square">
                                                 {r}
                                             </div>
@@ -836,7 +923,7 @@ const DailyPuzzle = () => {
                                 <div className="flex w-full">
                                     <div className="w-8" />
                                     <div className="flex-1 grid grid-cols-8">
-                                        {FILES.map((f) => (
+                                        {displayFiles.map((f) => (
                                             <div key={f} className="h-8 flex items-center justify-center text-sm font-mono text-muted-foreground/50">
                                                 {f}
                                             </div>

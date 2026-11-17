@@ -306,7 +306,8 @@ export function movePiece(
   from: Position,
   to: Position,
   castlingRights: CastlingRights,
-  enPassantTarget: Position | null
+  enPassantTarget: Position | null,
+  promotionPiece: PieceType = 'queen'
 ): MoveResult {
   const newBoard = board.map(row => [...row]);
   const piece = newBoard[from[0]][from[1]]!;
@@ -342,7 +343,7 @@ export function movePiece(
 
     const movedPiece = newBoard[to[0]][to[1]];
     if (movedPiece?.type === 'pawn' && (to[0] === 0 || to[0] === 7)) {
-      newBoard[to[0]][to[1]] = { ...movedPiece, type: 'queen' };
+      newBoard[to[0]][to[1]] = { ...movedPiece, type: promotionPiece };
       isPromotion = true;
     }
   }
@@ -374,9 +375,9 @@ export function movePiece(
     notation = to[1] === 6 ? 'O-O' : 'O-O-O';
   } else {
     const captureSymbol = captured ? '×' : '→';
-    const promotionSuffix = isPromotion ? '=♛' : '';
+    const promoSymbol = isPromotion ? `=${getPieceSymbol(promotionPiece)}` : '';
     const epSuffix = isEnPassant ? ' e.p.' : '';
-    notation = `${getPieceSymbol(piece.type)}${FILES[from[1]]}${RANKS[from[0]]}${captureSymbol}${FILES[to[1]]}${RANKS[to[0]]}${promotionSuffix}${epSuffix}`;
+    notation = `${getPieceSymbol(piece.type)}${FILES[from[1]]}${RANKS[from[0]]}${captureSymbol}${FILES[to[1]]}${RANKS[to[0]]}${promoSymbol}${epSuffix}`;
   }
 
   return { newBoard, captured, newCastlingRights, newEnPassantTarget, notation, isCastle, isEnPassant, isPromotion };

@@ -312,4 +312,18 @@
       top: 95%;
     }
   }
+
+  @keyframes chessPieceSlide {
+    0% {
+      transform: translate3d(var(--slide-x), var(--slide-y), 0);
+    }
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .piece-slide-anim {
+    animation: chessPieceSlide 0.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    will-change: transform;
+  }
 }

@@ -1,11 +1,25 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  RotateCcw,
+  Volume2,
+  VolumeX,
+  TrendingUp,
+  Crown,
+  Copy,
+  Check,
+  X,
+} from 'lucide-react';
 import {
   Board,
   Position,
   PieceColor,
   Piece,
+  PieceType,
   GameStatus,
   CastlingRights,
   createInitialBoard,
@@ -25,6 +39,11 @@ import {
 } from '@/lib/chess';
 import ChessSquare from './ChessSquare';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { ChessEvalBar } from './ChessEvalBar';
+import { ChessArrows, ArrowAnnotation } from './ChessArrows';
+import { PromotionModal } from './PromotionModal';
+import { isSoundMuted, toggleSoundMuted } from '@/lib/sounds';
+import { useToast } from '@/hooks/use-toast';
 
 import {
   boardToFen,
@@ -82,11 +101,27 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   const [glickoPlayer, setGlickoPlayer] = useState<Glicko2Player>(() => loadPlayer());
   const [ratingChange, setRatingChange] = useState<number | null>(null);
   const ratingUpdatedRef = useRef(false);
-  const draggedPieceIdRef = useRef<string | null>(null);
+  const [animatingMoves, setAnimatingMoves] = useState<Array<{ from: Position; to: Position; pieceId: string }>>([]);
+  const animTimeoutRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    draggedPieceIdRef.current = null;
-  });
+  const { toast } = useToast();
+
+  // Board UX Features
+  const [isFlipped, setIsFlipped] = useState(() => localStorage.getItem('chess_board_flipped') === 'true');
+  const [isMuted, setIsMuted] = useState(() => isSoundMuted());
+  const [showEvalBar, setShowEvalBar] = useState(() => localStorage.getItem('chess_show_eval') === 'true');
+  const [autoQueen, setAutoQueen] = useState(() => localStorage.getItem('chess_auto_queen') === 'true');
+  const [pendingPromotion, setPendingPromotion] = useState<{ from: Position; to: Position; color: PieceColor } | null>(null);
+
+  // Right-click arrows & highlights
+  const [arrows, setArrows] = useState<ArrowAnnotation[]>([]);
+  const [highlightedSquares, setHighlightedSquares] = useState<Position[]>([]);
+  const rightClickStartRef = useRef<Position | null>(null);
+
+  // Live evaluation & clipboard feedback
+  const [liveEval, setLiveEval] = useState<PositionAnalysis | null>(null);
+  const [copiedPgn, setCopiedPgn] = useState(false);
+  const [copiedFen, setCopiedFen] = useState(false);
 
   const [historySnapshots, setHistorySnapshots] = useState<Array<{
     board: Board,
@@ -182,12 +217,33 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         }
 
         if (bestMove) {
+          const pieceToMove = board[bestMove.from[0]][bestMove.from[1]];
           const result = movePiece(board, bestMove.from, bestMove.to, castlingRights, enPassantTarget);
           setBoard(result.newBoard);
           setCastlingRights(result.newCastlingRights);
           setEnPassantTarget(result.newEnPassantTarget);
           const newLastMove = { from: bestMove.from, to: bestMove.to as Position };
           setLastMove(newLastMove);
+
+          // Animate AI piece slide (and rook if castling)
+          if (pieceToMove) {
+            const newAnimMoves: Array<{ from: Position; to: Position; pieceId: string }> = [
+              { from: bestMove.from, to: bestMove.to as Position, pieceId: pieceToMove.id }
+            ];
+            if (result.isCastle) {
+              const row = bestMove.from[0];
+              if (bestMove.to[1] === 6) {
+                const rook = board[row][7];
+                if (rook) newAnimMoves.push({ from: [row, 7], to: [row, 5], pieceId: rook.id });
+              } else if (bestMove.to[1] === 2) {
+                const rook = board[row][0];
+                if (rook) newAnimMoves.push({ from: [row, 0], to: [row, 3], pieceId: rook.id });
+              }
+            }
+            setAnimatingMoves(newAnimMoves);
+            if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+            animTimeoutRef.current = window.setTimeout(() => setAnimatingMoves([]), 250);
+          }
 
           let updatedCaptured = captured;
           if (result.captured) {
@@ -234,11 +290,15 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     }
   }, [currentTurn, mode, level, gameStatus, insufficientMaterial, timeoutWinner, board, castlingRights, enPassantTarget, moveHistory.length, isViewingHistory]);
 
-  const navigateHistory = useCallback((direction: 'prev' | 'next') => {
+  const navigateHistory = useCallback((direction: 'prev' | 'next' | 'first' | 'last') => {
     const currentIndex = viewIndex === -1 ? historySnapshots.length - 1 : viewIndex;
     let newIndex: number;
 
-    if (direction === 'prev' && currentIndex > 0) {
+    if (direction === 'first') {
+      newIndex = 0;
+    } else if (direction === 'last') {
+      newIndex = historySnapshots.length - 1;
+    } else if (direction === 'prev' && currentIndex > 0) {
       newIndex = currentIndex - 1;
     } else if (direction === 'next' && currentIndex < historySnapshots.length - 1) {
       newIndex = currentIndex + 1;
@@ -264,16 +324,59 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
       if (e.key === 'ArrowLeft') {
         navigateHistory('prev');
       } else if (e.key === 'ArrowRight') {
         navigateHistory('next');
+      } else if (e.key === 'ArrowUp') {
+        navigateHistory('first');
+      } else if (e.key === 'ArrowDown' || e.key === ' ') {
+        navigateHistory('last');
+      } else if (e.key === 'f' || e.key === 'F') {
+        setIsFlipped(prev => {
+          const next = !prev;
+          localStorage.setItem('chess_board_flipped', String(next));
+          return next;
+        });
+      } else if (e.key === 'm' || e.key === 'M') {
+        const next = toggleSoundMuted();
+        setIsMuted(next);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [navigateHistory]);
+
+  // Live evaluation effect for the Eval Bar
+  useEffect(() => {
+    if (!showEvalBar) return;
+    const snap = historySnapshots[currentViewIndex];
+    const fen = snap?.fen;
+    if (!fen) return;
+
+    if (moveAnalyses[currentViewIndex]?.eval) {
+      setLiveEval(moveAnalyses[currentViewIndex].eval);
+      return;
+    }
+
+    let active = true;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await analyzePositionStockfish(fen, 8);
+        if (active && res) {
+          setLiveEval(res);
+        }
+      } catch (_) {}
+    }, 250);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [showEvalBar, currentViewIndex, historySnapshots, moveAnalyses]);
 
   const isGameOver = gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'resigned' || gameStatus === 'draw' || insufficientMaterial || timeoutWinner !== null;
 
@@ -356,6 +459,97 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
   const kingInCheckPos: Position | null =
     gameStatus === 'check' || gameStatus === 'checkmate' ? findKing(board, currentTurn) : null;
 
+  const executeMove = useCallback(
+    (from: Position, to: Position, isManualDrag = false, promotionPiece?: PieceType) => {
+      if (isGameOver || isViewingHistory) return false;
+      if (mode === 'computer' && currentTurn === 'black') return false;
+
+      const pieceToMove = board[from[0]][from[1]];
+      if (!pieceToMove || pieceToMove.color !== currentTurn) return false;
+
+      if (isValidMove(board, from, to, currentTurn, castlingRights, enPassantTarget)) {
+        // Check if pawn promotion requires user selection
+        if (pieceToMove.type === 'pawn' && (to[0] === 0 || to[0] === 7) && !autoQueen && !promotionPiece) {
+          setPendingPromotion({ from, to, color: pieceToMove.color });
+          return false;
+        }
+
+        const promoType = promotionPiece || 'queen';
+        const result = movePiece(board, from, to, castlingRights, enPassantTarget, promoType);
+        setBoard(result.newBoard);
+        setCastlingRights(result.newCastlingRights);
+        setEnPassantTarget(result.newEnPassantTarget);
+        const newLastMove = { from, to };
+        setLastMove(newLastMove);
+
+        // Clear arrows & highlights on move
+        setArrows([]);
+        setHighlightedSquares([]);
+
+        // Animate piece slide (unless manual drag)
+        const newAnimMoves: Array<{ from: Position; to: Position; pieceId: string }> = [];
+        if (!isManualDrag) {
+          newAnimMoves.push({ from, to, pieceId: pieceToMove.id });
+        }
+        if (result.isCastle) {
+          const row = from[0];
+          if (to[1] === 6) {
+            const rook = board[row][7];
+            if (rook) newAnimMoves.push({ from: [row, 7], to: [row, 5], pieceId: rook.id });
+          } else if (to[1] === 2) {
+            const rook = board[row][0];
+            if (rook) newAnimMoves.push({ from: [row, 0], to: [row, 3], pieceId: rook.id });
+          }
+        }
+        setAnimatingMoves(newAnimMoves);
+        if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+        animTimeoutRef.current = window.setTimeout(() => setAnimatingMoves([]), 250);
+
+        let updatedCaptured = captured;
+        if (result.captured) {
+          updatedCaptured = {
+            ...captured,
+            [currentTurn]: [...captured[currentTurn], result.captured!],
+          };
+          setCaptured(updatedCaptured);
+        }
+
+        setMoveHistory((prev) => [...prev, result.notation]);
+        if (initialTime > 0 && increment > 0) {
+          if (currentTurn === 'white') setWhiteTime(prev => prev + increment);
+          else setBlackTime(prev => prev + increment);
+        }
+        const newTurn = currentTurn === 'white' ? 'black' : 'white';
+        setCurrentTurn(newTurn);
+
+        // Determine and play appropriate chess sound immediately
+        const postMoveStatus = getGameStatus(result.newBoard, newTurn, result.newCastlingRights, result.newEnPassantTarget);
+        let soundType: ChessSoundType = 'move';
+        if (postMoveStatus === 'checkmate') soundType = 'checkmate';
+        else if (postMoveStatus === 'check') soundType = 'check';
+        else if (result.captured) soundType = 'capture';
+        else if (result.isCastle) soundType = 'castle';
+        playChessSound(soundType);
+
+        const newFen = boardToFen(result.newBoard, newTurn, result.newCastlingRights, result.newEnPassantTarget, 0, Math.floor((moveHistory.length + 1) / 2) + 1);
+
+        setHistorySnapshots(prev => [...prev, {
+          board: result.newBoard,
+          captured: updatedCaptured,
+          lastMove: newLastMove,
+          fen: newFen
+        }]);
+        setViewIndex(-1);
+
+        setSelected(null);
+        setValidMoves([]);
+        return true;
+      }
+      return false;
+    },
+    [board, currentTurn, castlingRights, enPassantTarget, isGameOver, isViewingHistory, mode, initialTime, increment, captured, moveHistory.length]
+  );
+
   const handleSquareClick = useCallback(
     (row: number, col: number) => {
       if (isGameOver || (mode === 'computer' && currentTurn === 'black') || isViewingHistory) return;
@@ -377,67 +571,21 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           return;
         }
 
-        if (isValidMove(board, selected, [row, col], currentTurn, castlingRights, enPassantTarget)) {
-          const result = movePiece(board, selected, [row, col], castlingRights, enPassantTarget);
-          setBoard(result.newBoard);
-          setCastlingRights(result.newCastlingRights);
-          setEnPassantTarget(result.newEnPassantTarget);
-          const newLastMove = { from: selected, to: [row, col] as Position };
-          setLastMove(newLastMove);
-
-          let updatedCaptured = captured;
-          if (result.captured) {
-            updatedCaptured = {
-              ...captured,
-              [currentTurn]: [...captured[currentTurn], result.captured!],
-            };
-            setCaptured(updatedCaptured);
-          }
-
-          setMoveHistory((prev) => [...prev, result.notation]);
-          if (initialTime > 0 && increment > 0) {
-            if (currentTurn === 'white') setWhiteTime(prev => prev + increment);
-            else setBlackTime(prev => prev + increment);
-          }
-          const newTurn = currentTurn === 'white' ? 'black' : 'white';
-          setCurrentTurn(newTurn);
-
-          // Determine and play appropriate chess sound immediately
-          const postMoveStatus = getGameStatus(result.newBoard, newTurn, result.newCastlingRights, result.newEnPassantTarget);
-          let soundType: ChessSoundType = 'move';
-          if (postMoveStatus === 'checkmate') soundType = 'checkmate';
-          else if (postMoveStatus === 'check') soundType = 'check';
-          else if (result.captured) soundType = 'capture';
-          else if (result.isCastle) soundType = 'castle';
-          playChessSound(soundType);
-
-          const newFen = boardToFen(result.newBoard, newTurn, result.newCastlingRights, result.newEnPassantTarget, 0, Math.floor((moveHistory.length + 1) / 2) + 1);
-
-          setHistorySnapshots(prev => [...prev, {
-            board: result.newBoard,
-            captured: updatedCaptured,
-            lastMove: newLastMove,
-            fen: newFen
-          }]);
-          setViewIndex(-1);
-
-          setSelected(null);
-          setValidMoves([]);
-          return;
-        }
-
-        // Invalid move attempt
-        const rawValid = isRawValidMove(board, selected, [row, col], currentTurn, enPassantTarget);
-        if (rawValid) {
-          const newBoard = applyRawMove(board, selected, [row, col], enPassantTarget);
-          if (isKingInCheck(newBoard, currentTurn)) {
+        const moved = executeMove(selected, [row, col], false);
+        if (!moved) {
+          // Invalid move attempt
+          const rawValid = isRawValidMove(board, selected, [row, col], currentTurn, enPassantTarget);
+          if (rawValid) {
+            const newBoard = applyRawMove(board, selected, [row, col], enPassantTarget);
+            if (isKingInCheck(newBoard, currentTurn)) {
+              playChessSound('error');
+            }
+          } else if (getGameStatus(board, currentTurn, castlingRights, enPassantTarget) === 'check') {
             playChessSound('error');
           }
-        } else if (getGameStatus(board, currentTurn, castlingRights, enPassantTarget) === 'check') {
-          playChessSound('error');
+          setSelected(null);
+          setValidMoves([]);
         }
-        setSelected(null);
-        setValidMoves([]);
       } else {
         if (clickedPiece && clickedPiece.color === currentTurn) {
           setSelected([row, col]);
@@ -445,7 +593,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         }
       }
     },
-    [board, selected, currentTurn, castlingRights, enPassantTarget, isGameOver, isViewingHistory, mode, initialTime, increment, captured, moveHistory.length, historySnapshots.length]
+    [board, selected, currentTurn, castlingRights, enPassantTarget, isGameOver, isViewingHistory, mode, executeMove]
   );
   const startFullGameReview = async () => {
     setOverlayContent('analyzing');
@@ -571,6 +719,107 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
     setReviewSummary(null);
 
   };
+
+  const handleToggleFlip = () => {
+    setIsFlipped(prev => {
+      const next = !prev;
+      localStorage.setItem('chess_board_flipped', String(next));
+      return next;
+    });
+  };
+
+  const handleToggleSound = () => {
+    const next = toggleSoundMuted();
+    setIsMuted(next);
+  };
+
+  const handleToggleEval = () => {
+    setShowEvalBar(prev => {
+      const next = !prev;
+      localStorage.setItem('chess_show_eval', String(next));
+      return next;
+    });
+  };
+
+  const handleToggleAutoQueen = () => {
+    setAutoQueen(prev => {
+      const next = !prev;
+      localStorage.setItem('chess_auto_queen', String(next));
+      return next;
+    });
+  };
+
+  const handleCopyPgn = () => {
+    const pgnMoves = moveHistory.reduce((acc, move, idx) => {
+      if (idx % 2 === 0) {
+        return `${acc}${Math.floor(idx / 2) + 1}. ${move} `;
+      }
+      return `${acc}${move} `;
+    }, '');
+    const res = gameStatus === 'checkmate' ? (currentTurn === 'white' ? '0-1' : '1-0') : (gameStatus === 'resigned' ? (currentTurn === 'white' ? '0-1' : '1-0') : '*');
+    const pgn = `[Event "Lemon Chess Casual Game"]\n[Site "Lemon Web"]\n[Date "${new Date().toISOString().slice(0, 10).replace(/-/g, '.')}"]\n[White "White"]\n[Black "Orange"]\n[Result "${res}"]\n\n${pgnMoves}\n`;
+
+    navigator.clipboard.writeText(pgn);
+    setCopiedPgn(true);
+    toast({ title: "PGN Copied!", description: "Game PGN copied to clipboard." });
+    setTimeout(() => setCopiedPgn(false), 2000);
+  };
+
+  const handleCopyFen = () => {
+    const snap = historySnapshots[currentViewIndex];
+    const fen = snap?.fen || boardToFen(board, currentTurn, castlingRights, enPassantTarget, 0, Math.floor(moveHistory.length / 2) + 1);
+    navigator.clipboard.writeText(fen);
+    setCopiedFen(true);
+    toast({ title: "FEN Copied!", description: "Position FEN copied to clipboard." });
+    setTimeout(() => setCopiedFen(false), 2000);
+  };
+
+  const getSquareFromPoint = (clientX: number, clientY: number): Position | null => {
+    const el = document.elementFromPoint(clientX, clientY)?.closest('.chess-square');
+    const posStr = el?.getAttribute('data-position');
+    if (posStr) {
+      return posStr.split(',').map(Number) as Position;
+    }
+    return null;
+  };
+
+  const handleBoardPointerDown = (e: React.PointerEvent) => {
+    if (e.button === 0) {
+      setArrows([]);
+      setHighlightedSquares([]);
+    } else if (e.button === 2) {
+      const pos = getSquareFromPoint(e.clientX, e.clientY);
+      if (pos) rightClickStartRef.current = pos;
+    }
+  };
+
+  const handleBoardPointerUp = (e: React.PointerEvent) => {
+    if (e.button === 2 && rightClickStartRef.current) {
+      const start = rightClickStartRef.current;
+      const end = getSquareFromPoint(e.clientX, e.clientY);
+      rightClickStartRef.current = null;
+      if (!end) return;
+
+      if (start[0] === end[0] && start[1] === end[1]) {
+        setHighlightedSquares(prev => {
+          const exists = prev.some(([r, c]) => r === start[0] && c === start[1]);
+          if (exists) return prev.filter(([r, c]) => !(r === start[0] && c === start[1]));
+          return [...prev, start];
+        });
+      } else {
+        setArrows(prev => {
+          const exists = prev.some(a => a.from[0] === start[0] && a.from[1] === start[1] && a.to[0] === end[0] && a.to[1] === end[1]);
+          if (exists) return prev.filter(a => !(a.from[0] === start[0] && a.from[1] === start[1] && a.to[0] === end[0] && a.to[1] === end[1]));
+          return [...prev, { from: start, to: end }];
+        });
+      }
+    }
+  };
+
+  const displayRanks = isFlipped ? [...RANKS].reverse() : RANKS;
+  const displayFiles = isFlipped ? [...FILES].reverse() : FILES;
+  const rowIndices = isFlipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
+  const colIndices = isFlipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
 
   const isValidMoveSquare = (row: number, col: number) =>
     !isViewingHistory && validMoves.some(([r, c]) => r === row && c === col);
@@ -824,6 +1073,23 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                             Game Review
                           </motion.button>
                         </div>
+
+                        <div className="flex w-full gap-2 mt-3">
+                          <button
+                            onClick={handleCopyPgn}
+                            className="flex-1 py-2 rounded-lg bg-secondary/50 text-xs font-mono text-muted-foreground hover:text-foreground hover:bg-secondary border border-border flex items-center justify-center gap-1.5 transition-colors"
+                          >
+                            {copiedPgn ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            Copy PGN
+                          </button>
+                          <button
+                            onClick={handleCopyFen}
+                            className="flex-1 py-2 rounded-lg bg-secondary/50 text-xs font-mono text-muted-foreground hover:text-foreground hover:bg-secondary border border-border flex items-center justify-center gap-1.5 transition-colors"
+                          >
+                            {copiedFen ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            Copy FEN
+                          </button>
+                        </div>
                       </>
                     )}
 
@@ -851,11 +1117,89 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           </AnimatePresence>
 
           <div className="chess-board-shadow rounded-xl overflow-hidden border border-chess-board-border relative flex flex-col items-center bg-chess-dark/30">
+            {/* Top Board Interactive Toolbar */}
+            <div className="w-full flex items-center justify-between px-3 py-2 border-b border-border/40 bg-card/30 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                  {mode === 'computer' ? `Stockfish L.${level}` : 'Pass & Play'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                {/* Flip Board */}
+                <button
+                  onClick={handleToggleFlip}
+                  className={`p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono transition-all border flex items-center gap-1.5 ${
+                    isFlipped
+                      ? 'bg-primary/20 text-primary border-primary/40 shadow-[0_0_8px_rgba(255,165,0,0.2)]'
+                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground border-border/60'
+                  }`}
+                  title="Flip Board [F]"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline text-[11px] font-bold">Flip</span>
+                </button>
+
+                {/* Eval Bar Toggle */}
+                <button
+                  onClick={handleToggleEval}
+                  className={`p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono transition-all border flex items-center gap-1.5 ${
+                    showEvalBar
+                      ? 'bg-primary/20 text-primary border-primary/40 shadow-[0_0_8px_rgba(255,165,0,0.2)]'
+                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground border-border/60'
+                  }`}
+                  title="Toggle Evaluation Bar"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline text-[11px] font-bold">Eval</span>
+                </button>
+
+                {/* Sound Toggle */}
+                <button
+                  onClick={handleToggleSound}
+                  className={`p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono transition-all border flex items-center gap-1.5 ${
+                    isMuted
+                      ? 'bg-destructive/20 text-destructive border-destructive/40'
+                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground border-border/60'
+                  }`}
+                  title={isMuted ? "Unmute Sound [M]" : "Mute Sound [M]"}
+                >
+                  {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                </button>
+
+                {/* Auto-Queen Toggle */}
+                <button
+                  onClick={handleToggleAutoQueen}
+                  className={`p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono transition-all border flex items-center gap-1.5 ${
+                    autoQueen
+                      ? 'bg-primary/20 text-primary border-primary/40 shadow-[0_0_8px_rgba(255,165,0,0.2)]'
+                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground border-border/60'
+                  }`}
+                  title={autoQueen ? "Auto-Queen: ON (Click to choose promotion piece)" : "Auto-Queen: OFF (Promote dialog active)"}
+                >
+                  <Crown className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Copy FEN */}
+                <button
+                  onClick={handleCopyFen}
+                  className="p-1.5 sm:px-2 rounded-lg text-xs font-mono bg-secondary/60 text-muted-foreground hover:text-foreground border border-border/60 transition-colors"
+                  title="Copy Position FEN"
+                >
+                  {copiedFen ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+
+                <ThemeSwitcher />
+              </div>
+            </div>
+
             {/* File labels top */}
             <div className="flex w-full">
+              {showEvalBar && <div className="hidden sm:block w-7 sm:w-8" />}
               <div className="w-8" />
               <div className="flex-1 grid grid-cols-8">
-                {FILES.map((f) => (
+                {displayFiles.map((f) => (
                   <div key={f} className="h-8 flex items-center justify-center text-sm font-mono text-muted-foreground/50">
                     {f}
                   </div>
@@ -864,10 +1208,26 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
               <div className="w-8" />
             </div>
 
-            <div className="flex relative">
+            <div className="flex relative items-center gap-1">
+              {/* Live Eval Bar if enabled */}
+              {showEvalBar && (
+                <div
+                  style={{
+                    height: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(calc(100cqw - 64px), calc(100vh - 120px), 1200px)'
+                  }}
+                  className="hidden sm:flex items-center flex-shrink-0 mr-1"
+                >
+                  <ChessEvalBar
+                    evaluation={moveAnalyses[currentViewIndex]?.eval?.evaluation ?? liveEval?.evaluation}
+                    mate={moveAnalyses[currentViewIndex]?.eval?.mate ?? liveEval?.mate}
+                    isFlipped={isFlipped}
+                  />
+                </div>
+              )}
+
               {/* Ranks left */}
               <div className="w-8 flex flex-col">
-                {RANKS.map((r, i) => (
+                {displayRanks.map((r, i) => (
                   <div key={i} className="flex-1 flex items-center justify-center text-sm font-mono text-muted-foreground/50 aspect-square">
                     {r}
                   </div>
@@ -881,49 +1241,84 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                   width: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(calc(100cqw - 64px), calc(100vh - 120px), 1200px)',
                   height: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(calc(100cqw - 64px), calc(100vh - 120px), 1200px)'
                 }}
-                className="relative chess-board-shadow rounded-lg overflow-hidden border border-chess-board-border bg-chess-dark"
+                className="relative chess-board-shadow rounded-lg overflow-hidden border border-chess-board-border bg-chess-dark select-none"
+                onContextMenu={(e) => e.preventDefault()}
+                onPointerDown={handleBoardPointerDown}
+                onPointerUp={handleBoardPointerUp}
               >
+                {/* SVG Tactical Arrows & Square Highlights */}
+                <ChessArrows
+                  arrows={arrows}
+                  highlights={highlightedSquares}
+                  isFlipped={isFlipped}
+                />
+
+                {/* Pawn Promotion Modal */}
+                <PromotionModal
+                  isOpen={pendingPromotion !== null}
+                  color={pendingPromotion?.color || 'white'}
+                  onSelect={(pieceType) => {
+                    if (pendingPromotion) {
+                      executeMove(pendingPromotion.from, pendingPromotion.to, false, pieceType);
+                      setPendingPromotion(null);
+                    }
+                  }}
+                  onCancel={() => {
+                    setPendingPromotion(null);
+                    setSelected(null);
+                    setValidMoves([]);
+                  }}
+                />
+
                 <div className="grid grid-cols-8 grid-rows-8 w-full h-full">
-                  {displayBoard.flatMap((row, rowIdx) =>
-                    row.map((piece, colIdx) => (
-                      <div
-                        key={`${rowIdx}-${colIdx}`}
-                        className="w-full h-full relative"
-                      >
-                        <ChessSquare
-                          piece={piece}
-                          isLight={(rowIdx + colIdx) % 2 === 0}
-                          isSelected={!isViewingHistory && selected?.[0] === rowIdx && selected?.[1] === colIdx}
-                          isValidMove={isValidMoveSquare(rowIdx, colIdx)}
-                          isLastMove={isLastMoveSquare(rowIdx, colIdx)}
-                          isKingInCheck={
-                            !isViewingHistory && kingInCheckPos !== null &&
-                            kingInCheckPos[0] === rowIdx &&
-                            kingInCheckPos[1] === colIdx
-                          }
-                          position={[rowIdx, colIdx]}
-                          onClick={() => handleSquareClick(rowIdx, colIdx)}
-                          canDragPiece={!isViewingHistory && piece?.color === currentTurn}
-                          currentTurn={currentTurn}
-                          onDropPosition={(source, target) => {
-                            if (target[0] === source[0] && target[1] === source[1]) return;
-                            const draggedPiece = displayBoard[source[0]][source[1]];
-                            if (draggedPiece) {
-                              draggedPieceIdRef.current = draggedPiece.id;
+                  {rowIndices.flatMap((rowIdx) =>
+                    colIndices.map((colIdx) => {
+                      const piece = displayBoard[rowIdx][colIdx];
+                      return (
+                        <div
+                          key={`${rowIdx}-${colIdx}`}
+                          className="w-full h-full relative"
+                        >
+                          <ChessSquare
+                            piece={piece}
+                            isLight={(rowIdx + colIdx) % 2 === 0}
+                            isSelected={!isViewingHistory && selected?.[0] === rowIdx && selected?.[1] === colIdx}
+                            isValidMove={isValidMoveSquare(rowIdx, colIdx)}
+                            isLastMove={isLastMoveSquare(rowIdx, colIdx)}
+                            isKingInCheck={
+                              !isViewingHistory && kingInCheckPos !== null &&
+                              kingInCheckPos[0] === rowIdx &&
+                              kingInCheckPos[1] === colIdx
                             }
-                            handleSquareClick(target[0], target[1]);
-                          }}
-                          shouldAnimate={piece ? piece.id !== draggedPieceIdRef.current : true}
-                        />
-                      </div>
-                    ))
+                            position={[rowIdx, colIdx]}
+                            onClick={() => handleSquareClick(rowIdx, colIdx)}
+                            canDragPiece={!isViewingHistory && piece?.color === currentTurn}
+                            currentTurn={currentTurn}
+                            onDropPosition={(source, target) => {
+                              if (target[0] === source[0] && target[1] === source[1]) return;
+                              const moved = executeMove(source, target, true);
+                              if (!moved) {
+                                playChessSound('error');
+                                setSelected(null);
+                                setValidMoves([]);
+                              }
+                            }}
+                            animatingFrom={(() => {
+                              const anim = animatingMoves.find(m => m.to[0] === rowIdx && m.to[1] === colIdx);
+                              return (anim && piece && anim.pieceId === piece.id) ? anim.from : null;
+                            })()}
+                            isFlipped={isFlipped}
+                          />
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </motion.div>
 
               {/* Ranks right */}
               <div className="w-8 flex flex-col">
-                {RANKS.map((r, i) => (
+                {displayRanks.map((r, i) => (
                   <div key={i} className="flex-1 flex items-center justify-center text-sm font-mono text-muted-foreground/50 aspect-square">
                     {r}
                   </div>
@@ -933,9 +1328,10 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
             {/* File labels bottom */}
             <div className="flex w-full">
+              {showEvalBar && <div className="hidden sm:block w-7 sm:w-8" />}
               <div className="w-8" />
               <div className="flex-1 grid grid-cols-8">
-                {FILES.map((f) => (
+                {displayFiles.map((f) => (
                   <div key={f} className="h-8 flex items-center justify-center text-sm font-mono text-muted-foreground/50">
                     {f}
                   </div>
@@ -1002,26 +1398,44 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         </div>
 
         {/* Mobile Navigation Bar */}
-        <div className="flex lg:hidden bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-3 border border-border/60 relative overflow-hidden flex-row gap-2 items-center justify-between">
+        <div className="flex lg:hidden bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-2.5 border border-border/60 relative overflow-hidden flex-row gap-1.5 items-center justify-between">
+          <button
+            onClick={() => navigateHistory('first')}
+            disabled={currentViewIndex === 0}
+            className="p-2.5 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            title="First Move"
+          >
+            <ChevronsLeft className="w-5 h-5" />
+          </button>
           <button
             onClick={() => navigateHistory('prev')}
             disabled={currentViewIndex === 0}
-            className="flex-1 p-3 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            className="flex-1 p-2.5 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            title="Previous Move"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
-          <div className="flex flex-col items-center justify-center w-20 sm:w-24 shrink-0">
-            <span className="text-xs sm:text-sm font-mono text-muted-foreground uppercase tracking-widest leading-none mb-1">Move</span>
-            <span className="text-base sm:text-lg font-mono font-bold leading-none text-foreground">
+          <div className="flex flex-col items-center justify-center px-3 shrink-0">
+            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest leading-none mb-1">Move</span>
+            <span className="text-sm font-mono font-bold leading-none text-foreground">
               {currentViewIndex === -1 ? moveHistory.length : currentViewIndex} / {moveHistory.length}
             </span>
           </div>
           <button
             onClick={() => navigateHistory('next')}
             disabled={!isViewingHistory}
-            className="flex-1 p-3 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            className="flex-1 p-2.5 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            title="Next Move"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => navigateHistory('last')}
+            disabled={!isViewingHistory}
+            className="p-2.5 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            title="Latest Move"
+          >
+            <ChevronsRight className="w-5 h-5" />
           </button>
         </div>
 
@@ -1179,56 +1593,101 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         </div>
 
         {/* Move History */}
-        <div className="hidden lg:flex bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-4 border border-border/60 flex-col flex-1 min-h-[150px] max-h-[250px] lg:max-h-[300px]">
+        <div className="hidden lg:flex bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-4 border border-border/60 flex-col flex-1 min-h-[160px] max-h-[260px] lg:max-h-[300px]">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest pl-1">
               Move History
               {moveHistory.length > 0 && <span className="ml-2 opacity-50 font-bold">({moveHistory.length})</span>}
             </p>
-            <div className="flex items-center gap-1 bg-black/20 rounded-lg p-0.5 border border-white/5">
+            <div className="flex items-center gap-0.5 bg-black/30 rounded-lg p-0.5 border border-white/5">
+              <button
+                onClick={() => navigateHistory('first')}
+                disabled={currentViewIndex === 0}
+                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-20 transition-all"
+                title="First Move [Up Arrow]"
+              >
+                <ChevronsLeft className="w-3.5 h-3.5" />
+              </button>
               <button
                 onClick={() => navigateHistory('prev')}
                 disabled={currentViewIndex === 0}
-                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all"
+                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-20 transition-all"
+                title="Previous Move [Left Arrow]"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => navigateHistory('next')}
                 disabled={!isViewingHistory}
-                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all"
+                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-20 transition-all"
+                title="Next Move [Right Arrow]"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => navigateHistory('last')}
+                disabled={!isViewingHistory}
+                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-20 transition-all"
+                title="Latest Move [Down Arrow / Space]"
+              >
+                <ChevronsRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-            <AnimatePresence>
-              {moveHistory.length === 0 ? (
-                <div className="h-full flex items-center justify-center pb-4">
-                  <p className="text-sm text-muted-foreground/30 italic">No moves played</p>
-                </div>
-              ) : (
-                Array.from({ length: Math.ceil(moveHistory.length / 2) }, (_, i) => (
-                  <motion.div
+            {moveHistory.length === 0 ? (
+              <div className="h-full flex items-center justify-center pb-4">
+                <p className="text-sm text-muted-foreground/30 italic">No moves played</p>
+              </div>
+            ) : (
+              Array.from({ length: Math.ceil(moveHistory.length / 2) }, (_, i) => {
+                const whitePly = i * 2 + 1;
+                const blackPly = i * 2 + 2;
+                const isWhiteActive = currentViewIndex === whitePly;
+                const isBlackActive = currentViewIndex === blackPly;
+
+                return (
+                  <div
                     key={i}
-                    className={`flex items-center gap-2 text-xs font-mono p-1 rounded hover:bg-white/5 transition-colors ${!isViewingHistory && i === Math.floor((moveHistory.length - 1) / 2) ? 'bg-primary/10 border border-primary/20' : ''
-                      }`}
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.15 }}
+                    className="flex items-center gap-1.5 text-xs font-mono p-1 rounded hover:bg-white/5 transition-colors"
                   >
-                    <span className="text-muted-foreground/40 w-5 text-right flex-shrink-0">{i + 1}.</span>
-                    <span className="text-chess-bright flex-1 truncate font-semibold ml-1">{moveHistory[i * 2]}</span>
+                    <span className="text-muted-foreground/40 w-5 text-right flex-shrink-0 font-medium">
+                      {i + 1}.
+                    </span>
+                    <button
+                      onClick={() => {
+                        setViewIndex(whitePly);
+                        playChessSound('move');
+                      }}
+                      className={`flex-1 text-left px-1.5 py-0.5 rounded truncate font-semibold transition-colors ${
+                        isWhiteActive
+                          ? 'bg-primary/20 text-primary border border-primary/30'
+                          : 'text-chess-bright hover:bg-white/10'
+                      }`}
+                    >
+                      {moveHistory[i * 2]}
+                    </button>
                     {moveHistory[i * 2 + 1] ? (
-                      <span className="text-chess-dull flex-1 truncate font-semibold">{moveHistory[i * 2 + 1]}</span>
+                      <button
+                        onClick={() => {
+                          setViewIndex(blackPly);
+                          playChessSound('move');
+                        }}
+                        className={`flex-1 text-left px-1.5 py-0.5 rounded truncate font-semibold transition-colors ${
+                          isBlackActive
+                            ? 'bg-white/20 text-white border border-white/30'
+                            : 'text-chess-dull hover:bg-white/10'
+                        }`}
+                      >
+                        {moveHistory[i * 2 + 1]}
+                      </button>
                     ) : (
                       <span className="flex-1" />
                     )}
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -1269,24 +1728,40 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 };
 
 function CapturedRow({ pieces, advantage, label }: { pieces: Piece[]; advantage?: number; label?: string }) {
-  if (pieces.length === 0) return <div className="text-muted-foreground/30 italic leading-none">None</div>;
+  if (pieces.length === 0) return <div className="text-muted-foreground/30 italic text-xs leading-none">No captures</div>;
+
+  const order: PieceType[] = ['pawn', 'knight', 'bishop', 'rook', 'queen'];
+  const counts: Partial<Record<PieceType, number>> = {};
+  for (const p of pieces) {
+    counts[p.type] = (counts[p.type] || 0) + 1;
+  }
+  const color = pieces[0]?.color;
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5">
-      {pieces.map((p, i) => (
-        <motion.span
-          key={i}
-          className={`text-sm leading-none ${p.color !== 'white' ? 'text-chess-bright/60' : 'text-chess-dull/60'}`}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 15, delay: i * 0.03 }}
-          title={label}
-        >
-          {getPieceSymbol(p.type)}
-        </motion.span>
-      ))}
+    <div className="flex flex-wrap items-center gap-1.5" title={label}>
+      {order.map((type) => {
+        const count = counts[type];
+        if (!count) return null;
+        return (
+          <div
+            key={type}
+            className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-black/30 border border-white/5 shadow-inner"
+          >
+            <span className={`text-sm leading-none ${color !== 'white' ? 'text-chess-bright' : 'text-chess-dull'}`}>
+              {getPieceSymbol(type)}
+            </span>
+            {count > 1 && (
+              <span className="text-[10px] font-mono font-bold text-muted-foreground/80">
+                ×{count}
+              </span>
+            )}
+          </div>
+        );
+      })}
       {advantage !== undefined && advantage > 0 && (
-        <span className="ml-2 text-xs font-mono text-muted-foreground/50">+{advantage}</span>
+        <span className="ml-auto text-xs font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 shadow-[0_0_6px_rgba(255,165,0,0.2)]">
+          +{advantage}
+        </span>
       )}
     </div>
   );
