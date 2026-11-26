@@ -12,17 +12,16 @@ const Play = () => {
     const level = parseInt(searchParams.get('level') || '5', 10);
     
     return (
-        <div className="h-screen bg-background flex flex-col items-center justify-center pb-8 px-1 md:px-4 relative overflow-hidden transition-colors duration-300">
+        <div className="h-[100dvh] max-h-[100dvh] w-screen bg-background flex flex-col items-center justify-center p-1 sm:p-2.5 relative overflow-hidden transition-colors duration-300">
 
-
-            <Link to="/" className="hidden md:flex absolute top-6 left-6 items-center gap-2 text-muted-foreground hover:text-foreground transition-colors z-50">
+            <Link to="/" className="hidden md:flex absolute top-3 left-4 items-center gap-2 text-muted-foreground hover:text-foreground transition-colors z-50">
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm font-medium">Home</span>
             </Link>
 
             {/* Board + side panel */}
             <motion.div
-                className="w-full flex justify-center relative z-10"
+                className="w-full h-full flex items-center justify-center relative z-10"
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.15 }}

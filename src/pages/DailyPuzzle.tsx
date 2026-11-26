@@ -558,7 +558,7 @@ const DailyPuzzle = () => {
     const colIndices = isFlipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
 
     return (
-        <div className="h-screen bg-background flex flex-col items-center py-2 px-2 md:px-4 relative overflow-hidden transition-colors duration-300">
+        <div className="h-[100dvh] max-h-[100dvh] w-screen bg-background flex flex-col items-center py-2 px-2 md:px-4 relative overflow-hidden transition-colors duration-300">
             {/* Elegant Vibe Sync Background */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <motion.div 
@@ -595,28 +595,30 @@ const DailyPuzzle = () => {
             </div>
 
             {/* Nav */}
-            <div className="relative z-10 w-full max-w-6xl flex items-center justify-between mb-1 px-2 flex-shrink-0">
-                <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                    <ArrowLeft className="w-4 h-4" />
-                    <span className="text-sm font-medium">Home</span>
+            <div className="relative z-10 w-full max-w-6xl flex items-center justify-between mb-2 px-2 flex-shrink-0">
+                <Link to="/" className="flex items-center gap-2.5 text-muted-foreground hover:text-foreground transition-colors group">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl skeuo-btn text-foreground">
+                        <ArrowLeft className="w-5 h-5" />
+                    </div>
+                    <span className="text-base font-semibold">Home</span>
                 </Link>
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 bg-card/60 border border-border px-3 py-1.5 rounded-full">
-                        <Flame className="w-3.5 h-3.5 text-orange-400" />
-                        <span className="text-xs font-mono font-bold text-foreground">{streak}</span>
-                        <span className="text-xs text-muted-foreground">streak</span>
+                <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2 skeuo-panel px-3.5 py-1.5 rounded-full">
+                        <Flame className="w-4 h-4 text-orange-400" />
+                        <span className="text-sm font-mono font-bold text-foreground">{streak}</span>
+                        <span className="text-xs font-semibold text-muted-foreground">streak</span>
                     </div>
                     <button
                         onClick={handleToggleFlip}
                         title="Flip Board (F)"
-                        className="p-1.5 rounded-xl border border-border bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all flex items-center justify-center"
+                        className="p-2 rounded-xl skeuo-btn text-muted-foreground hover:text-foreground transition-all flex items-center justify-center"
                     >
                         <ArrowUpDown className="w-4 h-4" />
                     </button>
                     <button
                         onClick={handleToggleMute}
                         title="Toggle Sound (M)"
-                        className={`p-1.5 rounded-xl border border-border bg-card/60 transition-all flex items-center justify-center ${isMuted ? 'text-destructive border-destructive/40' : 'text-muted-foreground hover:text-foreground hover:border-primary/50'}`}
+                        className={`p-2 rounded-xl skeuo-btn transition-all flex items-center justify-center ${isMuted ? 'text-destructive border-destructive/40' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                         {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                     </button>
@@ -629,33 +631,33 @@ const DailyPuzzle = () => {
                 {/* Left Panel */}
                 <div className="hidden lg:flex flex-col gap-4 w-full lg:w-[360px] flex-shrink-0 order-2 lg:order-1 max-w-[500px] lg:max-w-none mx-auto lg:mx-0 lg:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] lg:max-h-full">
                     {/* Puzzle Info */}
-                    <div className="bg-card/60 border border-border rounded-2xl p-6 backdrop-blur-sm">
-                        <div className="flex items-center gap-2.5 mb-2">
-                            <Crown className="w-6 h-6 text-orange-400" />
-                            <h1 className="text-xl font-bold tracking-tight text-foreground">Daily Puzzle</h1>
+                    <div className="skeuo-panel rounded-3xl p-6">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Crown className="w-7 h-7 text-orange-400" />
+                            <h1 className="text-2xl font-bold font-display tracking-tight text-foreground">Daily Puzzle</h1>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-6">
+                        <p className="text-base text-muted-foreground mb-6">
                             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                         </p>
 
                         {puzzleState && (
                             <>
                                 <div className="flex gap-3 mb-5 flex-wrap">
-                                    <div className="flex-1 bg-muted/40 rounded-xl px-4 py-3 text-center border border-white/5">
-                                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Rating</p>
-                                        <p className="text-2xl font-mono font-bold text-primary">{puzzleState.rating}</p>
+                                    <div className="flex-1 bg-muted/30 rounded-2xl px-4 py-3.5 text-center border border-border/60">
+                                        <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground/75 mb-1">Rating</p>
+                                        <p className="text-3xl font-mono font-bold font-display text-primary">{puzzleState.rating}</p>
                                     </div>
-                                    <div className="flex-1 bg-muted/40 rounded-xl px-4 py-3 text-center border border-white/5">
-                                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Moves</p>
-                                        <p className="text-2xl font-mono font-bold text-foreground">{Math.ceil(puzzleState.solution.length / 2)}</p>
+                                    <div className="flex-1 bg-muted/30 rounded-2xl px-4 py-3.5 text-center border border-border/60">
+                                        <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground/75 mb-1">Moves</p>
+                                        <p className="text-3xl font-mono font-bold font-display text-foreground">{Math.ceil(puzzleState.solution.length / 2)}</p>
                                     </div>
                                 </div>
 
                                 <div className="mb-5">
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Play as</p>
-                                    <div className="flex items-center gap-3 bg-muted/30 rounded-xl px-4 py-3 border border-white/5">
-                                        <div className={`w-5 h-5 rounded-full border-2 border-border ${puzzleState.playerColor === 'white' ? 'bg-white' : 'bg-neutral-900'}`} />
-                                        <span className="text-base font-semibold capitalize text-foreground">{puzzleState.playerColor}</span>
+                                    <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground/75 mb-2">Play as</p>
+                                    <div className="flex items-center gap-3 bg-muted/25 rounded-2xl px-4 py-3.5 border border-border/60">
+                                        <div className={`w-5 h-5 rounded-full border-2 border-border shadow-sm ${puzzleState.playerColor === 'white' ? 'bg-white' : 'bg-neutral-900'}`} />
+                                        <span className="text-base font-bold capitalize text-foreground">{puzzleState.playerColor}</span>
                                     </div>
                                 </div>
 
@@ -663,7 +665,7 @@ const DailyPuzzle = () => {
                                 <div>
                                     <button
                                         onClick={() => setShowThemes(v => !v)}
-                                        className="text-xs text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors flex items-center gap-1.5"
+                                        className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 hover:text-foreground transition-colors flex items-center gap-1.5"
                                     >
                                         Themes {showThemes ? '▲' : '▼'}
                                     </button>
@@ -676,7 +678,7 @@ const DailyPuzzle = () => {
                                                 exit={{ opacity: 0, height: 0 }}
                                             >
                                                 {puzzleState.themes.slice(0, 6).map(t => (
-                                                    <span key={t} className="text-xs bg-orange-500/10 text-orange-300 border border-orange-500/20 px-3 py-1 rounded-full font-medium">
+                                                    <span key={t} className="text-xs bg-orange-500/10 text-orange-300 border border-orange-500/25 px-3 py-1 rounded-full font-semibold">
                                                         {formatTheme(t)}
                                                     </span>
                                                 ))}
@@ -689,22 +691,22 @@ const DailyPuzzle = () => {
                     </div>
 
                     {/* Streak */}
-                    <div className="bg-card/60 border border-border rounded-2xl p-5 backdrop-blur-sm">
+                    <div className="skeuo-panel rounded-3xl p-6">
                         <div className="flex justify-between items-center mb-1">
                             <div className="flex items-center gap-2.5">
                                 <Flame className="w-5 h-5 text-orange-400" />
-                                <span className="text-lg font-bold text-foreground">Streak</span>
+                                <span className="text-xl font-bold font-display text-foreground">Streak</span>
                             </div>
-                            <Trophy className="w-5 h-5 text-yellow-500/70" />
+                            <Trophy className="w-5 h-5 text-yellow-500/80" />
                         </div>
-                        <div className="flex gap-6 mt-4">
+                        <div className="flex gap-8 mt-4">
                             <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Current</p>
-                                <p className="text-3xl font-mono font-bold text-primary">{streak}</p>
+                                <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground/75 mb-1">Current</p>
+                                <p className="text-3xl font-mono font-bold font-display text-primary">{streak}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Best</p>
-                                <p className="text-3xl font-mono font-bold text-foreground">{bestStreak}</p>
+                                <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground/75 mb-1">Best</p>
+                                <p className="text-3xl font-mono font-bold font-display text-foreground">{bestStreak}</p>
                             </div>
                         </div>
                     </div>
@@ -715,14 +717,14 @@ const DailyPuzzle = () => {
                             <button
                                 onClick={showHint}
                                 disabled={status === 'solved' || opponentMoving || currentTurn !== puzzleState?.playerColor}
-                                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-border bg-card/50 text-base font-semibold text-muted-foreground hover:text-foreground hover:border-orange-400/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl skeuo-btn text-lg font-bold text-foreground hover:border-orange-400/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
                             >
                                 <Lightbulb className="w-5 h-5 text-yellow-400" />
                                 Hint {hintsUsed > 0 ? `(${hintsUsed} used)` : ''}
                             </button>
                             <button
                                 onClick={loadPuzzle}
-                                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-border bg-card/50 text-base font-semibold text-muted-foreground hover:text-foreground hover:border-orange-400/40 transition-all"
+                                className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl skeuo-btn text-lg font-bold text-foreground hover:border-orange-400/50 transition-all shadow-md"
                             >
                                 <RotateCcw className="w-5 h-5" />
                                 Reload
@@ -734,61 +736,61 @@ const DailyPuzzle = () => {
                 {/* Board Column */}
                 <div className="flex flex-col items-center gap-2 relative order-1 lg:order-2 flex-shrink min-h-0">
                     {/* Status Banner - fixed height to prevent board layout shift */}
-                    <div className="relative w-full flex items-center justify-center flex-shrink-0" style={{ minHeight: '40px' }}>
+                    <div className="relative w-full flex items-center justify-center flex-shrink-0" style={{ minHeight: '44px' }}>
                         <AnimatePresence mode="wait">
                             {(() => {
                                 if (status === 'loading') {
                                     return (
-                                        <motion.div key="loading" className="flex items-center gap-3 bg-card/60 border border-border rounded-xl px-5 py-3"
+                                        <motion.div key="loading" className="flex items-center gap-3 skeuo-panel px-6 py-3 rounded-2xl"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                                            <span className="text-sm font-medium text-muted-foreground">Loading today's puzzle…</span>
+                                            <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                                            <span className="text-base font-semibold text-muted-foreground">Loading today's puzzle…</span>
                                         </motion.div>
                                     );
                                 }
                                 if (status === 'error') {
                                     return (
-                                        <motion.div key="error" className="flex items-center gap-3 bg-destructive/10 border border-destructive/30 rounded-xl px-5 py-3"
+                                        <motion.div key="error" className="flex items-center gap-3 skeuo-panel border-destructive/40 px-6 py-3 rounded-2xl"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                                            <XCircle className="w-4 h-4 text-destructive" />
-                                            <span className="text-sm font-medium text-destructive">Failed to load puzzle. Check your connection.</span>
+                                            <XCircle className="w-5 h-5 text-destructive" />
+                                            <span className="text-base font-semibold text-destructive">Failed to load puzzle. Check your connection.</span>
                                         </motion.div>
                                     );
                                 }
                                 if (status === 'solved') {
                                     return (
-                                        <motion.div key="solved" className="flex items-center gap-3 bg-orange-500/15 border border-orange-500/40 rounded-xl px-5 py-3"
+                                        <motion.div key="solved" className="flex items-center gap-3 skeuo-panel border-orange-500/50 bg-orange-500/10 px-6 py-3 rounded-2xl"
                                             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-                                            <Trophy className="w-4 h-4 text-orange-400" />
-                                            <span className="text-sm font-bold text-orange-300">Puzzle Solved! {solvedToday ? '🔥' : ''}</span>
+                                            <Trophy className="w-5 h-5 text-orange-400" />
+                                            <span className="text-base font-bold font-display text-orange-300">Puzzle Solved! {solvedToday ? '🔥' : ''}</span>
                                         </motion.div>
                                     );
                                 }
                                 if (status === 'wrong') {
                                     return (
-                                        <motion.div key="wrong" className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-5 py-3"
+                                        <motion.div key="wrong" className="flex items-center gap-3 skeuo-panel border-red-500/40 bg-red-500/10 px-6 py-3 rounded-2xl"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                                            <XCircle className="w-4 h-4 text-red-400" />
-                                            <span className="text-sm font-semibold text-red-400">Not the right move — try again!</span>
+                                            <XCircle className="w-5 h-5 text-red-400" />
+                                            <span className="text-base font-semibold text-red-400">Not the right move — try again!</span>
                                         </motion.div>
                                     );
                                 }
                                 if (status === 'correct') {
                                     return (
-                                        <motion.div key="correct" className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-xl px-5 py-3"
+                                        <motion.div key="correct" className="flex items-center gap-3 skeuo-panel border-green-500/40 bg-green-500/10 px-6 py-3 rounded-2xl"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                                            <CheckCircle2 className="w-4 h-4 text-green-400" />
-                                            <span className="text-sm font-semibold text-green-400">Good move! Keep going…</span>
+                                            <CheckCircle2 className="w-5 h-5 text-green-400" />
+                                            <span className="text-base font-semibold text-green-400">Good move! Keep going…</span>
                                         </motion.div>
                                     );
                                 }
                                 if ((status === 'ready' || status === 'playing') && puzzleState) {
                                     return (
-                                        <motion.div key="find" className="flex items-center gap-3 bg-card/60 border border-border rounded-xl px-5 py-3"
+                                        <motion.div key="find" className="flex items-center gap-3 skeuo-panel px-6 py-3 rounded-2xl"
                                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                                            <div className={`w-3 h-3 rounded-full ${puzzleState.playerColor === 'white' ? 'bg-white border border-neutral-400' : 'bg-neutral-900 border border-neutral-600'}`} />
-                                            <span className="text-sm font-semibold text-foreground">
-                                                Find the best move for <span className="text-primary capitalize">{puzzleState.playerColor}</span>
+                                            <div className={`w-3.5 h-3.5 rounded-full ${puzzleState.playerColor === 'white' ? 'bg-white border border-neutral-400' : 'bg-neutral-900 border border-neutral-600'}`} />
+                                            <span className="text-base font-semibold text-foreground">
+                                                Find the best move for <span className="text-primary capitalize font-bold">{puzzleState.playerColor}</span>
                                             </span>
                                         </motion.div>
                                     );
@@ -803,23 +805,29 @@ const DailyPuzzle = () => {
                         <div className="flex justify-center">
                             <div className="chess-board-shadow rounded-xl overflow-hidden border border-chess-board-border relative flex flex-col items-center bg-chess-dark/30">
                                 {/* File labels top */}
-                                <div className="flex w-full">
-                                    <div className="w-8" />
-                                    <div className="flex-1 grid grid-cols-8">
+                                <div className="flex items-center">
+                                    <div className="w-6 sm:w-7 flex-shrink-0" />
+                                    <div 
+                                        style={{ width: 'min(70vw, calc(100dvh - 180px), 700px)' }}
+                                        className="grid grid-cols-8 h-6 sm:h-7 flex-shrink-0"
+                                    >
                                         {displayFiles.map((f) => (
-                                            <div key={f} className="h-8 flex items-center justify-center text-sm font-mono text-muted-foreground/50">
+                                            <div key={f} className="flex items-center justify-center text-xs sm:text-sm font-mono font-bold text-muted-foreground/60 select-none">
                                                 {f}
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="w-8" />
+                                    <div className="w-6 sm:w-7 flex-shrink-0" />
                                 </div>
 
-                                <div className="flex relative">
+                                <div className="flex relative items-center">
                                     {/* Ranks left */}
-                                    <div className="w-8 flex flex-col">
+                                    <div 
+                                        style={{ height: 'min(70vw, calc(100dvh - 180px), 700px)' }}
+                                        className="w-6 sm:w-7 grid grid-rows-8 flex-shrink-0"
+                                    >
                                         {displayRanks.map((r, i) => (
-                                            <div key={i} className="flex-1 flex items-center justify-center text-sm font-mono text-muted-foreground/50 aspect-square">
+                                            <div key={i} className="flex items-center justify-center text-xs sm:text-sm font-mono font-bold text-muted-foreground/60 select-none">
                                                 {r}
                                             </div>
                                         ))}
@@ -829,8 +837,8 @@ const DailyPuzzle = () => {
                                     <motion.div
                                         layout
                                         style={{
-                                            width: 'min(70vw, calc(100vh - 200px), 700px)',
-                                            height: 'min(70vw, calc(100vh - 200px), 700px)'
+                                            width: 'min(70vw, calc(100dvh - 180px), 700px)',
+                                            height: 'min(70vw, calc(100dvh - 180px), 700px)'
                                         }}
                                         transition={{
                                           type: 'spring',
@@ -838,7 +846,7 @@ const DailyPuzzle = () => {
                                           damping: 80,
                                           mass: 0.2
                                         }}
-                                        className="relative chess-board-shadow rounded-lg overflow-hidden border border-chess-board-border bg-chess-dark"
+                                        className="relative chess-board-shadow rounded-lg overflow-hidden border border-chess-board-border bg-chess-dark select-none"
                                     >
                                         <div className="grid grid-cols-8 grid-rows-8 w-full h-full">
                                             {rowIndices.flatMap((rowIdx) =>
@@ -910,9 +918,12 @@ const DailyPuzzle = () => {
                                     </motion.div>
 
                                     {/* Ranks right */}
-                                    <div className="w-8 flex flex-col">
+                                    <div 
+                                        style={{ height: 'min(70vw, calc(100dvh - 180px), 700px)' }}
+                                        className="w-6 sm:w-7 grid grid-rows-8 flex-shrink-0"
+                                    >
                                         {displayRanks.map((r, i) => (
-                                            <div key={i} className="flex-1 flex items-center justify-center text-sm font-mono text-muted-foreground/50 aspect-square">
+                                            <div key={i} className="flex items-center justify-center text-xs sm:text-sm font-mono font-bold text-muted-foreground/60 select-none">
                                                 {r}
                                             </div>
                                         ))}
@@ -920,16 +931,19 @@ const DailyPuzzle = () => {
                                 </div>
 
                                 {/* File labels bottom */}
-                                <div className="flex w-full">
-                                    <div className="w-8" />
-                                    <div className="flex-1 grid grid-cols-8">
+                                <div className="flex items-center">
+                                    <div className="w-6 sm:w-7 flex-shrink-0" />
+                                    <div 
+                                        style={{ width: 'min(70vw, calc(100dvh - 180px), 700px)' }}
+                                        className="grid grid-cols-8 h-6 sm:h-7 flex-shrink-0"
+                                    >
                                         {displayFiles.map((f) => (
-                                            <div key={f} className="h-8 flex items-center justify-center text-sm font-mono text-muted-foreground/50">
+                                            <div key={f} className="flex items-center justify-center text-xs sm:text-sm font-mono font-bold text-muted-foreground/60 select-none">
                                                 {f}
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="w-8" />
+                                    <div className="w-6 sm:w-7 flex-shrink-0" />
                                 </div>
                             </div>
                         </div>
@@ -937,20 +951,20 @@ const DailyPuzzle = () => {
                         <AnimatePresence>
                             {status === 'solved' && showSolvedOverlay && (
                                 <motion.div
-                                    className="absolute inset-0 z-30 flex flex-col items-center justify-center backdrop-blur-sm bg-background/70"
+                                    className="absolute inset-0 z-30 flex flex-col items-center justify-center backdrop-blur-md bg-background/70"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                 >
                                     <motion.div
-                                        className="bg-card border border-orange-500/30 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl relative"
+                                        className="skeuo-panel rounded-3xl p-8 flex flex-col items-center gap-5 shadow-2xl relative border border-orange-500/40 max-w-sm w-full mx-4"
                                         initial={{ scale: 0.9, y: 10 }}
                                         animate={{ scale: 1, y: 0 }}
                                         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                                     >
                                         <button
                                             onClick={() => setShowSolvedOverlay(false)}
-                                            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+                                            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg skeuo-btn"
                                         >
                                             <X className="w-5 h-5" />
                                         </button>
@@ -958,19 +972,19 @@ const DailyPuzzle = () => {
                                             animate={{ rotate: [0, -10, 10, -5, 5, 0] }}
                                             transition={{ duration: 0.6, delay: 0.2 }}
                                         >
-                                            <Trophy className="w-12 h-12 text-orange-400 drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]" />
+                                            <Trophy className="w-14 h-14 text-orange-400" />
                                         </motion.div>
-                                        <h2 className="text-2xl font-bold text-foreground tracking-tight">Puzzle Complete!</h2>
-                                        <p className="text-sm text-muted-foreground">
+                                        <h2 className="text-3xl font-bold font-display text-foreground tracking-tight">Puzzle Complete!</h2>
+                                        <p className="text-base text-muted-foreground text-center">
                                             {hintsUsed === 0 ? 'Perfect — no hints used! 🎯' : `Solved with ${hintsUsed} hint${hintsUsed > 1 ? 's' : ''}`}
                                         </p>
-                                        <div className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 px-4 py-2 rounded-full">
-                                            <Flame className="w-4 h-4 text-orange-400" />
-                                            <span className="text-sm font-bold text-orange-300">{streak} day streak</span>
+                                        <div className="flex items-center gap-2 bg-orange-500/15 border border-orange-500/30 px-5 py-2.5 rounded-full shadow-inner">
+                                            <Flame className="w-5 h-5 text-orange-400" />
+                                            <span className="text-base font-bold text-orange-300">{streak} day streak</span>
                                         </div>
                                         <button
                                             onClick={loadPuzzle}
-                                            className="mt-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-all"
+                                            className="mt-2 w-full py-3.5 rounded-xl skeuo-btn-primary font-bold text-base transition-all shadow-md active:scale-95"
                                         >
                                             Try Another Puzzle
                                         </button>
@@ -994,9 +1008,9 @@ const DailyPuzzle = () => {
                                         className={`rounded-full transition-all duration-300 ${!isPlayerMove
                                             ? 'w-2 h-2 opacity-40 bg-muted-foreground'
                                             : isDone
-                                                ? 'w-3 h-3 bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'
+                                                ? 'w-3 h-3 bg-green-500'
                                                 : isCurrent
-                                                    ? 'w-3 h-3 bg-primary shadow-[0_0_8px_rgba(255,165,0,0.5)]'
+                                                    ? 'w-3 h-3 bg-primary'
                                                     : 'w-3 h-3 bg-muted border border-border'
                                             }`}
                                         animate={isCurrent ? { scale: [1, 1.3, 1] } : {}}

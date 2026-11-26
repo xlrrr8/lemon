@@ -26,25 +26,25 @@ export const PromotionModal: React.FC<PromotionModalProps> = ({
         onClick={onCancel}
       >
         <motion.div
-          className="bg-card border border-border/80 rounded-2xl p-5 shadow-2xl flex flex-col items-center gap-4 max-w-xs mx-4"
+          className="skeuo-panel rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-xs mx-4 border border-white/15"
           initial={{ scale: 0.9, opacity: 0, y: 10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
         >
-          <span className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground">
+          <span className="text-sm font-display font-bold uppercase tracking-wider text-foreground">
             Promote Pawn
           </span>
 
-          <div className="flex gap-2.5">
+          <div className="flex gap-3">
             {pieces.map((type) => (
               <button
                 key={type}
                 onClick={() => onSelect(type)}
-                className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl transition-all duration-150 border ${
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl transition-all duration-150 skeuo-btn ${
                   color === 'white'
-                    ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-zinc-700'
-                    : 'bg-primary/10 hover:bg-primary/20 text-chess-bright border-primary/30 shadow-[0_0_12px_rgba(255,165,0,0.2)]'
+                    ? 'text-zinc-100 hover:text-white'
+                    : 'text-chess-bright hover:border-primary/60'
                 } hover:scale-110 active:scale-95`}
               >
                 {getPieceSymbol(type)}
@@ -52,7 +52,7 @@ export const PromotionModal: React.FC<PromotionModalProps> = ({
             ))}
           </div>
 
-          <p className="text-[11px] text-muted-foreground/60 italic text-center">
+          <p className="text-xs font-medium text-muted-foreground/80 italic text-center">
             Click outside to cancel move
           </p>
         </motion.div>

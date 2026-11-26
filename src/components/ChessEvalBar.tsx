@@ -41,29 +41,29 @@ export const ChessEvalBar: React.FC<ChessEvalBarProps> = ({
   const topPercent = isFlipped ? whitePercent : (100 - whitePercent);
 
   return (
-    <div className="relative flex flex-col items-center w-7 sm:w-8 h-full min-h-[300px] rounded-lg overflow-hidden border border-border/80 bg-zinc-950 shadow-md select-none">
+    <div className="relative flex flex-col items-center w-8 sm:w-9 h-full min-h-[300px] rounded-xl overflow-hidden border border-white/15 skeuo-inner shadow-xl select-none">
       {/* Top section (Black by default, White if flipped) */}
       <motion.div
-        className="w-full bg-zinc-900 flex items-start justify-center pt-2 transition-all duration-500 ease-out"
+        className="w-full bg-zinc-900 flex items-start justify-center pt-2.5 transition-all duration-500 ease-out"
         style={{ height: `${topPercent}%` }}
       >
         {topPercent > 18 && (
-          <span className="text-[10px] font-mono font-bold text-zinc-400 select-none">
+          <span className="text-xs font-mono font-bold text-zinc-300 select-none">
             {isFlipped ? (label.startsWith('+') ? label : '') : (label.startsWith('-') ? label : '')}
           </span>
         )}
       </motion.div>
 
       {/* Thin accent divider line */}
-      <div className="w-full h-0.5 bg-primary/40 shadow-[0_0_8px_rgba(255,165,0,0.5)] z-10" />
+      <div className="w-full h-0.5 bg-primary/70 z-10" />
 
       {/* Bottom section (White by default, Black if flipped) */}
       <motion.div
-        className="w-full bg-zinc-200 dark:bg-zinc-100 flex items-end justify-center pb-2 transition-all duration-500 ease-out"
+        className="w-full bg-zinc-200 flex items-end justify-center pb-2.5 transition-all duration-500 ease-out"
         style={{ height: `${100 - topPercent}%` }}
       >
         {(100 - topPercent) > 18 && (
-          <span className="text-[10px] font-mono font-bold text-zinc-800 select-none">
+          <span className="text-xs font-mono font-bold text-zinc-900 select-none">
             {isFlipped ? (label.startsWith('-') ? label : '') : (label.startsWith('+') ? label : (label === '0.0' ? '0.0' : ''))}
           </span>
         )}

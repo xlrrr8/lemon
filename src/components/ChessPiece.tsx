@@ -81,10 +81,6 @@ const ChessPiece = memo(({
         dragClone.style.fontSize = `${squareSize * 0.75}px`;
         dragClone.style.lineHeight = '1';
         dragClone.style.zIndex = '99999';
-        dragClone.style.filter = 'drop-shadow(0 12px 24px rgba(0,0,0,0.5))';
-        dragClone.style.textShadow = !isWhite
-          ? '0 0 24px hsl(25 90% 55% / 0.7)'
-          : '0 0 20px rgba(255, 255, 255, 0.7)';
         dragClone.style.willChange = 'transform';
 
         const isMobile = window.innerWidth < 768;
@@ -154,13 +150,8 @@ const ChessPiece = memo(({
     >
       <span
         className={`inline-block leading-none ${!isWhite ? 'text-chess-bright piece-bright' : 'text-chess-dull piece-dull'
-          } ${isSelected ? 'drop-shadow-lg' : ''} ${scaleClass}`}
+          } ${scaleClass}`}
         style={{
-          textShadow: isSelected
-            ? !isWhite
-              ? '0 0 20px hsl(25 90% 55% / 0.6)'
-              : '0 0 16px rgba(255, 255, 255, 0.6)'
-            : 'none',
           fontSize: '75cqw',
         }}
       >

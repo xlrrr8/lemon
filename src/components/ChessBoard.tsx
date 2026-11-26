@@ -870,84 +870,114 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
   const { text: statusText, color: statusColor } = statusLabel();
 
+  const boardSize = isReviewPageActive 
+    ? 'min(50vw, calc(100dvh - 165px), 640px)' 
+    : 'min(calc(100cqw - 48px), calc(100dvh - 150px), 760px)';
+
   return (
-    <div className={`grid grid-cols-1 w-full mx-auto px-4 min-h-fit transition-all duration-500 ease-in-out ${isReviewPageActive ? 'lg:grid-cols-[minmax(0,_1fr)_350px] gap-6 max-w-[1080px] items-center' : 'lg:grid-cols-[280px_minmax(0,_1fr)_280px] gap-8 max-w-screen-2xl items-center'}`}>
-      {/* Left Panel - Timers */}
-      {!isReviewPageActive && initialTime > 0 ? (
-        <div className="hidden lg:flex flex-col w-[280px] flex-shrink-0 justify-between gap-4 py-8 h-full">
+    <div className={`grid grid-cols-1 w-full mx-auto px-2 sm:px-4 transition-all duration-500 ease-in-out ${
+      isReviewPageActive 
+        ? 'lg:grid-cols-[minmax(0,_1fr)_340px] gap-4 max-w-[1080px] items-center' 
+        : 'lg:grid-cols-[240px_minmax(0,_1fr)_260px] xl:grid-cols-[260px_minmax(0,_1fr)_280px] gap-3 xl:gap-6 max-w-screen-2xl items-center'
+    }`}>
+      {/* Left Panel - Player Cards & Timers */}
+      {!isReviewPageActive && (
+        <div className="hidden lg:flex flex-col w-[240px] xl:w-[260px] flex-shrink-0 justify-between gap-3 py-2 xl:py-4 h-full max-h-[calc(100dvh-40px)]">
           <div className="flex-1" />
 
-          <div className={`rounded-xl border flex flex-col transition-all duration-300 ${currentTurn === 'black' && !isGameOver ? 'bg-primary/10 border-primary/30 shadow-[0_0_20px_rgba(255,165,0,0.15)] scale-105' : 'bg-card border-border opacity-70 scale-95'} overflow-hidden`}>
-            <div className={`px-5 py-4 border-b flex items-center justify-between ${currentTurn === 'black' && !isGameOver ? 'border-primary/20 bg-primary/5' : 'border-border/50 bg-black/10'}`}>
+          {/* Opponent / Bot card */}
+          <div className={`rounded-xl flex flex-col transition-all duration-200 skeuo-panel ${currentTurn === 'black' && !isGameOver ? 'border-primary' : 'opacity-80'} overflow-hidden`}>
+            <div className={`px-5 py-4 border-b flex items-center justify-between ${currentTurn === 'black' && !isGameOver ? 'border-primary/30 bg-primary/10' : 'border-border/50 bg-black/15'}`}>
                <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 rounded flex items-center justify-center bg-orange-500/20 text-orange-400 text-sm font-bold border border-orange-500/20">O</div>
-                 <span className="text-lg font-bold text-foreground tracking-tight">Orange</span>
+                 <div className="w-10 h-10 rounded flex items-center justify-center bg-orange-500/20 text-orange-400 text-base font-bold border border-orange-500/25">O</div>
+                 <span className="text-xl font-display font-bold text-foreground tracking-tight">Orange</span>
                </div>
-               <span className="text-sm font-mono font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
+               <span className="text-base font-mono font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">
                  {mode === 'computer' ? `Bot L.${level}` : Math.round(glickoPlayer.rating)}
                </span>
             </div>
             <div className="flex flex-col items-center justify-center p-4 pt-3">
-              <span className={`text-3xl xl:text-4xl font-mono font-bold tracking-tight ${currentTurn === 'black' && !isGameOver ? 'text-primary' : 'text-muted-foreground'}`}>
-                {formatTime(blackTime)}
+              <span
+                className={`text-4xl xl:text-5xl font-mono font-bold tracking-tight ${currentTurn === 'black' && !isGameOver ? 'text-primary' : 'text-muted-foreground'}`}
+              >
+                {initialTime > 0 ? formatTime(blackTime) : '∞'}
               </span>
+              {initialTime === 0 && (
+                <span className="text-xs uppercase font-bold text-muted-foreground/60 tracking-widest mt-1">
+                  Untimed
+                </span>
+              )}
             </div>
           </div>
 
           <div className="flex-1" />
 
-          <div className={`rounded-xl border flex flex-col transition-all duration-300 ${currentTurn === 'white' && !isGameOver ? 'bg-white/5 border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-105' : 'bg-card border-border opacity-70 scale-95'} overflow-hidden`}>
-            <div className={`px-5 py-4 border-b flex items-center justify-between ${currentTurn === 'white' && !isGameOver ? 'border-white/10 bg-white/5' : 'border-border/50 bg-black/10'}`}>
+          {/* Player card */}
+          <div className={`rounded-xl flex flex-col transition-all duration-200 skeuo-panel ${currentTurn === 'white' && !isGameOver ? 'border-white/40' : 'opacity-80'} overflow-hidden`}>
+            <div className={`px-5 py-4 border-b flex items-center justify-between ${currentTurn === 'white' && !isGameOver ? 'border-white/20 bg-white/10' : 'border-border/50 bg-black/15'}`}>
                <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 rounded flex items-center justify-center bg-muted/60 text-muted-foreground text-sm font-bold border border-white/10">W</div>
-                 <span className="text-lg font-bold text-foreground tracking-tight">You</span>
+                 <div className="w-10 h-10 rounded flex items-center justify-center bg-muted/60 text-muted-foreground text-base font-bold border border-white/15">W</div>
+                 <span className="text-xl font-display font-bold text-foreground tracking-tight">You</span>
                </div>
-               <span className="text-sm font-mono font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 drop-shadow-[0_0_8px_rgba(255,165,0,0.3)]">
+               <span className="text-base font-mono font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">
                  {formatRating(glickoPlayer)}
                </span>
             </div>
             <div className="flex flex-col items-center justify-center p-4 pt-3">
-              <span className={`text-3xl xl:text-4xl font-mono font-bold tracking-tight ${currentTurn === 'white' && !isGameOver ? 'text-foreground' : 'text-muted-foreground'}`}>
-                {formatTime(whiteTime)}
+              <span
+                className={`text-4xl xl:text-5xl font-mono font-bold tracking-tight ${currentTurn === 'white' && !isGameOver ? 'text-foreground' : 'text-muted-foreground'}`}
+              >
+                {initialTime > 0 ? formatTime(whiteTime) : '∞'}
               </span>
+              {initialTime === 0 && (
+                <span className="text-xs uppercase font-bold text-muted-foreground/60 tracking-widest mt-1">
+                  Untimed
+                </span>
+              )}
             </div>
           </div>
 
           <div className="flex-1" />
         </div>
-      ) : (
-        !isReviewPageActive && <div className="hidden lg:block w-[280px] flex-shrink-0" />
       )}
 
-      {/* Mobile Timers Row */}
-      {!isReviewPageActive && initialTime > 0 && (
+      {/* Mobile Timers & Players Row */}
+      {!isReviewPageActive && (
         <div className="flex lg:hidden flex-row gap-4 w-full px-2 mb-4">
-          <div className={`rounded-xl border flex-1 flex flex-col overflow-hidden ${currentTurn === 'black' ? 'bg-primary/10 border-primary/30' : 'bg-card border-border'}`}>
-            <div className={`px-3 py-2 border-b flex justify-between items-center ${currentTurn === 'black' ? 'border-primary/20 bg-primary/5' : 'border-border/50 bg-black/10'}`}>
+          <div className={`rounded-xl flex-1 flex flex-col overflow-hidden skeuo-panel ${currentTurn === 'black' ? 'border-primary' : ''}`}>
+            <div className={`px-3 py-2 border-b flex justify-between items-center ${currentTurn === 'black' ? 'border-primary/30 bg-primary/10' : 'border-border/50 bg-black/15'}`}>
                <div className="flex items-center gap-2">
-                 <div className="w-5 h-5 rounded flex items-center justify-center bg-orange-500/20 text-orange-400 text-[10px] font-bold border border-orange-500/20">O</div>
-                 <span className="text-sm font-bold text-foreground tracking-tight">Orange</span>
+                 <div className="w-6 h-6 rounded flex items-center justify-center bg-orange-500/20 text-orange-400 text-xs font-bold border border-orange-500/20">O</div>
+                 <span className="text-base font-display font-bold text-foreground tracking-tight">Orange</span>
                </div>
-               <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
+               <span className="text-sm font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20">
                  {mode === 'computer' ? `Bot L.${level}` : Math.round(glickoPlayer.rating)}
                </span>
             </div>
             <div className="p-2.5 flex justify-center items-center">
-               <span className={`text-2xl font-mono font-bold tracking-tight ${currentTurn === 'black' ? 'text-primary' : 'text-foreground'}`}>{formatTime(blackTime)}</span>
+               <span
+                 className={`text-3xl font-mono font-bold tracking-tight ${currentTurn === 'black' ? 'text-primary' : 'text-foreground'}`}
+               >
+                 {initialTime > 0 ? formatTime(blackTime) : '∞'}
+               </span>
             </div>
           </div>
-          <div className={`rounded-xl border flex-1 flex flex-col overflow-hidden ${currentTurn === 'white' ? 'bg-white/5 border-white/20' : 'bg-card border-border'}`}>
-            <div className={`px-3 py-2 border-b flex justify-between items-center ${currentTurn === 'white' ? 'border-white/10 bg-white/5' : 'border-border/50 bg-black/10'}`}>
+          <div className={`rounded-xl flex-1 flex flex-col overflow-hidden skeuo-panel ${currentTurn === 'white' ? 'border-white/30' : ''}`}>
+            <div className={`px-3 py-2 border-b flex justify-between items-center ${currentTurn === 'white' ? 'border-white/20 bg-white/10' : 'border-border/50 bg-black/15'}`}>
                <div className="flex items-center gap-2">
-                 <div className="w-5 h-5 rounded flex items-center justify-center bg-muted/60 text-muted-foreground text-[10px] font-bold border border-white/10">W</div>
-                 <span className="text-sm font-bold text-foreground tracking-tight">You</span>
+                 <div className="w-6 h-6 rounded flex items-center justify-center bg-muted/60 text-muted-foreground text-xs font-bold border border-white/10">W</div>
+                 <span className="text-base font-display font-bold text-foreground tracking-tight">You</span>
                </div>
-               <span className="text-xs font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 drop-shadow-[0_0_6px_rgba(255,165,0,0.3)]">
+               <span className="text-sm font-mono font-black text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20">
                  {formatRating(glickoPlayer)}
                </span>
             </div>
             <div className="p-2.5 flex justify-center items-center">
-               <span className={`text-2xl font-mono font-bold tracking-tight ${currentTurn === 'white' ? 'text-foreground' : 'text-muted-foreground'}`}>{formatTime(whiteTime)}</span>
+               <span
+                 className={`text-3xl font-mono font-bold tracking-tight ${currentTurn === 'white' ? 'text-foreground' : 'text-muted-foreground'}`}
+               >
+                 {initialTime > 0 ? formatTime(whiteTime) : '∞'}
+               </span>
             </div>
           </div>
         </div>
@@ -970,7 +1000,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                 exit={{ opacity: 0 }}
               >
                 <motion.div
-                  className="relative overflow-hidden bg-card border border-border rounded-3xl p-8 flex flex-col items-center gap-6 shadow-2xl w-[92%] max-w-sm mx-4"
+                  className="relative overflow-hidden skeuo-panel rounded-3xl p-8 flex flex-col items-center gap-6 shadow-2xl w-[92%] max-w-sm mx-4"
                   initial={{ scale: 0.95, y: 10, opacity: 0 }}
                   animate={{ scale: 1, y: 0, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
@@ -978,7 +1008,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                   {/* Close Button */}
                   <button
                     onClick={() => setHideWinnerCard(true)}
-                    className="absolute top-4 right-4 z-20 p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    className="absolute top-4 right-4 z-20 p-2 rounded-full skeuo-btn text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -987,7 +1017,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                     {overlayContent === 'result' && (
                       <>
                         <div className="text-center mt-2 mb-2 w-full animate-in fade-in zoom-in-95 duration-300">
-                          <h2 className="text-3xl font-display font-bold text-foreground tracking-tight mb-2 leading-tight">
+                          <h2 className="text-4xl font-display font-bold text-foreground tracking-tight mb-2 leading-tight">
                             {statusText.includes('wins') || gameStatus === 'resigned' ? (
                               <>
                                 <span className={statusText.includes('White wins') || (gameStatus === 'resigned' && statusText.includes('Orange Resigned')) ? 'text-foreground' : 'text-primary'}>
@@ -1001,7 +1031,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                               statusText.split('—')[0]?.trim() || statusText
                             )}
                           </h2>
-                          <p className="text-sm font-medium text-muted-foreground">
+                          <p className="text-base font-medium text-muted-foreground">
                             {gameStatus === 'checkmate' ? 'by checkmate' :
                               timeoutWinner ? 'on time' :
                                 gameStatus === 'resigned' ? 'by resignation' :
@@ -1014,49 +1044,49 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
                         {/* Stats Grid */}
                         <div className={`grid ${initialTime > 0 ? 'grid-cols-2' : 'grid-cols-2'} gap-4 w-full mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500`}>
-                          <div className="col-span-1 flex flex-col items-center justify-center py-3 bg-muted/40 rounded-2xl border border-white/5">
-                            <span className="text-[10px] font-mono font-medium text-muted-foreground uppercase tracking-wider mb-1">Moves</span>
-                            <span className="text-2xl font-mono font-bold text-foreground">{Math.ceil(moveHistory.length / 2)}</span>
+                          <div className="col-span-1 flex flex-col items-center justify-center py-3 skeuo-inner rounded-2xl">
+                            <span className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-wider mb-1">Moves</span>
+                            <span className="text-3xl font-mono font-bold text-foreground">{Math.ceil(moveHistory.length / 2)}</span>
                           </div>
-                          <div className="col-span-1 flex flex-col items-center justify-center py-3 bg-muted/40 rounded-2xl border border-white/5">
-                            <span className="text-[10px] font-mono font-medium text-muted-foreground uppercase tracking-wider mb-1">Material</span>
-                            <span className={`text-2xl font-mono font-bold ${advantage > 0 ? 'text-foreground' : advantage < 0 ? 'text-primary' : 'text-foreground'}`}>
+                          <div className="col-span-1 flex flex-col items-center justify-center py-3 skeuo-inner rounded-2xl">
+                            <span className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-wider mb-1">Material</span>
+                            <span className={`text-3xl font-mono font-bold ${advantage > 0 ? 'text-foreground' : advantage < 0 ? 'text-primary' : 'text-foreground'}`}>
                               {advantage === 0 ? '=' : advantage > 0 ? `+${advantage}` : -advantage}
                             </span>
                           </div>
 
                           {initialTime > 0 && (
                             <>
-                              <div className="col-span-1 flex flex-col items-center justify-center py-3 bg-muted/40 rounded-2xl border border-white/5">
-                                <span className="text-[10px] font-mono font-medium text-muted-foreground uppercase tracking-wider mb-1">White</span>
-                                <span className={`text-lg font-mono font-bold ${timeoutWinner === 'black' ? 'text-destructive' : 'text-foreground'}`}>{formatTime(whiteTime)}</span>
+                              <div className="col-span-1 flex flex-col items-center justify-center py-3 skeuo-inner rounded-2xl">
+                                <span className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-wider mb-1">White</span>
+                                <span className={`text-xl font-mono font-bold ${timeoutWinner === 'black' ? 'text-destructive' : 'text-foreground'}`}>{formatTime(whiteTime)}</span>
                               </div>
-                              <div className="col-span-1 flex flex-col items-center justify-center py-3 bg-muted/40 rounded-2xl border border-white/5">
-                                <span className="text-[10px] font-mono font-medium text-muted-foreground uppercase tracking-wider mb-1">Orange</span>
-                                <span className={`text-lg font-mono font-bold ${timeoutWinner === 'white' ? 'text-destructive' : 'text-foreground'}`}>{formatTime(blackTime)}</span>
+                              <div className="col-span-1 flex flex-col items-center justify-center py-3 skeuo-inner rounded-2xl">
+                                <span className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-wider mb-1">Orange</span>
+                                <span className={`text-xl font-mono font-bold ${timeoutWinner === 'white' ? 'text-destructive' : 'text-foreground'}`}>{formatTime(blackTime)}</span>
                               </div>
                             </>
                           )}
 
                           {mode === 'computer' && (
                             <div className="col-span-2 flex flex-col items-center justify-center py-4 bg-primary/5 rounded-2xl border border-primary/20 shadow-inner mt-2">
-                              <span className="text-[10px] font-mono text-primary font-bold uppercase tracking-wider mb-1.5">Rating</span>
-                              <span className="text-3xl font-mono font-black text-foreground flex items-baseline gap-2">
+                              <span className="text-xs font-mono text-primary font-bold uppercase tracking-wider mb-1.5">Rating</span>
+                              <span className="text-4xl font-mono font-black text-foreground flex items-baseline gap-2">
                                 {Math.round(glickoPlayer.rating)}
                                 {ratingChange !== null && (
-                                  <span className={`text-sm font-semibold px-2 py-0.5 rounded-full ${ratingChange >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-destructive/20 text-destructive'}`}>
+                                  <span className={`text-base font-semibold px-2.5 py-0.5 rounded-full ${ratingChange >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-destructive/20 text-destructive'}`}>
                                     {ratingChange > 0 ? `+${ratingChange}` : ratingChange}
                                   </span>
                                 )}
                               </span>
-                              <span className="text-[10px] font-mono text-muted-foreground/60 mt-1">±{Math.round(glickoPlayer.rd)} RD</span>
+                              <span className="text-xs font-mono text-muted-foreground/80 mt-1">±{Math.round(glickoPlayer.rd)} RD</span>
                             </div>
                           )}
                         </div>
 
                         <div className="flex w-full gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
                           <motion.button
-                            className="flex-1 py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm tracking-wide hover:bg-primary/90 transition-all shadow-md"
+                            className="flex-1 py-3.5 rounded-xl skeuo-btn-primary font-semibold text-base tracking-wide transition-all"
                             onClick={resetGame}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -1065,7 +1095,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                           </motion.button>
 
                           <motion.button
-                            className="flex-1 py-3.5 rounded-xl bg-secondary text-secondary-foreground font-semibold text-sm tracking-wide hover:bg-secondary/80 transition-all"
+                            className="flex-1 py-3.5 rounded-xl skeuo-btn text-secondary-foreground font-semibold text-base tracking-wide transition-all"
                             onClick={startFullGameReview}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -1077,16 +1107,16 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                         <div className="flex w-full gap-2 mt-3">
                           <button
                             onClick={handleCopyPgn}
-                            className="flex-1 py-2 rounded-lg bg-secondary/50 text-xs font-mono text-muted-foreground hover:text-foreground hover:bg-secondary border border-border flex items-center justify-center gap-1.5 transition-colors"
+                            className="flex-1 py-2.5 rounded-lg skeuo-btn text-sm font-mono text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors"
                           >
-                            {copiedPgn ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            {copiedPgn ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                             Copy PGN
                           </button>
                           <button
                             onClick={handleCopyFen}
-                            className="flex-1 py-2 rounded-lg bg-secondary/50 text-xs font-mono text-muted-foreground hover:text-foreground hover:bg-secondary border border-border flex items-center justify-center gap-1.5 transition-colors"
+                            className="flex-1 py-2.5 rounded-lg skeuo-btn text-sm font-mono text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors"
                           >
-                            {copiedFen ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            {copiedFen ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                             Copy FEN
                           </button>
                         </div>
@@ -1095,17 +1125,17 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
                     {overlayContent === 'analyzing' && (
                       <div className="flex flex-col items-center justify-center py-8 w-full animate-in fade-in zoom-in-95 duration-500">
-                        <div className="w-16 h-16 border-4 border-muted border-t-primary rounded-full animate-spin mb-8 shadow-[0_0_15px_rgba(255,165,0,0.2)]" />
-                        <h3 className="text-2xl font-display font-bold mb-3 text-foreground tracking-tight">Reviewing Game</h3>
-                        <p className="text-sm font-medium text-muted-foreground mb-8 text-center max-w-[250px] leading-relaxed">
+                        <div className="w-16 h-16 border-4 border-muted border-t-primary rounded-full animate-spin mb-8" />
+                        <h3 className="text-3xl font-display font-bold mb-3 text-foreground tracking-tight">Reviewing Game</h3>
+                        <p className="text-base font-medium text-muted-foreground mb-8 text-center max-w-[270px] leading-relaxed">
                           Stockfish 16 NNUE is calculating match accuracy and best moves...
                         </p>
-                        <div className="w-full bg-muted border border-border rounded-full h-3 mb-4 overflow-hidden shadow-inner relative">
-                          <div className="absolute inset-y-0 left-0 bg-primary h-full rounded-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(255,165,0,0.5)]" style={{ width: `${reviewProgress.total > 0 ? (reviewProgress.current / reviewProgress.total) * 100 : 0}%` }}>
-                            <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                        <div className="w-full skeuo-inner rounded-full h-3.5 mb-4 overflow-hidden relative">
+                          <div className="absolute inset-y-0 left-0 bg-primary h-full rounded-full transition-all duration-300 ease-out" style={{ width: `${reviewProgress.total > 0 ? (reviewProgress.current / reviewProgress.total) * 100 : 0}%` }}>
+                            <div className="absolute inset-0 bg-white/20" />
                           </div>
                         </div>
-                        <p className="text-xs font-mono font-bold text-muted-foreground/80 tracking-widest">{reviewProgress.current} / {reviewProgress.total} MOVES</p>
+                        <p className="text-sm font-mono font-bold text-muted-foreground tracking-widest">{reviewProgress.current} / {reviewProgress.total} MOVES</p>
                       </div>
                     )}
 
@@ -1118,10 +1148,10 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
           <div className="chess-board-shadow rounded-xl overflow-hidden border border-chess-board-border relative flex flex-col items-center bg-chess-dark/30">
             {/* Top Board Interactive Toolbar */}
-            <div className="w-full flex items-center justify-between px-3 py-2 border-b border-border/40 bg-card/30 backdrop-blur-sm">
+            <div className="w-full flex items-center justify-between px-3 py-1.5 sm:py-2 border-b border-border/40 bg-card/40 backdrop-blur-sm">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-sm font-mono font-bold text-muted-foreground uppercase tracking-wider">
                   {mode === 'computer' ? `Stockfish L.${level}` : 'Pass & Play'}
                 </span>
               </div>
@@ -1130,64 +1160,64 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                 {/* Flip Board */}
                 <button
                   onClick={handleToggleFlip}
-                  className={`p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono transition-all border flex items-center gap-1.5 ${
+                  className={`skeuo-btn p-1.5 sm:px-3 sm:py-1 rounded-lg text-sm font-mono transition-all flex items-center gap-1.5 ${
                     isFlipped
-                      ? 'bg-primary/20 text-primary border-primary/40 shadow-[0_0_8px_rgba(255,165,0,0.2)]'
-                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground border-border/60'
+                      ? '!bg-primary !border-primary text-white font-bold'
+                      : 'text-muted-foreground hover:text-foreground hover:border-primary/40'
                   }`}
                   title="Flip Board [F]"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline text-[11px] font-bold">Flip</span>
+                  <RotateCcw className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm font-bold">Flip</span>
                 </button>
 
                 {/* Eval Bar Toggle */}
                 <button
                   onClick={handleToggleEval}
-                  className={`p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono transition-all border flex items-center gap-1.5 ${
+                  className={`skeuo-btn p-1.5 sm:px-3 sm:py-1 rounded-lg text-sm font-mono transition-all flex items-center gap-1.5 ${
                     showEvalBar
-                      ? 'bg-primary/20 text-primary border-primary/40 shadow-[0_0_8px_rgba(255,165,0,0.2)]'
-                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground border-border/60'
+                      ? '!bg-primary !border-primary text-white font-bold'
+                      : 'text-muted-foreground hover:text-foreground hover:border-primary/40'
                   }`}
                   title="Toggle Evaluation Bar"
                 >
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline text-[11px] font-bold">Eval</span>
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm font-bold">Eval</span>
                 </button>
 
                 {/* Sound Toggle */}
                 <button
                   onClick={handleToggleSound}
-                  className={`p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono transition-all border flex items-center gap-1.5 ${
+                  className={`skeuo-btn p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-sm font-mono transition-all flex items-center gap-1.5 ${
                     isMuted
-                      ? 'bg-destructive/20 text-destructive border-destructive/40'
-                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground border-border/60'
+                      ? '!border-destructive/60 text-destructive bg-destructive/10'
+                      : 'text-muted-foreground hover:text-foreground hover:border-primary/40'
                   }`}
                   title={isMuted ? "Unmute Sound [M]" : "Mute Sound [M]"}
                 >
-                  {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
 
                 {/* Auto-Queen Toggle */}
                 <button
                   onClick={handleToggleAutoQueen}
-                  className={`p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono transition-all border flex items-center gap-1.5 ${
+                  className={`skeuo-btn p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-sm font-mono transition-all flex items-center gap-1.5 ${
                     autoQueen
-                      ? 'bg-primary/20 text-primary border-primary/40 shadow-[0_0_8px_rgba(255,165,0,0.2)]'
-                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground border-border/60'
+                      ? '!bg-primary !border-primary text-white font-bold'
+                      : 'text-muted-foreground hover:text-foreground hover:border-primary/40'
                   }`}
                   title={autoQueen ? "Auto-Queen: ON (Click to choose promotion piece)" : "Auto-Queen: OFF (Promote dialog active)"}
                 >
-                  <Crown className="w-3.5 h-3.5" />
+                  <Crown className="w-4 h-4" />
                 </button>
 
                 {/* Copy FEN */}
                 <button
                   onClick={handleCopyFen}
-                  className="p-1.5 sm:px-2 rounded-lg text-xs font-mono bg-secondary/60 text-muted-foreground hover:text-foreground border border-border/60 transition-colors"
+                  className="skeuo-btn p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
                   title="Copy Position FEN"
                 >
-                  {copiedFen ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedFen ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                 </button>
 
                 <ThemeSwitcher />
@@ -1195,26 +1225,27 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
             </div>
 
             {/* File labels top */}
-            <div className="flex w-full">
-              {showEvalBar && <div className="hidden sm:block w-7 sm:w-8" />}
-              <div className="w-8" />
-              <div className="flex-1 grid grid-cols-8">
+            <div className="flex items-center gap-1">
+              {showEvalBar && <div className="hidden sm:block w-7 sm:w-8 mr-1 flex-shrink-0" />}
+              <div className="w-6 sm:w-7 flex-shrink-0" />
+              <div 
+                style={{ width: boardSize }} 
+                className="grid grid-cols-8 h-6 sm:h-7 flex-shrink-0"
+              >
                 {displayFiles.map((f) => (
-                  <div key={f} className="h-8 flex items-center justify-center text-sm font-mono text-muted-foreground/50">
+                  <div key={f} className="flex items-center justify-center text-xs sm:text-sm font-mono font-bold text-muted-foreground/60 select-none">
                     {f}
                   </div>
                 ))}
               </div>
-              <div className="w-8" />
+              <div className="w-6 sm:w-7 flex-shrink-0" />
             </div>
 
             <div className="flex relative items-center gap-1">
               {/* Live Eval Bar if enabled */}
               {showEvalBar && (
                 <div
-                  style={{
-                    height: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(calc(100cqw - 64px), calc(100vh - 120px), 1200px)'
-                  }}
+                  style={{ height: boardSize }}
                   className="hidden sm:flex items-center flex-shrink-0 mr-1"
                 >
                   <ChessEvalBar
@@ -1225,10 +1256,13 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                 </div>
               )}
 
-              {/* Ranks left */}
-              <div className="w-8 flex flex-col">
+              {/* Ranks left (1-8 perfectly mapped to grid rows) */}
+              <div 
+                style={{ height: boardSize }}
+                className="w-6 sm:w-7 grid grid-rows-8 flex-shrink-0"
+              >
                 {displayRanks.map((r, i) => (
-                  <div key={i} className="flex-1 flex items-center justify-center text-sm font-mono text-muted-foreground/50 aspect-square">
+                  <div key={i} className="flex items-center justify-center text-xs sm:text-sm font-mono font-bold text-muted-foreground/60 select-none">
                     {r}
                   </div>
                 ))}
@@ -1238,8 +1272,8 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
               <motion.div
                 layout
                 style={{
-                  width: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(calc(100cqw - 64px), calc(100vh - 120px), 1200px)',
-                  height: isReviewPageActive ? 'min(56vw, calc(100vh - 120px), 700px)' : 'min(calc(100cqw - 64px), calc(100vh - 120px), 1200px)'
+                  width: boardSize,
+                  height: boardSize
                 }}
                 className="relative chess-board-shadow rounded-lg overflow-hidden border border-chess-board-border bg-chess-dark select-none"
                 onContextMenu={(e) => e.preventDefault()}
@@ -1316,10 +1350,13 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                 </div>
               </motion.div>
 
-              {/* Ranks right */}
-              <div className="w-8 flex flex-col">
+              {/* Ranks right (1-8 perfectly mapped to grid rows) */}
+              <div 
+                style={{ height: boardSize }}
+                className="w-6 sm:w-7 grid grid-rows-8 flex-shrink-0"
+              >
                 {displayRanks.map((r, i) => (
-                  <div key={i} className="flex-1 flex items-center justify-center text-sm font-mono text-muted-foreground/50 aspect-square">
+                  <div key={i} className="flex items-center justify-center text-xs sm:text-sm font-mono font-bold text-muted-foreground/60 select-none">
                     {r}
                   </div>
                 ))}
@@ -1327,17 +1364,20 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
             </div>
 
             {/* File labels bottom */}
-            <div className="flex w-full">
-              {showEvalBar && <div className="hidden sm:block w-7 sm:w-8" />}
-              <div className="w-8" />
-              <div className="flex-1 grid grid-cols-8">
+            <div className="flex items-center gap-1">
+              {showEvalBar && <div className="hidden sm:block w-7 sm:w-8 mr-1 flex-shrink-0" />}
+              <div className="w-6 sm:w-7 flex-shrink-0" />
+              <div 
+                style={{ width: boardSize }} 
+                className="grid grid-cols-8 h-6 sm:h-7 flex-shrink-0"
+              >
                 {displayFiles.map((f) => (
-                  <div key={f} className="h-8 flex items-center justify-center text-sm font-mono text-muted-foreground/50">
+                  <div key={f} className="flex items-center justify-center text-xs sm:text-sm font-mono font-bold text-muted-foreground/60 select-none">
                     {f}
                   </div>
                 ))}
               </div>
-              <div className="w-8" />
+              <div className="w-6 sm:w-7 flex-shrink-0" />
             </div>
           </div>
         </div>
@@ -1345,19 +1385,23 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
       {/* Side Panel Score Board */}
       <motion.div
-        className={`flex lg:flex w-full ${isReviewPageActive ? 'lg:col-start-2 lg:w-full max-w-[350px] lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto custom-scrollbar' : 'lg:w-[280px]'} flex-col gap-4 lg:self-start transition-all duration-500`}
+        className={`flex lg:flex w-full ${
+          isReviewPageActive 
+            ? 'lg:col-start-2 lg:w-full max-w-[340px] lg:max-h-[calc(100dvh-32px)] lg:overflow-y-auto custom-scrollbar' 
+            : 'lg:w-[260px] xl:w-[280px] lg:max-h-[calc(100dvh-32px)] lg:overflow-y-auto custom-scrollbar'
+        } flex-col gap-2 xl:gap-2.5 lg:self-center transition-all duration-500`}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
       >
         {/* Status */}
-        <div className="hidden lg:flex bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-4 border border-border/60 relative overflow-hidden flex-col gap-2 shrink-0">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        <div className="hidden lg:flex skeuo-panel rounded-xl p-3 relative overflow-hidden flex-col gap-1.5 shrink-0">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
           <div className="flex justify-between items-center w-full">
-            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Status</p>
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Status</p>
             <div className="flex items-center gap-2">
               {mode === 'computer' && (
-                <p className="text-[10px] font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 drop-shadow-[0_0_5px_rgba(255,165,0,0.3)]">
+                <p className="text-xs font-mono font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
                   Rating: {formatRating(glickoPlayer)}
                 </p>
               )}
@@ -1365,27 +1409,18 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <motion.div
-              className={`w-3 h-3 rounded-full flex-shrink-0 ${gameStatus === 'check' || gameStatus === 'checkmate'
+            <div
+              className={`w-3.5 h-3.5 rounded-full flex-shrink-0 ${gameStatus === 'check' || gameStatus === 'checkmate'
                 ? 'bg-red-500'
                 : currentTurn === 'white'
                   ? 'bg-chess-dull'
                   : 'bg-primary'
                 }`}
-              animate={{
-                boxShadow:
-                  gameStatus === 'check' || gameStatus === 'checkmate'
-                    ? '0 0 14px rgba(239,68,68,0.8)'
-                    : currentTurn === 'white'
-                      ? '0 0 10px rgba(255, 255, 255, 0.4)'
-                      : '0 0 12px hsl(var(--primary) / 0.6)',
-              }}
-              transition={{ duration: 0.3 }}
             />
             <AnimatePresence mode="wait">
               <motion.span
                 key={statusText}
-                className={`text-sm font-medium ${statusColor}`}
+                className={`text-base font-medium ${statusColor}`}
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
@@ -1398,11 +1433,11 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         </div>
 
         {/* Mobile Navigation Bar */}
-        <div className="flex lg:hidden bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-2.5 border border-border/60 relative overflow-hidden flex-row gap-1.5 items-center justify-between">
+        <div className="flex lg:hidden skeuo-panel rounded-xl p-2.5 relative overflow-hidden flex-row gap-1.5 items-center justify-between">
           <button
             onClick={() => navigateHistory('first')}
             disabled={currentViewIndex === 0}
-            className="p-2.5 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            className="p-2.5 skeuo-btn rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 transition-all flex items-center justify-center"
             title="First Move"
           >
             <ChevronsLeft className="w-5 h-5" />
@@ -1410,21 +1445,21 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           <button
             onClick={() => navigateHistory('prev')}
             disabled={currentViewIndex === 0}
-            className="flex-1 p-2.5 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            className="flex-1 p-2.5 skeuo-btn rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 transition-all flex items-center justify-center"
             title="Previous Move"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div className="flex flex-col items-center justify-center px-3 shrink-0">
-            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest leading-none mb-1">Move</span>
-            <span className="text-sm font-mono font-bold leading-none text-foreground">
+            <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest leading-none mb-1">Move</span>
+            <span className="text-base font-mono font-bold leading-none text-foreground">
               {currentViewIndex === -1 ? moveHistory.length : currentViewIndex} / {moveHistory.length}
             </span>
           </div>
           <button
             onClick={() => navigateHistory('next')}
             disabled={!isViewingHistory}
-            className="flex-1 p-2.5 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            className="flex-1 p-2.5 skeuo-btn rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 transition-all flex items-center justify-center"
             title="Next Move"
           >
             <ChevronRight className="w-5 h-5" />
@@ -1432,7 +1467,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           <button
             onClick={() => navigateHistory('last')}
             disabled={!isViewingHistory}
-            className="p-2.5 bg-black/20 rounded-lg border border-white/5 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 transition-all flex items-center justify-center shadow-inner"
+            className="p-2.5 skeuo-btn rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 transition-all flex items-center justify-center"
             title="Latest Move"
           >
             <ChevronsRight className="w-5 h-5" />
@@ -1441,37 +1476,37 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 
         {/* Review Results Panel - only visible when isReviewPageActive is true */}
         {isReviewPageActive && reviewSummary && (
-          <div className="flex flex-col w-full animate-in fade-in slide-in-from-right-8 duration-700 bg-card/60 rounded-2xl border border-border p-4 shadow-xl relative overflow-hidden shrink-0 lg:mt-2">
+          <div className="flex flex-col w-full animate-in fade-in slide-in-from-right-8 duration-700 skeuo-panel rounded-2xl p-4 relative overflow-hidden shrink-0 lg:mt-2">
              <div className="flex items-center justify-center gap-2 mb-5">
-               <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,165,0,0.8)]" />
-               <h2 className="text-xl font-display font-bold text-foreground uppercase tracking-widest">Match Report</h2>
-               <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,165,0,0.8)]" />
+               <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+               <h2 className="text-2xl font-display font-bold text-foreground uppercase tracking-widest">Match Report</h2>
+               <div className="w-2.5 h-2.5 rounded-full bg-primary" />
              </div>
 
              <div className="grid grid-cols-2 gap-4 mb-5">
-               <div className="flex flex-col items-center bg-card py-4 px-2 rounded-xl border border-border relative overflow-hidden group shadow-sm transition hover:border-primary/50">
+               <div className="flex flex-col items-center skeuo-inner py-4 px-2 rounded-xl relative overflow-hidden group transition hover:border-primary/50">
                  <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                 <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">White</span>
-                 <span className="text-4xl font-display font-black text-foreground drop-shadow-sm mb-1">{reviewSummary.white.accuracy}<span className="text-xl font-medium text-muted-foreground/50">%</span></span>
-                 <span className="text-[10px] font-mono text-muted-foreground mt-1 mb-3 uppercase tracking-widest">Accuracy</span>
+                 <span className="text-sm font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">White</span>
+                 <span className="text-4xl font-display font-black text-foreground mb-1">{reviewSummary.white.accuracy}<span className="text-xl font-medium text-muted-foreground/60">%</span></span>
+                 <span className="text-xs font-mono text-muted-foreground mt-1 mb-3 uppercase tracking-widest">Accuracy</span>
                  <div className="bg-background/80 w-full px-3 py-1.5 rounded-lg text-center mt-auto border border-border flex justify-between items-center group-hover:border-primary/30 transition-colors">
-                   <span className="text-[10px] font-mono text-muted-foreground uppercase">Est. Rating</span>
-                   <div className="text-sm font-bold font-mono text-foreground">{reviewSummary.white.estimatedElo}</div>
+                   <span className="text-xs font-mono text-muted-foreground uppercase">Est. Rating</span>
+                   <div className="text-base font-bold font-mono text-foreground">{reviewSummary.white.estimatedElo}</div>
                  </div>
                </div>
-               <div className="flex flex-col items-center bg-card py-4 px-2 rounded-xl border border-border relative overflow-hidden group shadow-sm transition hover:border-orange-500/50">
+               <div className="flex flex-col items-center skeuo-inner py-4 px-2 rounded-xl relative overflow-hidden group transition hover:border-orange-500/50">
                  <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                 <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Orange</span>
-                 <span className="text-4xl font-display font-black text-foreground drop-shadow-sm mb-1">{reviewSummary.black.accuracy}<span className="text-xl font-medium text-muted-foreground/50">%</span></span>
-                 <span className="text-[10px] font-mono text-muted-foreground mt-1 mb-3 uppercase tracking-widest">Accuracy</span>
+                 <span className="text-sm font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Orange</span>
+                 <span className="text-4xl font-display font-black text-foreground mb-1">{reviewSummary.black.accuracy}<span className="text-xl font-medium text-muted-foreground/60">%</span></span>
+                 <span className="text-xs font-mono text-muted-foreground mt-1 mb-3 uppercase tracking-widest">Accuracy</span>
                  <div className="bg-background/80 w-full px-3 py-1.5 rounded-lg text-center mt-auto border border-border flex justify-between items-center group-hover:border-orange-500/30 transition-colors">
-                   <span className="text-[10px] font-mono text-muted-foreground uppercase">Est. Rating</span>
-                   <div className="text-sm font-bold font-mono text-primary/90">{reviewSummary.black.estimatedElo}</div>
+                   <span className="text-xs font-mono text-muted-foreground uppercase">Est. Rating</span>
+                   <div className="text-base font-bold font-mono text-primary/90">{reviewSummary.black.estimatedElo}</div>
                  </div>
                </div>
              </div>
 
-             <div className="bg-background/80 border border-border rounded-xl p-3 mb-4 w-full shadow-sm">
+             <div className="skeuo-inner rounded-xl p-3 mb-4 w-full">
                {[
                  { label: 'Brilliant', key: 'brilliant', icon: '!!', wVal: reviewSummary.white.brilliant, bVal: reviewSummary.black.brilliant },
                  { label: 'Great', key: 'great', icon: '!', wVal: reviewSummary.white.great, bVal: reviewSummary.black.great },
@@ -1522,15 +1557,15 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                      }}
                    >
                      <div className="flex items-center justify-between px-2">
-                       <span className="text-[11px] font-bold uppercase tracking-wide text-foreground">{row.label}</span>
-                       <span className="text-sm font-mono font-bold text-foreground">{row.wVal}</span>
+                       <span className="text-xs font-bold uppercase tracking-wide text-foreground">{row.label}</span>
+                       <span className="text-base font-mono font-bold text-foreground">{row.wVal}</span>
                      </div>
-                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black border mx-2 shrink-0 ${isActive ? 'bg-primary border-primary text-primary-foreground' : 'bg-primary/10 border-primary/30 text-primary'}`}>
+                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black border mx-2 shrink-0 ${isActive ? 'bg-primary border-primary text-primary-foreground' : 'bg-primary/10 border-primary/30 text-primary'}`}>
                        {row.icon}
                      </div>
                      <div className="flex items-center justify-between px-2">
-                       <span className="text-[11px] font-bold uppercase tracking-wide text-primary">{row.label}</span>
-                       <span className="text-sm font-mono font-bold text-primary">{row.bVal}</span>
+                       <span className="text-xs font-bold uppercase tracking-wide text-primary">{row.label}</span>
+                       <span className="text-base font-mono font-bold text-primary">{row.bVal}</span>
                      </div>
                    </div>
                  );
@@ -1539,74 +1574,43 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
           </div>
         )}
 
-        <div className={`hidden lg:flex flex-col gap-3 ${isReviewPageActive ? 'w-full' : 'w-full max-w-[280px]'}`}>
+        <div className={`hidden lg:flex flex-col gap-2 xl:gap-2.5 ${isReviewPageActive ? 'w-full' : 'w-full max-w-[280px]'}`}>
         {/* Captured Pieces */}
-        <div className="hidden lg:flex bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-4 border border-border/60 flex-col">
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-3">Material Score</p>
-          <div className="space-y-4 text-sm font-mono">
-            <div className="flex flex-col gap-1.5 p-2 rounded-lg bg-black/10 border border-white/5">
+        <div className="hidden lg:flex skeuo-panel rounded-xl p-3 flex-col">
+          <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-2">Material Score</p>
+          <div className="space-y-2 text-sm font-mono">
+            <div className="flex flex-col gap-1 p-2 rounded-lg skeuo-inner">
               <div className="flex justify-between items-center">
-                <p className="font-semibold text-foreground">White Cap.</p>
-                <div className="text-xs text-muted-foreground/60">+{whiteScore} pts</div>
+                <p className="font-semibold text-foreground text-sm">White Cap.</p>
+                <div className="text-xs text-muted-foreground/80">+{whiteScore} pts</div>
               </div>
               <CapturedRow pieces={displayCaptured.white} advantage={advantage > 0 ? advantage : undefined} />
             </div>
-            <div className="flex flex-col gap-1.5 p-2 rounded-lg bg-black/10 border border-white/5">
+            <div className="flex flex-col gap-1 p-2 rounded-lg skeuo-inner">
               <div className="flex justify-between items-center">
-                <p className="font-semibold text-primary">Orange Cap.</p>
-                <div className="text-xs text-muted-foreground/60">+{blackScore} pts</div>
+                <p className="font-semibold text-primary text-sm">Orange Cap.</p>
+                <div className="text-xs text-muted-foreground/80">+{blackScore} pts</div>
               </div>
               <CapturedRow pieces={displayCaptured.black} advantage={advantage < 0 ? -advantage : undefined} />
             </div>
           </div>
         </div>
 
-        {/* Coach Analysis panel */}
-        <div className="hidden lg:flex bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-4 border border-border/60 relative overflow-hidden flex-col gap-2 shrink-0">
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest px-1 mb-1">Coach Analysis</p>
-          {(isViewingHistory || isGameOver) ? (
-            moveAnalyses[currentViewIndex] ? (
-              <div className="flex flex-col gap-2 relative z-10 px-1">
-                <div className="flex justify-between items-center text-sm">
-                  <span className={`font-bold uppercase tracking-wider ${moveAnalyses[currentViewIndex].classification === 'blunder' ? 'text-red-500' : moveAnalyses[currentViewIndex].classification === 'best' || moveAnalyses[currentViewIndex].classification === 'great' || moveAnalyses[currentViewIndex].classification === 'brilliant' ? 'text-chess-bright' : 'text-primary'}`}>
-                    {moveAnalyses[currentViewIndex].classification || 'Good'} Move
-                  </span>
-                  <span className="font-mono bg-black/40 px-2.5 py-1 rounded-md text-white/80 shadow-inner">
-                    Eval: {moveAnalyses[currentViewIndex].eval.mate !== null ? `M${moveAnalyses[currentViewIndex].eval.mate}` : (moveAnalyses[currentViewIndex].eval.evaluation > 0 ? '+' : '') + moveAnalyses[currentViewIndex].eval.evaluation.toFixed(2)}
-                  </span>
-                </div>
-                {moveAnalyses[currentViewIndex].coachComment && (
-                  <p className="text-sm text-muted-foreground/90 leading-relaxed mt-1">
-                    {moveAnalyses[currentViewIndex].coachComment}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 px-1 py-2">
-                <div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                <p className="text-sm text-muted-foreground/70 tracking-wide font-medium">Analyzing engine data...</p>
-              </div>
-            )
-          ) : (
-            <p className="text-sm text-muted-foreground/50 px-1 italic">Use the Review mode after the game to analyze your moves against Stockfish 16.</p>
-          )}
-        </div>
-
         {/* Move History */}
-        <div className="hidden lg:flex bg-card/50 backdrop-blur-sm shadow-sm rounded-xl p-4 border border-border/60 flex-col flex-1 min-h-[160px] max-h-[260px] lg:max-h-[300px]">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest pl-1">
+        <div className="hidden lg:flex skeuo-panel rounded-xl p-3 flex-col flex-1 min-h-[140px] max-h-[220px] xl:max-h-[260px]">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest pl-1">
               Move History
-              {moveHistory.length > 0 && <span className="ml-2 opacity-50 font-bold">({moveHistory.length})</span>}
+              {moveHistory.length > 0 && <span className="ml-2 opacity-60 font-bold">({moveHistory.length})</span>}
             </p>
-            <div className="flex items-center gap-0.5 bg-black/30 rounded-lg p-0.5 border border-white/5">
+            <div className="flex items-center gap-0.5 skeuo-inner rounded-lg p-0.5">
               <button
                 onClick={() => navigateHistory('first')}
                 disabled={currentViewIndex === 0}
                 className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-20 transition-all"
                 title="First Move [Up Arrow]"
               >
-                <ChevronsLeft className="w-3.5 h-3.5" />
+                <ChevronsLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => navigateHistory('prev')}
@@ -1614,7 +1618,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                 className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-20 transition-all"
                 title="Previous Move [Left Arrow]"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => navigateHistory('next')}
@@ -1622,7 +1626,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                 className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-20 transition-all"
                 title="Next Move [Right Arrow]"
               >
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-4 h-4" />
               </button>
               <button
                 onClick={() => navigateHistory('last')}
@@ -1630,14 +1634,14 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                 className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-20 transition-all"
                 title="Latest Move [Down Arrow / Space]"
               >
-                <ChevronsRight className="w-3.5 h-3.5" />
+                <ChevronsRight className="w-4 h-4" />
               </button>
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto space-y-0.5 pr-1 custom-scrollbar text-sm font-mono">
             {moveHistory.length === 0 ? (
-              <div className="h-full flex items-center justify-center pb-4">
-                <p className="text-sm text-muted-foreground/30 italic">No moves played</p>
+              <div className="h-full flex items-center justify-center pb-2">
+                <p className="text-sm text-muted-foreground/50 italic">No moves played</p>
               </div>
             ) : (
               Array.from({ length: Math.ceil(moveHistory.length / 2) }, (_, i) => {
@@ -1649,9 +1653,9 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-1.5 text-xs font-mono p-1 rounded hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-mono p-0.5 rounded hover:bg-white/5 transition-colors"
                   >
-                    <span className="text-muted-foreground/40 w-5 text-right flex-shrink-0 font-medium">
+                    <span className="text-muted-foreground/60 w-5 text-right flex-shrink-0 font-medium">
                       {i + 1}.
                     </span>
                     <button
@@ -1694,17 +1698,17 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
         {/* Game Actions */}
         {isGameOver ? (
           <motion.button
-            className="w-full py-3.5 rounded-xl bg-secondary/80 text-secondary-foreground font-semibold text-sm tracking-wide hover:bg-secondary transition-all duration-200 border border-border shadow-sm group relative overflow-hidden"
+            className="w-full py-2.5 sm:py-3 rounded-xl skeuo-btn-primary text-white font-bold text-base tracking-wide transition-all duration-200 group relative overflow-hidden"
             onClick={resetGame}
             whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.98 }}
           >
-            <span className="relative z-10 group-hover:text-primary transition-colors">Start New Game</span>
+            <span className="relative z-10">Start New Game</span>
           </motion.button>
         ) : (
-          <div className="flex gap-3 w-full">
+          <div className="flex gap-2.5 w-full">
             <motion.button
-              className="flex-1 py-3.5 rounded-xl bg-red-500/10 text-red-500 font-semibold text-sm tracking-wide hover:bg-red-500/20 transition-all duration-200 border border-red-500/20 shadow-sm transition-colors"
+              className="flex-1 py-2.5 sm:py-3 rounded-xl skeuo-btn !border-red-500/30 text-red-400 font-semibold text-base tracking-wide hover:!border-red-500/50 hover:!bg-red-500/10 transition-all duration-200"
               onClick={() => { setGameStatus('resigned'); }}
               whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
@@ -1712,7 +1716,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
               Resign
             </motion.button>
             <motion.button
-              className="flex-1 py-3.5 rounded-xl bg-secondary/80 text-secondary-foreground font-semibold text-sm tracking-wide hover:bg-secondary transition-all duration-200 border border-border shadow-sm transition-colors"
+              className="flex-1 py-2.5 sm:py-3 rounded-xl skeuo-btn text-foreground font-semibold text-base tracking-wide hover:border-primary/50 transition-all duration-200"
               onClick={() => { setGameStatus('draw'); }}
               whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
@@ -1728,7 +1732,7 @@ const ChessBoard = ({ initialTime = 0, increment = 0, mode = 'human', level = 5 
 };
 
 function CapturedRow({ pieces, advantage, label }: { pieces: Piece[]; advantage?: number; label?: string }) {
-  if (pieces.length === 0) return <div className="text-muted-foreground/30 italic text-xs leading-none">No captures</div>;
+  if (pieces.length === 0) return <div className="text-muted-foreground/50 italic text-sm leading-none">No captures</div>;
 
   const order: PieceType[] = ['pawn', 'knight', 'bishop', 'rook', 'queen'];
   const counts: Partial<Record<PieceType, number>> = {};
@@ -1745,13 +1749,13 @@ function CapturedRow({ pieces, advantage, label }: { pieces: Piece[]; advantage?
         return (
           <div
             key={type}
-            className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-black/30 border border-white/5 shadow-inner"
+            className="flex items-center gap-1 px-2 py-0.5 rounded bg-black/30 border border-white/10 shadow-inner"
           >
-            <span className={`text-sm leading-none ${color !== 'white' ? 'text-chess-bright' : 'text-chess-dull'}`}>
+            <span className={`text-base leading-none ${color !== 'white' ? 'text-chess-bright' : 'text-chess-dull'}`}>
               {getPieceSymbol(type)}
             </span>
             {count > 1 && (
-              <span className="text-[10px] font-mono font-bold text-muted-foreground/80">
+              <span className="text-sm font-mono font-bold text-muted-foreground">
                 ×{count}
               </span>
             )}
@@ -1759,7 +1763,7 @@ function CapturedRow({ pieces, advantage, label }: { pieces: Piece[]; advantage?
         );
       })}
       {advantage !== undefined && advantage > 0 && (
-        <span className="ml-auto text-xs font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 shadow-[0_0_6px_rgba(255,165,0,0.2)]">
+        <span className="ml-auto text-sm font-mono font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/25">
           +{advantage}
         </span>
       )}

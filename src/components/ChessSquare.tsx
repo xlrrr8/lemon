@@ -48,25 +48,25 @@ const ChessSquare = React.memo(({
 
       {/* Selected highlight */}
       {isSelected && (
-        <div className="absolute inset-0 bg-primary/30 pointer-events-none z-10" />
+        <div className="absolute inset-0 bg-primary/30 border-2 border-primary pointer-events-none z-10" />
       )}
 
       {/* Valid move indicator */}
       {isValidMove && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           {piece ? (
-            // Capture ring
-            <div className="w-[88%] h-[88%] rounded-full border-[6px] border-primary/40" />
+            // Capture ring (minimal matte orange)
+            <div className="w-[84%] h-[84%] rounded-full border-[4px] border-primary/70" />
           ) : (
-            // Move dot
-            <div className="w-[28%] h-[28%] rounded-full bg-primary/40 shadow-[0_0_10px_rgba(255,165,0,0.2)]" />
+            // Move dot (minimal matte orange)
+            <div className="w-[26%] h-[26%] rounded-full bg-primary/70" />
           )}
         </div>
       )}
 
       {/* King in check red outline */}
       {isKingInCheck && (
-        <div className="absolute inset-0 shadow-[inset_0_0_24px_rgba(239,68,68,0.8)] animate-pulse pointer-events-none z-10 rounded-sm" />
+        <div className="absolute inset-0 bg-red-500/25 border-2 border-red-500 pointer-events-none z-10 rounded-sm" />
       )}
 
       {piece && (

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -22,7 +22,7 @@
     --secondary-foreground: 220 10% 65%;
 
     --muted: 220 15% 12%;
-    --muted-foreground: 220 10% 42%;
+    --muted-foreground: 220 10% 48%;
 
     --accent: 220 15% 18%;
     --accent-foreground: 220 10% 85%;
@@ -40,9 +40,7 @@
     --chess-light-square: 220 12% 16%;
     --chess-dark-square: 220 15% 10%;
     --chess-bright-piece: 27 100% 55%;
-    --chess-bright-piece-glow: 27 100% 60%;
     --chess-dull-piece: 0 0% 96%;
-    --chess-dull-piece-glow: 0 0% 100%;
     --chess-selected: 25 90% 55%;
     --chess-valid-move: 25 80% 50%;
     --chess-board-border: 220 15% 20%;
@@ -57,6 +55,7 @@
     --sidebar-ring: 25 90% 55%;
 
     --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
 
@@ -93,9 +92,7 @@
     --chess-light-square: 210 5% 22%;
     --chess-dark-square: 210 5% 14%;
     --chess-bright-piece: 27 100% 55%;
-    --chess-bright-piece-glow: 27 100% 60%;
     --chess-dull-piece: 0 0% 96%;
-    --chess-dull-piece-glow: 0 0% 100%;
     --chess-selected: 25 90% 55%;
     --chess-valid-move: 25 80% 50%;
     --chess-board-border: 210 5% 22%;
@@ -143,9 +140,7 @@
     --chess-light-square: 220 10% 14%;
     --chess-dark-square: 220 10% 5%;
     --chess-bright-piece: 27 100% 55%;
-    --chess-bright-piece-glow: 27 100% 60%;
     --chess-dull-piece: 0 0% 96%;
-    --chess-dull-piece-glow: 0 0% 100%;
     --chess-selected: 25 90% 55%;
     --chess-valid-move: 25 80% 50%;
     --chess-board-border: 220 10% 14%;
@@ -162,43 +157,46 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-display);
+    font-family: var(--font-body);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.011em;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.025em;
   }
 }
 
 @layer components {
   .chess-board-shadow {
-    box-shadow:
-      0 0 60px -10px hsl(var(--primary) / 0.08),
-      0 25px 50px -12px hsl(220 20% 0% / 0.6);
+    box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.75);
   }
 
   .piece-bright {
-    background-image: linear-gradient(to bottom, hsl(27 100% 70%), hsl(27 100% 48%));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.75));
+    color: hsl(27 100% 55%);
   }
 
   .piece-dull {
-    background-image: linear-gradient(to bottom, hsl(0 0% 100%), hsl(0 0% 80%));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.9));
+    color: hsl(0 0% 96%);
   }
 
   .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
+    width: 5px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
@@ -206,12 +204,12 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.14);
     border-radius: 4px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
   }
 
   .chess-square {
@@ -221,87 +219,68 @@
   .skeuo-btn {
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    background: linear-gradient(145deg, hsl(var(--card) / 0.8), hsl(var(--background) / 0.8));
-    box-shadow: 
-      4px 4px 10px rgba(0, 0, 0, 0.4),
-      -2px -2px 10px rgba(255, 255, 255, 0.05),
-      inset 1px 1px 2px rgba(255, 255, 255, 0.1),
-      inset -1px -1px 2px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s ease;
+    background-color: hsl(var(--card));
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+    transition: all 0.15s ease-out;
   }
   
   .skeuo-btn:hover {
-    background: linear-gradient(145deg, hsl(var(--background) / 0.8), hsl(var(--card) / 0.8));
-    box-shadow: 
-      2px 2px 5px rgba(0, 0, 0, 0.4),
-      -1px -1px 5px rgba(255, 255, 255, 0.03),
-      inset 1px 1px 2px rgba(255, 255, 255, 0.1),
-      inset -1px -1px 2px rgba(0, 0, 0, 0.3);
-    transform: translateY(1px);
+    background-color: hsl(var(--secondary));
+    border-color: hsl(var(--primary) / 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
   }
   
   .skeuo-btn:active {
-    background: hsl(var(--background) / 0.9);
-    box-shadow: 
-      inset 3px 3px 6px rgba(0, 0, 0, 0.5),
-      inset -1px -1px 3px rgba(255, 255, 255, 0.05);
-    transform: translateY(2px);
+    background-color: hsl(var(--background));
+    border-color: hsl(var(--primary) / 0.7);
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   }
 
   .skeuo-inner {
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    background: hsl(var(--background) / 0.9);
-    box-shadow: 
-      inset 3px 3px 8px rgba(0, 0, 0, 0.5),
-      inset -2px -2px 6px rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background-color: hsl(var(--background) / 0.85);
   }
   
   .glass-panel {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: linear-gradient(145deg, hsl(var(--card) / 0.4), hsl(var(--background) / 0.4));
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: hsl(var(--card));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
   }
 
   .skeuo-panel {
     border: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(145deg, hsl(var(--card) / 0.95), hsl(var(--background) / 0.95));
-    box-shadow: 
-      8px 8px 16px rgba(0, 0, 0, 0.4),
-      -4px -4px 12px rgba(255, 255, 255, 0.03),
-      inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.1);
+    background-color: hsl(var(--card));
+    box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.45);
   }
 
   .skeuo-btn-primary {
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
-    box-shadow: 
-      4px 4px 10px rgba(0, 0, 0, 0.5),
-      -2px -2px 10px rgba(255, 255, 255, 0.1),
-      inset 1px 1px 3px rgba(255, 255, 255, 0.4),
-      inset -1px -1px 3px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s ease;
+    border: 1px solid hsl(25 90% 50%);
+    background-color: hsl(var(--primary));
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: all 0.15s ease-out;
     color: white;
+    font-weight: 700;
   }
   
   .skeuo-btn-primary:hover {
-    background: linear-gradient(145deg, hsl(var(--primary) / 0.9), hsl(var(--primary)));
-    box-shadow: 
-      2px 2px 5px rgba(0, 0, 0, 0.5),
-      -1px -1px 5px rgba(255, 255, 255, 0.1),
-      inset 1px 1px 3px rgba(255, 255, 255, 0.4),
-      inset -1px -1px 3px rgba(0, 0, 0, 0.3);
-    transform: translateY(1px);
+    background-color: hsl(25 95% 58%);
+    border-color: hsl(25 95% 62%);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35);
+    transform: translateY(-1px);
   }
   
   .skeuo-btn-primary:active {
-    background: hsl(var(--primary) / 0.9);
-    box-shadow: 
-      inset 3px 3px 6px rgba(0, 0, 0, 0.4),
-      inset -1px -1px 3px rgba(255, 255, 255, 0.1);
-    transform: translateY(2px);
+    background-color: hsl(25 90% 46%);
+    border-color: hsl(25 90% 48%);
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  .smooth-transform {
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   @keyframes scan {
@@ -323,7 +302,7 @@
   }
 
   .piece-slide-anim {
-    animation: chessPieceSlide 0.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: chessPieceSlide 0.18s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
     will-change: transform;
   }
 }

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Swords, Brain, Crown, ArrowRight, Timer, User, Users, Trophy, Flame, Play, Zap, Clock, Target } from 'lucide-react';
+import { Swords, Brain, Crown, ArrowRight, User, Flame, Play, Zap, Clock, Target } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import {
@@ -10,18 +10,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-
 const Index = () => {
   const [compTime, setCompTime] = useState(0);
   const [compLevel, setCompLevel] = useState(4);
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   const [selectedOnlineTime, setSelectedOnlineTime] = useState<{ t: number, inc: number } | null>({ t: 10, inc: 0 });
-  const [customTime, setCustomTime] = useState(0);
-  const [customInc, setCustomInc] = useState(0);
 
   return (
-    <div className={`relative flex flex-col bg-background text-foreground transition-all duration-500 ${isSignedIn ? 'min-h-screen overflow-y-auto' : 'h-screen overflow-hidden'}`}>
+    <div className="relative flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden bg-background text-foreground select-none">
       {/* Matte Dark Chess Board & Pieces Background */}
       <div className="pointer-events-none absolute inset-0 bg-background overflow-hidden transition-colors duration-300">
         {/* Chess Board Pattern Background */}
@@ -35,115 +32,113 @@ const Index = () => {
             WebkitMaskImage: `radial-gradient(ellipse at top, black 30%, transparent 80%)`,
           }}
         ></div>
-        <div className="absolute inset-x-0 bottom-0 h-96 bg-[linear-gradient(180deg,rgba(0,0,0,0),hsl(var(--background))_55%,hsl(var(--background))_100%)] transition-colors duration-300"></div>
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-[linear-gradient(180deg,rgba(0,0,0,0),hsl(var(--background))_55%,hsl(var(--background))_100%)] transition-colors duration-300"></div>
       </div>
 
-      <main className={`relative mx-auto flex w-full max-w-7xl flex-1 flex-col gap-10 px-6 pt-8 sm:px-10 lg:px-12 transition-all duration-500 ${isSignedIn ? 'justify-start pb-20' : 'justify-center pb-12'}`}>
-        <header className="flex items-center justify-between relative z-10 pb-4">
+      <main className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-between px-6 py-4 sm:px-10 sm:py-5 lg:px-12 lg:py-6 z-10 overflow-hidden">
+        <header className="flex items-center justify-between relative z-10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-400/30 bg-orange-500/15 text-orange-300">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/15 text-orange-300 shadow-md">
               <Crown className="h-5 w-5" />
             </div>
-            <p className="text-2xl font-bold tracking-tight text-foreground">Orange.</p>
+            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-display">Orange.</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <ThemeSwitcher />
             {isSignedIn && (
               <Link
                 to="/profile"
-                className="flex items-center gap-2.5 rounded-full pl-1.5 pr-4 py-1.5 text-sm font-bold text-foreground transition hover:border-primary/40 hover:bg-card/60 group glass-panel"
+                className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1 text-sm sm:text-base font-bold text-foreground transition hover:border-primary/40 hover:bg-card/60 group skeuo-btn"
               >
                 <div className="relative">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground group-hover:text-primary transition-colors">
-                    <User className="h-5 w-5" />
+                    <User className="h-4 w-4" />
                   </div>
-                  <div className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-card bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.4)]"></div>
+                  <div className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-card bg-primary"></div>
                 </div>
                 <span className="tracking-tight">Aaryan K.</span>
               </Link>
             )}
             <button
               onClick={() => setIsSignedIn(!isSignedIn)}
-              className="rounded-full px-4 py-2 text-sm font-medium text-foreground transition border border-border bg-card hover:bg-muted hover:text-orange-200"
+              className="skeuo-btn rounded-full px-4 sm:px-5 py-2 text-sm sm:text-base font-semibold text-foreground transition hover:text-orange-300"
             >
               {isSignedIn ? 'Sign Out' : 'Sign In'}
             </button>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 mt-6 lg:mt-12 items-start relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 my-auto items-center relative z-10">
           
           {/* Left Column - Hero Content & Stats */}
-          <div className="lg:col-span-5 flex flex-col gap-10">
-            <div className="flex flex-col items-start gap-6 text-left">
-              <p className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-orange-200">
+          <div className="lg:col-span-5 flex flex-col justify-center gap-5 lg:gap-7">
+            <div className="flex flex-col items-start gap-4 lg:gap-5 text-left">
+              <p className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-orange-200">
                 <Flame className="h-3.5 w-3.5" />
                 The New Standard Of Chess
               </p>
-              <h1 className="text-6xl font-bold leading-[0.9] tracking-tight text-foreground sm:text-7xl lg:text-[5.5rem]">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[0.95] tracking-tight text-foreground font-display">
                 Play beautiful <br/><span className="text-orange-400">chess.</span>
               </h1>
-              <p className="text-lg text-muted-foreground sm:text-xl max-w-[420px] leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-foreground max-w-[440px] leading-relaxed">
                 Orange is built for pure competition: clean visuals, precise clocks, intelligent matchmaking, and a board that keeps your focus on the next move.
               </p>
             </div>
 
-            <div className="grid w-full grid-cols-3 gap-6 pt-6 border-t border-border/50">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Online</span>
-                <span className="text-3xl font-bold text-foreground">18.4K</span>
+            <div className="grid w-full grid-cols-3 gap-4 pt-4 border-t border-border/50">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Online</span>
+                <span className="text-2xl sm:text-3xl font-bold text-foreground font-display">18.4K</span>
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Today</span>
-                <span className="text-3xl font-bold text-foreground">231K</span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Today</span>
+                <span className="text-2xl sm:text-3xl font-bold text-foreground font-display">231K</span>
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Queue</span>
-                <span className="text-3xl font-bold text-foreground">3.8s</span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Queue</span>
+                <span className="text-2xl sm:text-3xl font-bold text-foreground font-display">3.8s</span>
               </div>
             </div>
           </div>
 
           {/* Right Column - Bento Actions */}
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 auto-rows-min">
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3.5 lg:gap-4 auto-rows-min">
             
             {isSignedIn && (
               <Dialog>
                 <DialogTrigger asChild>
-                  <button className="sm:col-span-2 group overflow-hidden relative rounded-3xl p-5 sm:p-6 flex items-center justify-between text-left transition hover:border-orange-500/50 shadow-sm shadow-black/20 glass-panel">
-                    <Swords className="absolute -right-8 -bottom-16 sm:right-[15%] sm:-top-16 h-64 w-64 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05] pointer-events-none" />
-                    
+                  <button className="sm:col-span-2 group overflow-hidden relative rounded-2xl p-4 sm:p-5 flex items-center justify-between text-left transition hover:border-orange-500/50 shadow-md skeuo-panel">
+                    <Swords className="absolute -right-6 -bottom-10 sm:right-[15%] sm:-top-10 h-48 w-48 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05] pointer-events-none" />
 
-
-                    <div className="flex flex-col gap-2 relative z-10">
-                       <div className="flex items-center gap-3">
-                         <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-400">
-                            <Swords className="h-6 w-6" />
+                    <div className="flex flex-col gap-1.5 relative z-10">
+                       <div className="flex items-center gap-2.5">
+                         <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-400">
+                            <Swords className="h-5 w-5" />
                          </div>
-                         <span className="rounded-full border border-orange-500/20 bg-orange-500/5 px-3 py-1 text-xs font-bold text-orange-400/90 tracking-wide">COMPETITIVE</span>
+                         <span className="rounded-full border border-orange-500/20 bg-orange-500/5 px-2.5 py-0.5 text-[11px] font-bold text-orange-400/90 tracking-wide">COMPETITIVE</span>
                        </div>
-                       <div className="mt-2">
-                         <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">Play Online</p>
-                         <p className="text-base text-muted-foreground mt-1 max-w-[280px]">Match instantly with players of your exact skill level.</p>
+                       <div className="mt-1">
+                         <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight font-display">Play Online</p>
+                         <p className="text-sm text-muted-foreground mt-0.5 max-w-[320px]">Match instantly with players of your exact skill level.</p>
                        </div>
                     </div>
-                    <div className="hidden sm:flex rounded-full p-5 text-black transition-all duration-300 group-hover:scale-110 bg-primary relative z-10">
-                       <Play className="h-8 w-8 ml-1 fill-current" />
+                    <div className="hidden sm:flex rounded-full p-4 text-black transition-all duration-300 group-hover:scale-110 bg-primary relative z-10 shadow-md">
+                       <Play className="h-6 w-6 ml-0.5 fill-current" />
                     </div>
                   </button>
                 </DialogTrigger>
 
-                <DialogContent className="sm:max-w-xl bg-background border-border shadow-2xl rounded-3xl p-6 md:p-8 max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full w-full text-foreground transition-all duration-300">
+                <DialogContent className="sm:max-w-xl bg-background border-border shadow-2xl rounded-3xl p-6 md:p-8 max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full w-full text-foreground transition-all duration-300 skeuo-panel">
                   <DialogHeader className="mb-4">
-                    <DialogTitle className="text-left text-2xl font-bold tracking-tight text-foreground">Play Online</DialogTitle>
-                    <p className="text-sm font-medium text-muted-foreground text-left">Choose your time control.</p>
+                    <DialogTitle className="text-left text-3xl font-bold tracking-tight text-foreground font-display">Play Online</DialogTitle>
+                    <p className="text-base font-medium text-muted-foreground text-left">Choose your time control.</p>
                   </DialogHeader>
 
                   <div className="flex flex-col gap-5 w-full mt-1">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Zap className="w-4 h-4 text-orange-400" />
-                        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Bullet</h4>
+                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Bullet</h4>
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         {[
@@ -154,9 +149,9 @@ const Index = () => {
                           <button
                             key={label}
                             onClick={() => setSelectedOnlineTime({ t, inc })}
-                            className={`py-3 px-2 rounded-xl border flex justify-center items-center transition-all duration-200 ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
+                            className={`py-3.5 px-3 rounded-xl border flex justify-center items-center transition-all duration-200 ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                           >
-                            <span className="font-bold text-sm">{label}</span>
+                            <span className="font-bold text-base">{label}</span>
                           </button>
                         ))}
                       </div>
@@ -165,7 +160,7 @@ const Index = () => {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Flame className="w-4 h-4 text-primary" />
-                        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Blitz</h4>
+                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Blitz</h4>
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         {[
@@ -178,9 +173,9 @@ const Index = () => {
                           <button
                             key={label}
                             onClick={() => setSelectedOnlineTime({ t, inc })}
-                            className={`py-3 px-2 rounded-xl border flex justify-center items-center transition-all duration-200 ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
+                            className={`py-3.5 px-3 rounded-xl border flex justify-center items-center transition-all duration-200 ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                           >
-                            <span className="font-bold text-sm">{label}</span>
+                            <span className="font-bold text-base">{label}</span>
                           </button>
                         ))}
                       </div>
@@ -189,7 +184,7 @@ const Index = () => {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-emerald-500" />
-                        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Rapid</h4>
+                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Rapid</h4>
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         {[
@@ -203,9 +198,9 @@ const Index = () => {
                           <button
                             key={label}
                             onClick={() => setSelectedOnlineTime({ t, inc })}
-                            className={`py-3 px-2 rounded-xl border flex justify-center items-center transition-all duration-200 ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
+                            className={`py-3.5 px-3 rounded-xl border flex justify-center items-center transition-all duration-200 ${selectedOnlineTime?.t === t && selectedOnlineTime?.inc === inc ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                           >
-                            <span className="font-bold text-sm">{label}</span>
+                            <span className="font-bold text-base">{label}</span>
                           </button>
                         ))}
                       </div>
@@ -213,8 +208,8 @@ const Index = () => {
 
                     {selectedOnlineTime && (
                       <Link to={`/play?time=${selectedOnlineTime.t}&inc=${selectedOnlineTime.inc}`} className="w-full mt-4">
-                        <button className="w-full py-3.5 rounded-xl font-bold text-base text-white flex items-center justify-center gap-3 transition-all duration-200 bg-primary hover:bg-primary/90 active:scale-[0.98]">
-                          <Play className="w-4 h-4 fill-current" /> Start Match
+                        <button className="w-full py-4 rounded-xl font-bold text-lg text-white flex items-center justify-center gap-3 transition-all duration-200 skeuo-btn-primary">
+                          <Play className="w-5 h-5 fill-current" /> Start Match
                         </button>
                       </Link>
                     )}
@@ -225,36 +220,34 @@ const Index = () => {
 
             <Dialog>
               <DialogTrigger asChild>
-                <button className="group flex flex-col justify-between rounded-3xl p-5 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[10rem] glass-panel">
-                  <div className="flex justify-start items-center gap-3 relative z-10 w-full">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
+                <button className="group flex flex-col justify-between rounded-2xl p-4 sm:p-5 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[8.5rem] sm:min-h-[9rem] skeuo-panel">
+                  <div className="flex justify-start items-center gap-2.5 relative z-10 w-full">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
                       <Brain className="h-5 w-5" />
                     </div>
-                    <span className="rounded-full border border-border/50 bg-background/50 px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground tracking-wide uppercase">PRACTICE</span>
+                    <span className="rounded-full border border-border/50 bg-background/50 px-2.5 py-0.5 text-[11px] font-bold text-muted-foreground tracking-wide uppercase">PRACTICE</span>
                   </div>
-                  <Brain className="absolute -right-6 -top-2 h-40 w-40 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
-                  
-
+                  <Brain className="absolute -right-4 -top-2 h-32 w-32 rotate-[15deg] opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[10deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
 
                   <div className="relative z-10">
-                    <p className="text-2xl font-bold text-foreground">Computer</p>
-                    <p className="text-sm text-muted-foreground mt-1 max-w-[180px]">Adaptive AI sparring</p>
+                    <p className="text-2xl font-bold text-foreground font-display">Computer</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">Adaptive AI sparring</p>
                   </div>
-                  <ArrowRight className="absolute bottom-5 right-5 h-9 w-9 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
+                  <ArrowRight className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 h-7 w-7 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
                 </button>
               </DialogTrigger>
 
-              <DialogContent className="sm:max-w-xl bg-background border-border shadow-2xl rounded-3xl p-6 md:p-8 max-h-[90vh] overflow-y-auto text-foreground w-full transition-all duration-300">
+              <DialogContent className="sm:max-w-xl bg-background border-border shadow-2xl rounded-3xl p-6 md:p-8 max-h-[90vh] overflow-y-auto text-foreground w-full transition-all duration-300 skeuo-panel">
                 <DialogHeader className="mb-4">
-                  <DialogTitle className="text-left text-2xl font-bold tracking-tight text-foreground">Match Config</DialogTitle>
-                  <p className="text-sm font-medium text-muted-foreground text-left">Set up your perfect local game.</p>
+                  <DialogTitle className="text-left text-3xl font-bold tracking-tight text-foreground font-display">Match Config</DialogTitle>
+                  <p className="text-base font-medium text-muted-foreground text-left">Set up your perfect local game.</p>
                 </DialogHeader>
 
                 <div className="flex flex-col gap-5 w-full mt-1">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-orange-400" />
-                      <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Time Control</h4>
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Time Control</h4>
                     </div>
                     <div className="grid grid-cols-4 gap-3">
                       {[
@@ -266,10 +259,10 @@ const Index = () => {
                         <button
                           key={t}
                           onClick={() => setCompTime(t)}
-                          className={`py-3 px-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 ${compTime === t ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
+                          className={`py-3.5 px-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 ${compTime === t ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                         >
-                          <span className="text-base font-black">{val}</span>
-                          <span className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider font-mono">{label}</span>
+                          <span className="text-lg font-black">{val}</span>
+                          <span className="text-xs uppercase font-bold text-muted-foreground/60 tracking-wider font-mono">{label}</span>
                         </button>
                       ))}
                     </div>
@@ -278,7 +271,7 @@ const Index = () => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Target className="w-4 h-4 text-orange-400" />
-                      <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">AI Difficulty</h4>
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">AI Difficulty</h4>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {[
@@ -290,68 +283,66 @@ const Index = () => {
                         <button
                           key={l}
                           onClick={() => setCompLevel(l)}
-                          className={`py-3 px-5 rounded-xl border flex justify-between items-center transition-all duration-200 ${compLevel === l ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
+                          className={`py-3.5 px-5 rounded-xl border flex justify-between items-center transition-all duration-200 ${compLevel === l ? 'border-orange-500/50 bg-orange-500/10 text-orange-400 ring-2 ring-orange-500/20' : 'border-border bg-card/50 text-foreground/80 hover:bg-muted font-medium'}`}
                         >
-                          <span className="font-bold text-sm">{name}</span>
-                          <span className="text-[13px] text-muted-foreground/60 font-mono font-bold tracking-tighter">{elo}</span>
+                          <span className="font-bold text-base">{name}</span>
+                          <span className="text-sm text-muted-foreground/60 font-mono font-bold tracking-tighter">{elo}</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <Link to={`/play?mode=computer&level=${compLevel}&time=${compTime}`} className="w-full mt-4">
-                    <button className="w-full py-3.5 rounded-xl text-white font-bold text-base flex items-center justify-center gap-3 transition-all duration-200 bg-primary hover:bg-primary/90 active:scale-[0.98]">
-                      <Play className="w-4 h-4 fill-current" /> Start Match
+                    <button className="w-full py-4 rounded-xl text-white font-bold text-lg flex items-center justify-center gap-3 transition-all duration-200 skeuo-btn-primary">
+                      <Play className="w-5 h-5 fill-current" /> Start Match
                     </button>
                   </Link>
                 </div>
               </DialogContent>
             </Dialog>
 
-            <Link to="/puzzle" className="group flex flex-col justify-between rounded-3xl p-5 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[10rem] glass-panel">
-              <div className="flex justify-start items-center gap-3 relative z-10 w-full">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
+            <Link to="/puzzle" className="group flex flex-col justify-between rounded-2xl p-4 sm:p-5 text-left transition hover:-translate-y-1 relative overflow-hidden min-h-[8.5rem] sm:min-h-[9rem] skeuo-panel">
+              <div className="flex justify-start items-center gap-2.5 relative z-10 w-full">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-300">
                   <Crown className="h-5 w-5" />
                 </div>
-                <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-500 tracking-wide uppercase">NEW DAILY</span>
+                <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-500 tracking-wide uppercase">NEW DAILY</span>
               </div>
-              <Crown className="absolute -right-8 -top-6 h-48 w-48 rotate-12 opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[8deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
-              
-
+              <Crown className="absolute -right-6 -top-4 h-36 w-36 rotate-12 opacity-[0.03] text-foreground transition-all duration-300 group-hover:rotate-[8deg] group-hover:scale-110 group-hover:opacity-[0.05]" />
 
               <div className="relative z-10">
-                <p className="text-2xl font-bold text-foreground">Daily Puzzle</p>
-                <p className="text-sm text-muted-foreground mt-1 max-w-[180px]">Sharpen tactics in 5 mins</p>
+                <p className="text-2xl font-bold text-foreground font-display">Daily Puzzle</p>
+                <p className="text-sm text-muted-foreground mt-0.5">Sharpen tactics in 5 mins</p>
               </div>
-              <ArrowRight className="absolute bottom-5 right-5 h-9 w-9 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
+              <ArrowRight className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 h-7 w-7 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-orange-400" />
             </Link>
 
-            <div className="sm:col-span-2 rounded-3xl glass-panel overflow-hidden flex flex-col">
-               <div className="border-b border-white/5 bg-background/50 px-6 py-4 flex justify-between items-center">
-                   <h2 className="text-sm font-bold text-foreground uppercase tracking-widest text-muted-foreground">Live Events</h2>
-                   <div className="flex items-center gap-2 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+            <div className="sm:col-span-2 rounded-2xl skeuo-panel overflow-hidden flex flex-col">
+               <div className="border-b border-white/5 bg-background/50 px-5 py-2.5 flex justify-between items-center">
+                   <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Live Events</h2>
+                   <div className="flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                      <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                     <span className="text-[10px] font-bold text-emerald-400 uppercase">Live</span>
+                     <span className="text-[11px] font-bold text-emerald-400 uppercase">Live</span>
                    </div>
                </div>
-               <div className="p-3 grid gap-2">
-                  <div className="flex items-center justify-between rounded-2xl bg-background/40 hover:bg-background/80 transition p-4 border border-transparent hover:border-border cursor-pointer">
+               <div className="p-2 sm:p-2.5 grid gap-1.5">
+                  <div className="flex items-center justify-between rounded-xl bg-background/40 hover:bg-background/80 transition px-3.5 py-2 border border-transparent hover:border-border cursor-pointer">
                     <div>
-                      <p className="font-semibold text-foreground">Night Blitz Arena</p>
-                      <p className="text-xs text-muted-foreground/80 mt-0.5">1,248 players entered</p>
+                      <p className="text-sm sm:text-base font-semibold text-foreground">Night Blitz Arena</p>
+                      <p className="text-[11px] text-muted-foreground/80">1,248 players entered</p>
                     </div>
                     <div className="text-right">
-                       <p className="text-sm font-bold text-orange-400">09:14</p>
+                       <p className="text-sm font-bold text-orange-400 font-mono">09:14</p>
                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Starting In</p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between rounded-2xl bg-background/40 hover:bg-background/80 transition p-4 border border-transparent hover:border-border cursor-pointer">
+                  <div className="flex items-center justify-between rounded-xl bg-background/40 hover:bg-background/80 transition px-3.5 py-2 border border-transparent hover:border-border cursor-pointer">
                     <div>
-                      <p className="font-semibold text-foreground">Orange Rapid Cup</p>
-                      <p className="text-xs text-muted-foreground/80 mt-0.5">736 players registered</p>
+                      <p className="text-sm sm:text-base font-semibold text-foreground">Orange Rapid Cup</p>
+                      <p className="text-[11px] text-muted-foreground/80">736 players registered</p>
                     </div>
                     <div className="text-right">
-                       <p className="text-sm font-bold text-orange-400">41:03</p>
+                       <p className="text-sm font-bold text-orange-400 font-mono">41:03</p>
                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Starting In</p>
                     </div>
                   </div>
@@ -360,33 +351,6 @@ const Index = () => {
 
           </div>
         </div>
-
-        {isSignedIn && (
-          <section className="grid gap-6 md:grid-cols-3 mt-8 pt-10 border-t border-border/50 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <article className="rounded-3xl p-6 bg-transparent">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10 text-orange-300">
-                <Timer className="h-6 w-6" />
-              </div>
-              <h2 className="text-lg font-bold text-foreground">Focus-first board</h2>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Minimal UI, clear move highlights, and distraction-free clocks built for deep calculation.</p>
-            </article>
-            <article className="rounded-3xl p-6 bg-transparent">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10 text-orange-300">
-                <Users className="h-6 w-6" />
-              </div>
-              <h2 className="text-lg font-bold text-foreground">Fair matchmaking</h2>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Smart pairing by strength and form so each game feels competitive from move one.</p>
-            </article>
-            <article className="rounded-3xl p-6 bg-transparent">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10 text-orange-300">
-                <Trophy className="h-6 w-6" />
-              </div>
-              <h2 className="text-lg font-bold text-foreground">Season ladders</h2>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Climb monthly ladders, earn titles, and unlock signature board themes as you rank up.</p>
-            </article>
-          </section>
-        )}
-
       </main>
     </div>
   );
